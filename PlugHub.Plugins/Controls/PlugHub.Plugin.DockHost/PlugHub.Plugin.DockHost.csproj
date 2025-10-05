@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!--Avalonia-->
+		<PackageReference Include="Avalonia" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.2" />
+		<!--Avalonia Extras-->
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<!--Avalonia Behaviors-->
+		<PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.2" />
+		<PackageReference Include="Xaml.Behaviors.Interactivity" Version="11.3.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Views\DockControlDemoView.axaml.cs">
+			<DependentUpon>DockControlDemoView.axaml</DependentUpon>
+		</Compile>
+		<AvaloniaResource Include="Themes\Fluent\Generic.axaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\PlugHub.Shared\PlugHub.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

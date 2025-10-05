@@ -1,0 +1,173 @@
+﻿using Avalonia.Controls;
+using PlugHub.Plugin.DockHost.Interfaces.Plugins;
+using PlugHub.Plugin.DockHost.Models;
+using PlugHub.Shared.Interfaces.Services.Plugins;
+
+namespace PlugHub.Plugin.DockHost.Interfaces.Services
+{
+    /// <summary>
+    /// Indicates the type of change that occurred to a dock panel item.
+    /// </summary>
+    public enum DockPanelChangeType
+    {
+        /// <summary>
+        /// A new panel item was added.
+        /// </summary>
+        Added,
+
+        /// <summary>
+        /// An existing panel item was removed.
+        /// </summary>
+        Removed,
+
+        /// <summary>
+        /// An existing panel item was updated.
+        /// </summary>
+        Updated,
+
+        /// <summary>
+        /// The set of panel items was reset or reloaded.
+        /// </summary>
+        Reset
+    }
+    /// <summary>
+    /// Indicates the type of change that occurred to a dock control.
+    /// </summary>
+    public enum DockControlChangeType
+    {
+        /// <summary>
+        /// A new dock control was registered.
+        /// </summary>
+        Registered,
+
+        /// <summary>
+        /// An existing dock control was unregistered.
+        /// </summary>
+        Unregistered
+    }
+
+
+    /// <summary>
+    /// Provides event data for dock panel change notifications.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="DockPanelChangedEventArgs"/> class.
+    /// </remarks>
+    /// <param name="controlId">The identifier of the dock control.</param>
+    /// <param name="item">The panel item that changed.</param>
+    /// <param name="changeType">The type of change that occurred.</param>
+    public sealed class DockPanelChangedEventArgs(Guid controlId, DockPanelItem item, DockPanelChangeType changeType) : EventArgs
+    {
+        /// <summary>
+        /// Gets the identifier of the dock control associated with the change.
+        /// </summary>
+        public Guid ControlId { get; } = controlId;
+
+        /// <summary>
+        /// Gets the panel item involved in the change.
+        /// </summary>
+        public DockPanelItem Item { get; } = item;
+
+        /// <summary>
+        /// Gets the type of change that occurred.
+        /// </summary>
+        public DockPanelChangeType ChangeType { get; } = changeType;
+    }
+
+    /// <summary>
+    /// Provides event data for dock control change notifications.
+    /// </summary>
+    /// <param name="controlId">The identifier of the dock control.</param>
+    /// <param name="changeType">The type of change that occurred.</param>
+    public sealed class DockControlChangedEventArgs(Guid controlId, DockControlChangeType changeType) : EventArgs
+    {
+        /// <summary>
+        /// Gets the identifier of the dock control associated with the change.
+        /// </summary>
+        public Guid ControlId { get; } = controlId;
+
+        /// <summary>
+        /// Gets the type of change that occurred.
+        /// </summary>
+        public DockControlChangeType ChangeType { get; } = changeType;
+    }
+
+
+    /// <summary>
+    /// Defines the contract for managing dock hosts and plugin-provided panels.
+    /// Responsible for registering dock controls, exposing available panels,
+    /// and instantiating requested panel content.
+    /// </summary>
+    public interface IDockService
+    {
+        /// <summary>
+        /// Occurs when the set of available dock panels changes for a control.
+        /// </summary>
+        public event EventHandler<DockPanelChangedEventArgs>? PanelsChanged;
+
+        /// <summary>
+        /// Occurs when a dock control is registered or unregistered.
+        /// </summary>
+        public event EventHandler<DockControlChangedEventArgs>? DockControlChanged;
+
+        /// <summary>
+        /// Finds a registered panel descriptor by its unique identifier for the given dock host.
+        /// </summary>
+        /// <param name="dockId">The identifier of the dock host.</param>
+        /// <param name="descriptorId">The unique identifier of the panel descriptor.</param>
+        /// <returns>The matching <see cref="DockPanelDescriptor"/> if found; otherwise <c>null</c>.</returns>
+        public DockPanelDescriptor? FindDescriptor(Guid dockId, Guid descriptorId);
+
+        /// <summary>
+        /// Retrieves all panel descriptors that are valid for the specified dock host.
+        /// </summary>
+        /// <param name="dockId">The identifier of the dock host.</param>
+        /// <returns>A read-only list of descriptors available to that host.</returns>
+        public IReadOnlyList<DockPanelDescriptor> GetDescriptorsForHost(Guid dockId);
+
+        /// <summary>
+        /// Retrieves the list of available panel items for a given dock control.
+        /// </summary>
+        /// <param name="controlId">The identifier of the dock control.</param>
+        /// <returns>A read-only list of panel items that can be requested for this control.</returns>
+        public IReadOnlyList<DockPanelItem> GetPanelItems(Guid controlId);
+
+        /// <summary>
+        /// Registers a dock host control with the service.
+        /// Only <see cref="Controls.DockControl"/> instances are meaningful,
+        /// but the signature accepts <see cref="Control"/> for shared interface compatibility.
+        /// </summary>
+        /// <param name="control">The Avalonia control instance to register.</param>
+        public void RegisterDockControl(Control control);
+
+        /// <summary>
+        /// Registers a new panel descriptor with the service.
+        /// The descriptor is resolved through the provided plugin resolver
+        /// to enforce ordering, dependencies, and conflicts.
+        /// </summary>
+        /// <param name="descriptor">The panel descriptor to register.</param>
+        /// <param name="resolver">The plugin resolver used to validate and merge descriptors.</param>
+        public void RegisterPanel(DockPanelDescriptor descriptor, IPluginResolver resolver);
+
+        /// <summary>
+        /// Requests that a panel be instantiated and added to the specified dock control,
+        /// with optional initial docking configuration.
+        /// </summary>
+        /// <param name="controlId">The identifier of the target dock control. Use <see cref="Guid.Empty"/> for unbound controls.</param>
+        /// <param name="panelId">The identifier of the panel descriptor to instantiate.</param>
+        /// <param name="edge">The dock edge where the panel should be placed. Defaults to <see cref="Dock.Left"/>.</param>
+        /// <param name="pinned">Whether the panel should be pinned when created. Defaults to <c>false</c>.</param>
+        /// <returns>
+        /// The created <see cref="DockPanelState"/> if the panel was successfully instantiated and added;
+        /// otherwise <c>null</c>.
+        /// </returns>
+        public DockPanelState? RequestPanel(Guid controlId, Guid panelId, Dock edge = Dock.Left, bool pinned = false);
+
+
+        /// <summary>
+        /// Unregisters a previously registered dock control.
+        /// </summary>
+        /// <param name="controlId">The identifier of the control to remove.</param>
+        public void UnregisterDockControl(Guid controlId);
+    }
+}

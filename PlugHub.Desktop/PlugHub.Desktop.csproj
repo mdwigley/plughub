@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PlugHub.Plugins\Controls\PlugHub.Plugin.DockHost\PlugHub.Plugin.DockHost.csproj" />
     <ProjectReference Include="..\PlugHub\PlugHub.csproj" />
   </ItemGroup>
 
