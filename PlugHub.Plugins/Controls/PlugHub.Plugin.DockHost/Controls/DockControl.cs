@@ -616,7 +616,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         private void OnPanelCloseRequested(object? sender, RoutedEventArgs e)
         {
-            if (sender is DockablePanel panel && panel.Descriptor is DockPanelState state)
+            if (sender is DockablePanel panel && panel.PanelState is DockPanelState state)
                 this.ClosePanel(state);
         }
         public void ClosePanel(DockPanelState d)

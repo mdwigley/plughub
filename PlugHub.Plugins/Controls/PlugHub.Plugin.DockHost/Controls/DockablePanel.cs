@@ -36,27 +36,27 @@ namespace PlugHub.Plugin.DockHost.Controls
             remove => this.RemoveHandler(CloseRequestedEvent, value);
         }
 
+        #region DockablePanel: Panel State Properties
 
-        private DockPanelState? descriptor;
-        public DockPanelState? Descriptor
+        public static readonly StyledProperty<DockPanelState?> PanelStateProperty =
+            AvaloniaProperty.Register<DockablePanel, DockPanelState?>(nameof(PanelState));
+        public DockPanelState? PanelState
         {
-            get => this.descriptor;
-            set
-            {
-                if (this.descriptor == value)
-                    return;
-
-                if (this.descriptor != null)
-                    this.descriptor.PropertyChanged -= this.Descriptor_PropertyChanged;
-
-                this.descriptor = value;
-
-                if (this.descriptor != null)
-                    this.descriptor.PropertyChanged += this.Descriptor_PropertyChanged;
-
-                this.UpdateFromDescriptor();
-            }
+            get => this.GetValue(PanelStateProperty);
+            set => this.SetValue(PanelStateProperty, value);
         }
+
+        #endregion
+
+        public static readonly StyledProperty<double> DragThresholdProperty =
+            AvaloniaProperty.Register<DockablePanel, double>(nameof(DragThreshold), 4d);
+        public double DragThreshold
+        {
+            get => this.GetValue(DragThresholdProperty);
+            set => this.SetValue(DragThresholdProperty, value);
+        }
+
+        #region DockablePanel: Header Properties
 
         public static readonly StyledProperty<string> HeaderProperty =
             AvaloniaProperty.Register<DockablePanel, string>(nameof(Header), "Dock Panel");
@@ -74,6 +74,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(IsPinnedProperty, value);
         }
 
+        #endregion
 
         static DockablePanel()
         {
@@ -81,28 +82,41 @@ namespace PlugHub.Plugin.DockHost.Controls
             {
                 x.PseudoClasses.Set(":pinned", x.IsPinned);
                 x.PseudoClasses.Set(":unpinned", !x.IsPinned);
+
+                if (x.PanelState != null && x.PanelState.IsPinned != x.IsPinned)
+                    x.PanelState.IsPinned = x.IsPinned;
+            });
+
+            PanelStateProperty.Changed.AddClassHandler<DockablePanel>((x, e) =>
+            {
+                if (e.OldValue is DockPanelState oldState)
+                    oldState.PropertyChanged -= x.PanelState_PropertyChanged;
+
+                if (e.NewValue is DockPanelState newState)
+                    newState.PropertyChanged += x.PanelState_PropertyChanged;
+
+                x.PanelState_UpdatePanel();
             });
         }
 
-
-        private void Descriptor_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void PanelState_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (this.descriptor == null)
+            if (this.PanelState == null)
                 return;
 
             switch (e.PropertyName)
             {
                 case nameof(DockPanelState.IsPinned):
-                    this.UpdateFromDescriptor();
+                    this.PanelState_UpdatePanel();
                     break;
             }
         }
-        public void UpdateFromDescriptor()
+        public void PanelState_UpdatePanel()
         {
-            if (this.descriptor == null)
+            if (this.PanelState == null)
                 return;
 
-            this.IsPinned = this.descriptor.IsPinned;
+            this.IsPinned = this.PanelState.IsPinned;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -127,12 +141,12 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.dragHandle?.AddHandler(InputElement.PointerMovedEvent, this.DragHandle_PointerMoved, RoutingStrategies.Bubble, handledEventsToo: true);
             this.dragHandle?.AddHandler(InputElement.PointerReleasedEvent, this.DragHandle_PointerReleased, RoutingStrategies.Bubble, handledEventsToo: true);
 
-            this.UpdateFromDescriptor();
+            this.PanelState_UpdatePanel();
         }
 
         protected virtual void DragHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            if (this.Descriptor is null)
+            if (this.PanelState is null)
                 return;
 
             if (e.GetCurrentPoint(this.dragHandle).Properties.IsLeftButtonPressed)
@@ -144,7 +158,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         protected virtual void DragHandle_PointerMoved(object? sender, PointerEventArgs e)
         {
-            if (this.Descriptor is null)
+            if (this.PanelState is null)
                 return;
 
             if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -156,19 +170,19 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             Point pos = e.GetPosition(this);
 
-            if (!this.isDragging && this.dragStart.HasValue && (Math.Abs(pos.X - this.dragStart.Value.X) > 4 || Math.Abs(pos.Y - this.dragStart.Value.Y) > 4))
+            if (!this.isDragging && this.dragStart.HasValue && (Math.Abs(pos.X - this.dragStart.Value.X) > this.DragThreshold || Math.Abs(pos.Y - this.dragStart.Value.Y) > this.DragThreshold))
             {
                 this.isDragging = true;
                 DragStarted?.Invoke(this, EventArgs.Empty);
             }
 
             if (this.isDragging)
-                DragProgressing?.Invoke(this, new PanelDragEventArgs(this.Descriptor, e));
+                DragProgressing?.Invoke(this, new PanelDragEventArgs(this.PanelState, e));
         }
         protected virtual void DragHandle_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            if (this.Descriptor != null)
-                DragCompleted?.Invoke(this, new PanelDragEventArgs(this.Descriptor, e));
+            if (this.PanelState != null)
+                DragCompleted?.Invoke(this, new PanelDragEventArgs(this.PanelState, e));
 
             this.isDragging = false;
             this.dragStart = null;
@@ -180,18 +194,12 @@ namespace PlugHub.Plugin.DockHost.Controls
             e.Handled = true;
 
             this.IsPinned = true;
-
-            if (this.Descriptor != null)
-                this.Descriptor.IsPinned = true;
         }
         protected virtual void PathButtonUnpin_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             e.Handled = true;
 
             this.IsPinned = false;
-
-            if (this.Descriptor != null)
-                this.Descriptor.IsPinned = false;
         }
         protected virtual void PathButtonClose_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {

@@ -76,7 +76,7 @@ namespace PlugHub.Plugin.DockHost.Models
             {
                 Header = this.Header,
                 Content = control,
-                Descriptor = this
+                PanelState = this
             };
             this.ControlId = controlId;
         }
@@ -86,7 +86,7 @@ namespace PlugHub.Plugin.DockHost.Models
 
         public DockHostPanelData GetHostPanelData()
         {
-            DockHostPanelData data = new DockHostPanelData
+            DockHostPanelData data = new()
             {
                 PluginID = this.PluginId,
                 DescriptorID = this.DescriptorId,

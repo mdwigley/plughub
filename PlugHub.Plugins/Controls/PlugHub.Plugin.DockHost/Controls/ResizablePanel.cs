@@ -2,7 +2,9 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace PlugHub.Plugin.DockHost.Controls
 {
@@ -12,20 +14,35 @@ namespace PlugHub.Plugin.DockHost.Controls
     {
         private Thumb? thumb;
 
-
-        private static double CurrentWidth(Control c) =>
-            double.IsNaN(c.Width) ? c.Bounds.Width : c.Width;
-        private static double CurrentHeight(Control c) =>
-            double.IsNaN(c.Height) ? c.Bounds.Height : c.Height;
-
-
-        public static readonly StyledProperty<double> ThumbWidthProperty =
-            AvaloniaProperty.Register<ResizablePanel, double>(nameof(ThumbWidth), 4);
-        public double ThumbWidth
+        public static readonly RoutedEvent<RoutedEventArgs> DragCompleteEvent =
+            RoutedEvent.Register<ResizablePanel, RoutedEventArgs>(nameof(DragComplete), RoutingStrategies.Bubble);
+        public event EventHandler<RoutedEventArgs> DragComplete
         {
-            get => this.GetValue(ThumbWidthProperty);
-            set => this.SetValue(ThumbWidthProperty, value);
+            add => this.AddHandler(DragCompleteEvent, value);
+            remove => this.RemoveHandler(DragCompleteEvent, value);
         }
+
+        #region ResizablePanel: Thumb Properties
+
+        public static readonly StyledProperty<double> ThumbThicknessProperty =
+            AvaloniaProperty.Register<ResizablePanel, double>(nameof(ThumbThickness), 4);
+        public double ThumbThickness
+        {
+            get => this.GetValue(ThumbThicknessProperty);
+            set => this.SetValue(ThumbThicknessProperty, value);
+        }
+
+        public static readonly StyledProperty<IBrush?> ThumbBrushProperty =
+            AvaloniaProperty.Register<ResizablePanel, IBrush?>(nameof(ThumbBrush));
+        public IBrush? ThumbBrush
+        {
+            get => this.GetValue(ThumbBrushProperty);
+            set => this.SetValue(ThumbBrushProperty, value);
+        }
+
+        #endregion
+
+        #region ResizablePanel: Placement Properties
 
         public static readonly StyledProperty<Dock> DockEdgeProperty =
             AvaloniaProperty.Register<ResizablePanel, Dock>(nameof(DockEdge), Dock.Left);
@@ -34,6 +51,10 @@ namespace PlugHub.Plugin.DockHost.Controls
             get => this.GetValue(DockEdgeProperty);
             set => this.SetValue(DockEdgeProperty, value);
         }
+
+        #endregion
+
+        #region ResizablePanel: Panel Size Properties
 
         public static readonly StyledProperty<double> PanelSizeProperty =
             AvaloniaProperty.Register<ResizablePanel, double>(nameof(PanelSize), 150.0);
@@ -59,6 +80,19 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(MaximumSizeProperty, value);
         }
 
+        public static readonly DirectProperty<ResizablePanel, double> ActualPanelSizeProperty =
+            AvaloniaProperty.RegisterDirect<ResizablePanel, double>(nameof(ResizablePanel.ActualPanelSize), (Func<ResizablePanel, double>)(o => o.ActualPanelSize));
+        private double actualPanelSize;
+        public double ActualPanelSize
+        {
+            get => this.actualPanelSize;
+            private set => this.SetAndRaise(ActualPanelSizeProperty, ref this.actualPanelSize, value);
+        }
+
+        #endregion
+
+        #region ResizablePanel: Size Constrtaints Properties
+
         public static readonly StyledProperty<ResizeConstraintMode> ConstraintModeProperty =
             AvaloniaProperty.Register<ResizablePanel, ResizeConstraintMode>(nameof(ConstraintMode), ResizeConstraintMode.Window);
         public ResizeConstraintMode ConstraintMode
@@ -75,12 +109,79 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(ConstraintTargetProperty, value);
         }
 
+        #endregion
+
         public ResizablePanel()
         {
             PanelSizeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyPanelSize());
             DockEdgeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => { x.ApplyPanelSize(); x.ApplyThumbStyle(); });
-            ThumbWidthProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyThumbStyle());
+            ThumbThicknessProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyThumbStyle());
         }
+
+        #region ResizablePanel: Overrides
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            if (this.thumb != null)
+            {
+                this.thumb.DragDelta -= this.Thumb_DragDelta;
+                this.thumb.DragCompleted -= this.Thumb_DragCompleted;
+
+            }
+
+            this.thumb = e.NameScope.Find<Thumb>("PART_ResizeThumb");
+
+            if (this.thumb != null)
+            {
+                this.thumb.DragDelta += this.Thumb_DragDelta;
+                this.thumb.DragCompleted += this.Thumb_DragCompleted;
+
+                switch (this.DockEdge)
+                {
+                    case Dock.Left:
+                    case Dock.Right:
+                        this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
+                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+                        this.thumb.Width = this.ThumbThickness;
+                        this.thumb.Height = double.NaN;
+
+                        this.thumb.HorizontalAlignment = this.DockEdge == Dock.Left
+                            ? HorizontalAlignment.Right
+                            : HorizontalAlignment.Left;
+                        break;
+
+                    case Dock.Top:
+                    case Dock.Bottom:
+                        this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
+                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
+                        this.thumb.Height = this.ThumbThickness;
+                        this.thumb.Width = double.NaN;
+
+                        this.thumb.VerticalAlignment = this.DockEdge == Dock.Top
+                            ? VerticalAlignment.Bottom
+                            : VerticalAlignment.Top;
+                        break;
+                }
+            }
+
+            this.ApplyPanelSize();
+        }
+        protected override void ArrangeCore(Rect finalRect)
+        {
+            base.ArrangeCore(finalRect);
+
+            double newSize = this.DockEdge is Dock.Left or Dock.Right
+                ? this.Bounds.Width
+                : this.Bounds.Height;
+
+            this.SetAndRaise(ActualPanelSizeProperty, ref this.actualPanelSize, newSize);
+        }
+
+        #endregion
+
+        #region ResizablePanel: Event Handlers
 
         private void ApplyPanelSize()
         {
@@ -105,83 +206,29 @@ namespace PlugHub.Plugin.DockHost.Controls
             switch (this.DockEdge)
             {
                 case Dock.Left:
-                    this.thumb.HorizontalAlignment = HorizontalAlignment.Right;
-                    this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
-                    this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
-                    this.thumb.Width = this.ThumbWidth;
-                    this.thumb.Height = double.NaN;
-                    break;
                 case Dock.Right:
-                    this.thumb.HorizontalAlignment = HorizontalAlignment.Left;
                     this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
                     this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
-                    this.thumb.Width = this.ThumbWidth;
+                    this.thumb.Width = this.ThumbThickness;
                     this.thumb.Height = double.NaN;
+
+                    this.thumb.HorizontalAlignment = this.DockEdge == Dock.Left
+                        ? HorizontalAlignment.Right
+                        : HorizontalAlignment.Left;
                     break;
+
                 case Dock.Top:
-                    this.thumb.VerticalAlignment = VerticalAlignment.Bottom;
-                    this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                    this.thumb.Height = this.ThumbWidth;
-                    this.thumb.Width = double.NaN;
-                    break;
                 case Dock.Bottom:
-                    this.thumb.VerticalAlignment = VerticalAlignment.Top;
                     this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                    this.thumb.Height = this.ThumbWidth;
+                    this.thumb.Height = this.ThumbThickness;
                     this.thumb.Width = double.NaN;
+
+                    this.thumb.VerticalAlignment = this.DockEdge == Dock.Top
+                        ? VerticalAlignment.Bottom
+                        : VerticalAlignment.Top;
                     break;
             }
-        }
-
-        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-        {
-            base.OnApplyTemplate(e);
-
-            if (this.thumb != null)
-                this.thumb.DragDelta -= this.Thumb_DragDelta;
-
-            this.thumb = e.NameScope.Find<Thumb>("PART_ResizeThumb");
-
-            if (this.thumb != null)
-            {
-                this.thumb.DragDelta += this.Thumb_DragDelta;
-
-                switch (this.DockEdge)
-                {
-                    case Dock.Left:
-                        this.thumb.HorizontalAlignment = HorizontalAlignment.Right;
-                        this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
-                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
-                        this.thumb.Width = this.ThumbWidth;
-                        this.thumb.Height = double.NaN;
-                        break;
-                    case Dock.Right:
-                        this.thumb.HorizontalAlignment = HorizontalAlignment.Left;
-                        this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
-                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
-                        this.thumb.Width = this.ThumbWidth;
-                        this.thumb.Height = double.NaN;
-                        break;
-                    case Dock.Top:
-                        this.thumb.VerticalAlignment = VerticalAlignment.Bottom;
-                        this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                        this.thumb.Height = this.ThumbWidth;
-                        this.thumb.Width = double.NaN;
-                        break;
-                    case Dock.Bottom:
-                        this.thumb.VerticalAlignment = VerticalAlignment.Top;
-                        this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                        this.thumb.Height = this.ThumbWidth;
-                        this.thumb.Width = double.NaN;
-                        break;
-                }
-            }
-
-            this.ApplyPanelSize();
         }
 
         private void Thumb_DragDelta(object? sender, VectorEventArgs e)
@@ -195,57 +242,71 @@ namespace PlugHub.Plugin.DockHost.Controls
             Point pos = this.TranslatePoint(new Point(0, 0), surface) ?? default;
 
             double min = this.MinimumSize;
-            double maxConfigured = double.IsNaN(this.MaximumSize) ? double.PositiveInfinity : this.MaximumSize;
+            double max = double.IsNaN(this.MaximumSize) ? double.PositiveInfinity : this.MaximumSize;
 
-            double w = CurrentWidth(this);
-            double h = CurrentHeight(this);
+            double w = double.IsNaN(this.Width) ? this.Bounds.Width : this.Width;
+            double h = double.IsNaN(this.Height) ? this.Bounds.Height : this.Height;
 
             switch (this.DockEdge)
             {
                 case Dock.Left:
                     {
-                        double rightGap = Math.Max(0, size.Width - (pos.X + w));
-                        double dx = Math.Clamp(e.Vector.X, -(w - min), Math.Min(rightGap, maxConfigured - w));
-                        this.PanelSize = Math.Clamp(w + dx, min, Math.Min(maxConfigured, w + rightGap));
+                        double g = Math.Max(0, size.Width - (pos.X + w));
+                        double dx = Math.Clamp(e.Vector.X, -(w - min), Math.Min(g, max - w));
+                        this.PanelSize = Math.Clamp(w + dx, min, Math.Min(max, w + g));
                         break;
                     }
                 case Dock.Right:
                     {
-                        double leftGap = Math.Max(0, pos.X);
-                        double dx = Math.Clamp(-e.Vector.X, -(w - min), Math.Min(leftGap, maxConfigured - w));
-                        this.PanelSize = Math.Clamp(w + dx, min, Math.Min(maxConfigured, w + leftGap));
+                        double g = Math.Max(0, pos.X);
+                        double dx = Math.Clamp(-e.Vector.X, -(w - min), Math.Min(g, max - w));
+                        this.PanelSize = Math.Clamp(w + dx, min, Math.Min(max, w + g));
                         break;
                     }
                 case Dock.Top:
                     {
-                        double bottomGap = Math.Max(0, size.Height - (pos.Y + h));
-                        double dy = Math.Clamp(e.Vector.Y, -(h - min), Math.Min(bottomGap, maxConfigured - h));
-                        this.PanelSize = Math.Clamp(h + dy, min, Math.Min(maxConfigured, h + bottomGap));
+                        double g = Math.Max(0, size.Height - (pos.Y + h));
+                        double dy = Math.Clamp(e.Vector.Y, -(h - min), Math.Min(g, max - h));
+                        this.PanelSize = Math.Clamp(h + dy, min, Math.Min(max, h + g));
                         break;
                     }
                 case Dock.Bottom:
                     {
-                        double topGap = Math.Max(0, pos.Y);
-                        double dy = Math.Clamp(-e.Vector.Y, -(h - min), Math.Min(topGap, maxConfigured - h));
-                        this.PanelSize = Math.Clamp(h + dy, min, Math.Min(maxConfigured, h + topGap));
+                        double g = Math.Max(0, pos.Y);
+                        double dy = Math.Clamp(-e.Vector.Y, -(h - min), Math.Min(g, max - h));
+                        this.PanelSize = Math.Clamp(h + dy, min, Math.Min(max, h + g));
                         break;
                     }
             }
         }
-
         private (Visual surface, Size size)? TryGetConstraintSurface()
         {
-            return this.ConstraintMode switch
+            if (this.ConstraintMode == ResizeConstraintMode.Window)
             {
-                ResizeConstraintMode.Window => TopLevel.GetTopLevel(this) is { } tl
-                    ? (tl, tl.ClientSize)
-                    : null,
-                ResizeConstraintMode.Custom when this.ConstraintTarget is { } v
-                    => (v, v.Bounds.Size),
-                _ when this.Parent is Visual p
-                    => (p, p.Bounds.Size),
-                _ => null
-            };
+                TopLevel? tl = TopLevel.GetTopLevel(this);
+
+                if (tl != null)
+                    return (tl, tl.ClientSize);
+            }
+            else if (this.ConstraintMode == ResizeConstraintMode.Custom)
+            {
+                if (this.ConstraintTarget != null)
+                    return (this.ConstraintTarget, this.ConstraintTarget.Bounds.Size);
+            }
+
+            if (this.Parent is Visual p)
+            {
+                return (p, p.Bounds.Size);
+            }
+
+            return null;
         }
+
+        private void Thumb_DragCompleted(object? sender, VectorEventArgs e)
+        {
+            this.RaiseEvent(new RoutedEventArgs(DragCompleteEvent));
+        }
+
+        #endregion
     }
 }

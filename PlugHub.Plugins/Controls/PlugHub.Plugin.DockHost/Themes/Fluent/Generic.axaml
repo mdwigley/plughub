@@ -179,13 +179,18 @@
 
 	<!-- ResizablePanel -->
 	<Style Selector="local|ResizablePanel">
-		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="Background" Value="{DynamicResource LayerFillColorDefaultBrush}"/>
+		<Setter Property="ThumbBrush" Value="{DynamicResource AccentFillColorTertiaryBrush}"/>
+		<Setter Property="ThumbThickness" Value="8"/>
+		<Setter Property="MinimumSize" Value="16"/>
+		<Setter Property="MaximumSize" Value="512"/>
+		<Setter Property="ConstraintMode" Value="Parent"/>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate>
 					<Grid
 						IsVisible="{TemplateBinding IsVisible}"
-						Background="{DynamicResource LayerFillColorDefaultBrush}">
+						Background="{TemplateBinding Background}">
 						<ContentPresenter
 							Name="PART_ContentPresenter"
 							Content="{TemplateBinding Content}"
@@ -193,9 +198,7 @@
 							VerticalAlignment="Stretch"/>
 						<Thumb
 							Name="PART_ResizeThumb"
-							Background="{TemplateBinding Background}"
-							Width="{TemplateBinding ThumbWidth}"
-							Height="{TemplateBinding ThumbWidth}"/>
+							Background="{TemplateBinding ThumbBrush}"/>
 					</Grid>
 				</ControlTemplate>
 			</Setter.Value>
@@ -208,7 +211,6 @@
 			<ControlTemplate>
 				<LayoutTransformControl>
 					<LayoutTransformControl.LayoutTransform>
-						<!-- Use TemplatedParent binding, not TemplateBinding, to avoid scoping issues -->
 						<RotateTransform Angle="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}}" />
 					</LayoutTransformControl.LayoutTransform>
 
@@ -225,14 +227,21 @@
 
 	<!-- DockablePanel -->
 	<Style Selector="local|DockablePanel">
+		<Setter Property="DragThreshold" Value="4"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="BorderBrush" Value="Black"/>
+		<Setter Property="Background" Value="{DynamicResource SystemFillColorSolidNeutralBackgroundBrush}"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate>
 					<Border
-					  BorderThickness="1"
-					  BorderBrush="Black"
-					  Background="{DynamicResource SystemFillColorSolidNeutralBackgroundBrush}"
-					  Padding="0" Margin="0">
+						BorderThickness="{TemplateBinding BorderThickness}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						Background="{TemplateBinding Background}"
+						Padding="{TemplateBinding Padding}"
+						Margin="{TemplateBinding Margin}">
 						<Grid>
 							<Grid.RowDefinitions>
 								<RowDefinition Height="2"/>
@@ -258,89 +267,89 @@
 								</Grid.ColumnDefinitions>
 
 								<TextBlock
-								  Grid.Row="0" Grid.Column="0"
-								  Text="{TemplateBinding Header}"
-								  FontSize="16"
-								  FontWeight="Light"
-								  Margin="4,0,0,0"/>
+									Grid.Row="0" Grid.Column="0"
+									Text="{TemplateBinding Header}"
+									FontSize="16"
+									FontWeight="Light"
+									Margin="4,0,0,0"/>
 
 								<Border
-								  Grid.Row="0" Grid.Column="1"
-								  Margin="4,0,4,0"
-								  HorizontalAlignment="Stretch"
-								  VerticalAlignment="Center"
-								  Height="8"
-								  Background="{StaticResource CustomGridBrush}"/>
+									Grid.Row="0" Grid.Column="1"
+									Margin="4,0,4,0"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Center"
+									Height="8"
+									Background="{StaticResource CustomGridBrush}"/>
 
 								<StackPanel
-								  Grid.Row="0"
-								  Grid.Column="2"
-								  Orientation="Horizontal"
-								  Margin="0,0,8,0"
-								  HorizontalAlignment="Right">
+									Grid.Row="0"
+									Grid.Column="2"
+									Orientation="Horizontal"
+									Margin="0,0,8,0"
+									HorizontalAlignment="Right">
 
 									<!-- Pin button visible when unpinned -->
 									<Border
-									  Name="PART_ButtonPin"
-									  Width="16" Height="16"
-									  Padding="1"
-									  Classes="path-button"
-									  Background="Transparent">
+										Name="PART_ButtonPin"
+										Width="16" Height="16"
+										Padding="1"
+										Classes="path-button"
+										Background="Transparent">
 										<Path
-										  HorizontalAlignment="Center"
-										  VerticalAlignment="Center"
-										  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-										  Fill="{DynamicResource TextFillColorPrimaryBrush}"
-										  StrokeThickness="1"
-										  Data="M6 4H12V9H6ZM0 6H4V7H0ZM4 2H6V11H4Z" />
+											HorizontalAlignment="Center"
+											VerticalAlignment="Center"
+											Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											Fill="{DynamicResource TextFillColorPrimaryBrush}"
+											StrokeThickness="1"
+											Data="M6 4H12V9H6ZM0 6H4V7H0ZM4 2H6V11H4Z" />
 									</Border>
 
 									<!-- Unpin button visible when pinned -->
 									<Border
-									  Name="PART_ButtonUnpin"
-									  IsVisible="{TemplateBinding IsPinned}"
-									  Width="16" Height="16"
-									  Padding="1"
-									  Classes="path-button"
-									  Background="Transparent">
+										Name="PART_ButtonUnpin"
+										IsVisible="{TemplateBinding IsPinned}"
+										Width="16" Height="16"
+										Padding="1"
+										Classes="path-button"
+										Background="Transparent">
 										<Path
-										  HorizontalAlignment="Center"
-										  VerticalAlignment="Center"
-										  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-										  Fill="{DynamicResource TextFillColorPrimaryBrush}"
-										  StrokeThickness="1"
-										  Data="M4 8V2H9V8Zm2 4V10H7v2ZM2 10V8h9v2Z" />
+											HorizontalAlignment="Center"
+											VerticalAlignment="Center"
+											Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											Fill="{DynamicResource TextFillColorPrimaryBrush}"
+											StrokeThickness="1"
+											Data="M4 8V2H9V8Zm2 4V10H7v2ZM2 10V8h9v2Z" />
 									</Border>
 
 									<Border
-									  Name="PART_ButtonClose"
-									  Width="16" Height="16"
-									  Classes="path-button-close"
-									  Background="Transparent">
+										Name="PART_ButtonClose"
+										Width="16" Height="16"
+										Classes="path-button-close"
+										Background="Transparent">
 										<Path
-										  HorizontalAlignment="Left"
-										  VerticalAlignment="Top"
-										  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-										  StrokeThickness="4"
-										  Data="M4,4 L12,12 M12,4 L4,12" />
+											HorizontalAlignment="Left"
+											VerticalAlignment="Top"
+											Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											StrokeThickness="4"
+											Data="M4,4 L12,12 M12,4 L4,12" />
 									</Border>
 								</StackPanel>
 
 								<Border
-								  Name="PART_DragHandle"
-								  Grid.Row="0"
-								  Grid.Column="0"
-								  Grid.ColumnSpan="2"
-								  HorizontalAlignment="Stretch"
-								  VerticalAlignment="Stretch"
-								  Background="Transparent"/>
+									Name="PART_DragHandle"
+									Grid.Row="0"
+									Grid.Column="0"
+									Grid.ColumnSpan="2"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Stretch"
+									Background="Transparent"/>
 							</Grid>
 
 							<!-- Explicit Content binding -->
 							<ContentPresenter
-							  Grid.Row="2"
-							  Name="PART_ContentPresenter"
-							  Content="{TemplateBinding Content}"/>
+								Grid.Row="2"
+								Name="PART_ContentPresenter"
+								Content="{TemplateBinding Content}"/>
 						</Grid>
 					</Border>
 				</ControlTemplate>
@@ -352,14 +361,12 @@
 	<Style Selector="local|DockGutter">
 		<Setter Property="Template">
 			<ControlTemplate>
-				<!-- Wrap the gutter strip in a ScrollViewer so overflow can scroll -->
 				<ScrollViewer
 					Name="PART_GutterScroller"
 					HorizontalScrollBarVisibility="Hidden"
 					VerticalScrollBarVisibility="Hidden"
 					ClipToBounds="True">
 
-					<!-- GutterItem strip -->
 					<ItemsControl
 						Name="PART_GutterItemStrip"
 						ItemsSource="{TemplateBinding Panels}"
@@ -398,19 +405,19 @@
 					<Button Classes="gutter-item" Tag="{Binding}" Padding="0,5,11,6">
 						<Grid>
 							<TextBlock Text="{Binding Header}"
-									   FontSize="14"
-									   FontWeight="Thin"
-									   HorizontalAlignment="Center"
-									   Margin="0,4,0,4" />
+								FontSize="14"
+								FontWeight="Thin"
+								HorizontalAlignment="Center"
+								Margin="0,4,0,4" />
 
 							<!-- Disabled stroke -->
 							<Border BorderBrush="{DynamicResource TextFillColorDisabledBrush}"
-									BorderThickness="{Binding AccentBorderThickness, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
+								BorderThickness="{Binding AccentBorderThickness, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
 
 							<!-- Accent stroke -->
 							<Border Classes="accent-bar"
-									BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
-									BorderThickness="{Binding AccentBorderThickness, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
+								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
+								BorderThickness="{Binding AccentBorderThickness, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
 						</Grid>
 					</Button>
 				</DataTemplate>
