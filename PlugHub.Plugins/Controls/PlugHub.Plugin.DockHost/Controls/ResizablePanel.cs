@@ -57,7 +57,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         #region ResizablePanel: Panel Size Properties
 
         public static readonly StyledProperty<double> PanelSizeProperty =
-            AvaloniaProperty.Register<ResizablePanel, double>(nameof(PanelSize), 150.0);
+            AvaloniaProperty.Register<ResizablePanel, double>(nameof(PanelSize), 300);
         public double PanelSize
         {
             get => this.GetValue(PanelSizeProperty);
@@ -138,32 +138,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.thumb.DragDelta += this.Thumb_DragDelta;
                 this.thumb.DragCompleted += this.Thumb_DragCompleted;
 
-                switch (this.DockEdge)
-                {
-                    case Dock.Left:
-                    case Dock.Right:
-                        this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
-                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
-                        this.thumb.Width = this.ThumbThickness;
-                        this.thumb.Height = double.NaN;
-
-                        this.thumb.HorizontalAlignment = this.DockEdge == Dock.Left
-                            ? HorizontalAlignment.Right
-                            : HorizontalAlignment.Left;
-                        break;
-
-                    case Dock.Top:
-                    case Dock.Bottom:
-                        this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                        this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                        this.thumb.Height = this.ThumbThickness;
-                        this.thumb.Width = double.NaN;
-
-                        this.thumb.VerticalAlignment = this.DockEdge == Dock.Top
-                            ? VerticalAlignment.Bottom
-                            : VerticalAlignment.Top;
-                        break;
-                }
+                this.ApplyThumbStyle();
             }
 
             this.ApplyPanelSize();
@@ -256,18 +231,18 @@ namespace PlugHub.Plugin.DockHost.Controls
                         this.PanelSize = Math.Clamp(w + dx, min, Math.Min(max, w + g));
                         break;
                     }
-                case Dock.Right:
-                    {
-                        double g = Math.Max(0, pos.X);
-                        double dx = Math.Clamp(-e.Vector.X, -(w - min), Math.Min(g, max - w));
-                        this.PanelSize = Math.Clamp(w + dx, min, Math.Min(max, w + g));
-                        break;
-                    }
                 case Dock.Top:
                     {
                         double g = Math.Max(0, size.Height - (pos.Y + h));
                         double dy = Math.Clamp(e.Vector.Y, -(h - min), Math.Min(g, max - h));
                         this.PanelSize = Math.Clamp(h + dy, min, Math.Min(max, h + g));
+                        break;
+                    }
+                case Dock.Right:
+                    {
+                        double g = Math.Max(0, pos.X);
+                        double dx = Math.Clamp(-e.Vector.X, -(w - min), Math.Min(g, max - w));
+                        this.PanelSize = Math.Clamp(w + dx, min, Math.Min(max, w + g));
                         break;
                     }
                 case Dock.Bottom:

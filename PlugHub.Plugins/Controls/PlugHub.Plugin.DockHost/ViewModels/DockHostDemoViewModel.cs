@@ -22,6 +22,22 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         #endregion
 
+        #region DockHostDemoViewModel: Control IDs
+
+        public static readonly Guid RightPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-444444444444");
+        public static readonly Guid RightPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-555555555555");
+
+        public static readonly Guid TopPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-666666666666");
+        public static readonly Guid TopPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-777777777777");
+
+        public static readonly Guid LeftPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-888888888888");
+        public static readonly Guid LeftPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-999999999999");
+
+        public static readonly Guid BottomPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-aaaaaaaaaaaa");
+        public static readonly Guid BottomPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-bbbbbbbbbbbb");
+
+        #endregion
+
         public ObservableCollection<DockPanelState> DockPanels { get; } = [];
         public ObservableCollection<DockPanelItem> DockPanelItems { get; private set; } = [];
         public Guid DockId { get; set; } = Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d");
@@ -48,20 +64,19 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         private void ApplyDefaultPanels()
         {
-            this.DockService.RequestPanel(this.DockId, RightPanel1, edge: Dock.Right);
-            this.DockService.RequestPanel(this.DockId, RightPanel2, edge: Dock.Right);
+            this.DockService.RequestPanel(LeftPanel1ControlId, this.DockId, LeftPanel1, edge: Dock.Left, pinned: true);
+            this.DockService.RequestPanel(LeftPanel2ControlId, this.DockId, LeftPanel2, edge: Dock.Left, pinned: true);
 
-            this.DockService.RequestPanel(this.DockId, TopPanel1, edge: Dock.Top);
-            this.DockService.RequestPanel(this.DockId, TopPanel2, edge: Dock.Top);
+            this.DockService.RequestPanel(TopPanel1ControlId, this.DockId, TopPanel1, edge: Dock.Top);
+            this.DockService.RequestPanel(TopPanel2ControlId, this.DockId, TopPanel2, edge: Dock.Top);
 
-            this.DockService.RequestPanel(this.DockId, LeftPanel1, edge: Dock.Left, pinned: true);
-            this.DockService.RequestPanel(this.DockId, LeftPanel2, edge: Dock.Left, pinned: true);
+            this.DockService.RequestPanel(RightPanel1ControlId, this.DockId, RightPanel1, edge: Dock.Right);
+            this.DockService.RequestPanel(RightPanel2ControlId, this.DockId, RightPanel2, edge: Dock.Right);
 
-            this.DockService.RequestPanel(this.DockId, BottomPanel1, edge: Dock.Bottom, pinned: true);
-            this.DockService.RequestPanel(this.DockId, BottomPanel2, edge: Dock.Bottom, pinned: true);
+            this.DockService.RequestPanel(BottomPanel1ControlId, this.DockId, BottomPanel1, edge: Dock.Bottom, pinned: true);
+            this.DockService.RequestPanel(BottomPanel2ControlId, this.DockId, BottomPanel2, edge: Dock.Bottom, pinned: true);
 
             this.logger.LogInformation("Default panels applied for DockId {DockId}", this.DockId);
         }
-
     }
 }

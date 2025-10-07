@@ -10,62 +10,56 @@ using PlugHub.Plugin.DockHost.Models;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace PlugHub.Plugin.DockHost.Controls
 {
-    public class FlyoutExtendedEventArgs(DockPanelState descriptor, Control control) : EventArgs
+    public class FlyoutExtendedEventArgs(DockPanelState state, Control control) : EventArgs
     {
-        public DockPanelState Descriptor { get; } = descriptor;
+        public DockPanelState State { get; } = state;
         public Control Control { get; } = control;
     }
+    public class PanelsReorderedEventArgs(DockPanelState state) : EventArgs
+    {
+        public DockPanelState State = state;
+    }
 
-    public class DockGutter : TemplatedControl
+
+    public class DockGutter : ItemsControl
     {
         public event EventHandler<FlyoutExtendedEventArgs>? FlyoutExpanded;
+        public event EventHandler<PanelsReorderedEventArgs>? PanelsReordered;
 
-        private ItemsControl? itemsStrip;
-        private TopLevel? top;
         private EventHandler<PointerPressedEventArgs>? defocusHandler;
 
-        public Control? ActiveItem { get; protected set; }
+        private Point? clickPosition;
+        private bool isMoving;
+        private RotatableContent? pressedRot;
+        private DockPanelState? pressedState;
+        private DockPanelState? lastTargetState;
+        private Rect? lastTargetBounds;
+        private TopLevel? top;
+        private Control? currentContent;
+        private DockPanelState? currentState;
 
-        private DockPanelState? activeState;
-        public DockPanelState? ActiveState
+        public DockPanelState? CurrentState
         {
-            get => this.activeState;
+            get => this.currentState;
             protected set
             {
-                if (this.activeState == value)
+                if (this.currentState == value)
                     return;
 
-                if (this.activeState != null)
-                    this.activeState.PropertyChanged -= this.OnDescriptorPropertyChanged;
+                if (this.currentState != null)
+                    this.currentState.PropertyChanged -= this.StatePropertyChanged;
 
-                this.activeState = value;
+                this.currentState = value;
 
-                if (this.activeState != null)
-                    this.activeState.PropertyChanged += this.OnDescriptorPropertyChanged;
+                if (this.currentState != null)
+                    this.currentState.PropertyChanged += this.StatePropertyChanged;
             }
         }
 
-        public static readonly StyledProperty<ObservableCollection<DockPanelState>> PanelsProperty =
-            AvaloniaProperty.Register<DockGutter, ObservableCollection<DockPanelState>>(nameof(Panels), []);
-        public ObservableCollection<DockPanelState> Panels
-        {
-            get => this.GetValue(PanelsProperty);
-            set => this.SetValue(PanelsProperty, value);
-        }
-
         #region DockGutter: Style Properties
-
-        public static readonly StyledProperty<bool> IsExpandedProperty =
-            AvaloniaProperty.Register<DockGutter, bool>(nameof(IsExpanded), false);
-        public bool IsExpanded
-        {
-            get => this.GetValue(IsExpandedProperty);
-            set => this.SetValue(IsExpandedProperty, value);
-        }
 
         public static readonly StyledProperty<double> PanelSizeProperty =
             AvaloniaProperty.Register<DockGutter, double>(nameof(PanelSize), 400);
@@ -91,25 +85,18 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(GutterItemTemplateProperty, value);
         }
 
-        public static readonly StyledProperty<double> GutterItemRotationProperty =
-            AvaloniaProperty.Register<DockGutter, double>(nameof(GutterItemRotation), 0);
-        public double GutterItemRotation
-        {
-            get => this.GetValue(GutterItemRotationProperty);
-            set => this.SetValue(GutterItemRotationProperty, value);
-        }
-
-        public static readonly StyledProperty<object?> ActiveContentProperty =
-            AvaloniaProperty.Register<DockGutter, object?>(nameof(ActiveContent));
-        public object? ActiveContent
-        {
-            get => this.GetValue(ActiveContentProperty);
-            set => this.SetValue(ActiveContentProperty, value);
-        }
-
         #endregion
 
         #region DockGutter: Direct Properties
+
+        public static readonly DirectProperty<DockGutter, bool> IsExpandedProperty =
+            AvaloniaProperty.RegisterDirect<DockGutter, bool>(nameof(IsExpanded), o => o.IsExpanded, (o, v) => o.IsExpanded = v);
+        private bool isExpanded;
+        public bool IsExpanded
+        {
+            get => this.isExpanded;
+            set => this.SetAndRaise(IsExpandedProperty, ref this.isExpanded, value);
+        }
 
         public static readonly DirectProperty<DockGutter, bool> HasContentProperty =
             AvaloniaProperty.RegisterDirect<DockGutter, bool>(nameof(HasContent), o => o.HasContent);
@@ -129,6 +116,15 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(ItemOrientationProperty, ref this.itemOrientation, value);
         }
 
+        public static readonly DirectProperty<DockGutter, double> GutterItemRotationProperty =
+            AvaloniaProperty.RegisterDirect<DockGutter, double>(nameof(GutterItemRotation), o => o.GutterItemRotation, (o, v) => o.GutterItemRotation = v, 0);
+        private double gutterItemRotation;
+        public double GutterItemRotation
+        {
+            get => this.gutterItemRotation;
+            private set => this.SetAndRaise(GutterItemRotationProperty, ref this.gutterItemRotation, value);
+        }
+
         public static readonly DirectProperty<DockGutter, Thickness> AccentBorderThicknessProperty =
             AvaloniaProperty.RegisterDirect<DockGutter, Thickness>(nameof(AccentBorderThickness), o => o.AccentBorderThickness);
         private Thickness accentBorderThickness;
@@ -138,24 +134,33 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(AccentBorderThicknessProperty, ref this.accentBorderThickness, value);
         }
 
+        public static readonly DirectProperty<DockGutter, object?> PanelContentProperty =
+            AvaloniaProperty.RegisterDirect<DockGutter, object?>(nameof(PanelContent), o => o.PanelContent, (o, v) => o.PanelContent = v);
+        private object? panelContent;
+        public object? PanelContent
+        {
+            get => this.panelContent;
+            set => this.SetAndRaise(PanelContentProperty, ref this.panelContent, value);
+        }
+
         #endregion
 
         public DockGutter()
         {
             DockEdgeProperty.Changed.AddClassHandler<DockGutter>((x, e) => x.UpdateGutterItemOrientation());
 
-            PanelsProperty.Changed.AddClassHandler<DockGutter>((x, e) =>
+            ItemsSourceProperty.Changed.AddClassHandler<DockGutter>((x, e) =>
             {
                 if (e.OldValue is ObservableCollection<DockPanelState> oldColl)
-                    oldColl.CollectionChanged -= x.OnPanelsChanged;
+                    oldColl.CollectionChanged -= x.CollectionChanged;
 
                 if (e.NewValue is ObservableCollection<DockPanelState> newColl)
-                    newColl.CollectionChanged += x.OnPanelsChanged;
+                    newColl.CollectionChanged += x.CollectionChanged;
 
                 x.UpdateGutterItemContent();
             });
 
-            this.Panels.CollectionChanged += this.OnPanelsChanged;
+            this.Items.CollectionChanged += this.CollectionChanged;
         }
 
         #region DockGutter: Internal Upkeep
@@ -168,14 +173,12 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.UpdateGutterItemContent();
             this.UpdateAccent();
 
-            this.itemsStrip = e.NameScope.Find<ItemsControl>("PART_GutterItemStrip");
-
             this.HookGutterItemClicks();
             this.HookDefocusClose();
 
             ScrollViewer? scroller = e.NameScope.Find<ScrollViewer>("PART_GutterScroller");
 
-            scroller?.AddHandler(InputElement.PointerWheelChangedEvent, this.OnWheel, RoutingStrategies.Tunnel);
+            scroller?.AddHandler(InputElement.PointerWheelChangedEvent, this.OnPointerWheelChanged, RoutingStrategies.Tunnel);
         }
 
         protected virtual void UpdateGutterItemOrientation()
@@ -187,7 +190,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         protected virtual void UpdateGutterItemContent()
         {
-            this.HasContent = this.Panels != null && this.Panels.Count > 0;
+            this.HasContent = this.ItemsSource != null && this.Items.Count > 0;
 
             this.IsVisible = this.HasContent;
         }
@@ -205,24 +208,21 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         private void HookGutterItemClicks()
         {
-            if (this.itemsStrip == null)
-                return;
+            this.RemoveHandler(InputElement.PointerPressedEvent, this.OnGutterItemPressed);
+            this.RemoveHandler(InputElement.PointerMovedEvent, this.OnGutterItemMoved);
+            this.RemoveHandler(InputElement.PointerReleasedEvent, this.OnGutterItemReleased);
 
-            this.itemsStrip.RemoveHandler(InputElement.PointerPressedEvent, this.OnGutterItemPressed);
-            this.itemsStrip.RemoveHandler(InputElement.PointerMovedEvent, this.OnGutterItemMoved);
-            this.itemsStrip.RemoveHandler(InputElement.PointerReleasedEvent, this.OnGutterItemReleased);
-
-            this.itemsStrip.AddHandler(
+            this.AddHandler(
                 InputElement.PointerPressedEvent,
                 this.OnGutterItemPressed,
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
-            this.itemsStrip.AddHandler(
+            this.AddHandler(
                 InputElement.PointerMovedEvent,
                 this.OnGutterItemMoved,
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
-            this.itemsStrip.AddHandler(
+            this.AddHandler(
                 InputElement.PointerReleasedEvent,
                 this.OnGutterItemReleased,
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
@@ -230,9 +230,6 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         private void HookDefocusClose()
         {
-            if (this.itemsStrip == null)
-                return;
-
             TopLevel? topLevel = TopLevel.GetTopLevel(this);
 
             if (topLevel == null) return;
@@ -249,17 +246,17 @@ namespace PlugHub.Plugin.DockHost.Controls
 
                 if (ev.Source is Visual v)
                 {
-                    if (this.ActiveItem is Visual btn && (ReferenceEquals(v, btn) || btn.IsVisualAncestorOf(v)))
+                    if (this.currentContent is Visual btn && (ReferenceEquals(v, btn) || btn.IsVisualAncestorOf(v)))
                         return;
 
-                    if (this.ActiveContent is Visual content)
+                    if (this.PanelContent is Visual content)
                     {
                         ResizablePanel? host = content.FindAncestorOfType<ResizablePanel>(includeSelf: true);
                         if (host != null && (ReferenceEquals(v, host) || host.IsVisualAncestorOf(v)))
                             return;
                     }
 
-                    if (this.itemsStrip.IsVisualAncestorOf(v))
+                    if (this.IsVisualAncestorOf(v))
                         return;
                 }
 
@@ -272,6 +269,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+
             this.HookDefocusClose();
         }
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -283,9 +281,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.top = null;
 
             base.OnDetachedFromVisualTree(e);
-            this.Panels.CollectionChanged -= this.OnPanelsChanged;
         }
-        private void OnWheel(object? sender, PointerWheelEventArgs e)
+        private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
             if (sender is ScrollViewer sv)
             {
@@ -306,18 +303,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockGutter: Gutter Item Reorder
 
-        protected Point? ClickPosition;
-        protected bool IsMoving;
-        private RotatableContent? pressedRot;
-        private DockPanelState? pressedDesc;
-
-        private DockPanelState? lastTargetDesc;
-        private Rect? lastTargetBounds;
-
         private void OnGutterItemPressed(object? sender, PointerPressedEventArgs e)
         {
             this.pressedRot = null;
-            this.pressedDesc = null;
+            this.pressedState = null;
 
             if (e.Source is Visual v)
             {
@@ -325,29 +314,21 @@ namespace PlugHub.Plugin.DockHost.Controls
                 if (rot?.DataContext is DockPanelState d)
                 {
                     this.pressedRot = rot;
-                    this.pressedDesc = d;
-                    Debug.WriteLine($"[Pressed] Cached RotatableContent + Descriptor at index {this.Panels?.IndexOf(d)}");
-                }
-                else
-                {
-                    Debug.WriteLine("[Pressed] No RotatableContent/DataContext found");
+                    this.pressedState = d;
                 }
             }
 
-            this.ClickPosition = e.GetPosition(this.itemsStrip);
-            this.IsMoving = false;
-
-            Debug.WriteLine($"[Pressed] sender={sender?.GetType().Name}, source={e.Source?.GetType().Name}, " +
-                            $"ClickPosition=({this.ClickPosition?.X:0.0},{this.ClickPosition?.Y:0.0}), IsMoving={this.IsMoving}");
+            this.clickPosition = e.GetPosition(this);
+            this.isMoving = false;
         }
         private void OnGutterItemMoved(object? sender, PointerEventArgs e)
         {
-            if (this.ClickPosition == null || this.itemsStrip == null || this.pressedRot == null || this.pressedDesc == null)
+            if (this.clickPosition == null || this.pressedRot == null || this.pressedState == null)
                 return;
 
-            Point current = e.GetPosition(this.itemsStrip);
-            double dx = current.X - this.ClickPosition.Value.X;
-            double dy = current.Y - this.ClickPosition.Value.Y;
+            Point current = e.GetPosition(this);
+            double dx = current.X - this.clickPosition.Value.X;
+            double dy = current.Y - this.clickPosition.Value.Y;
             double distSq = dx * dx + dy * dy;
 
             bool beyondThreshold = distSq > (4 * 4);
@@ -355,34 +336,32 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (!beyondThreshold)
                 return;
 
-            if (!this.IsMoving)
+            if (!this.isMoving)
             {
                 this.Cursor = new Cursor(StandardCursorType.DragMove);
-                e.Pointer.Capture(this.itemsStrip);
-                Debug.WriteLine("[Moved] Threshold crossed → captured pointer, cursor=DragMove");
+                e.Pointer.Capture(this);
             }
 
-            this.IsMoving = true;
-            Debug.WriteLine("[Moved] Calling OnGutterItemReorder");
-            this.OnGutterItemReorder(this.pressedDesc, current);
+            this.isMoving = true;
+            this.OnGutterItemReorder(this.pressedState, current);
         }
-        private void OnGutterItemReorder(DockPanelState pressedDesc, Point currentPos)
+        private void OnGutterItemReorder(DockPanelState pressedState, Point currentPos)
         {
-            if (this.itemsStrip == null || this.Panels == null)
+            if (this.ItemsSource == null)
                 return;
 
-            int currentIndex = this.Panels.IndexOf(pressedDesc);
+            int currentIndex = this.Items.IndexOf(pressedState);
             if (currentIndex < 0)
                 return;
 
-            DockPanelState? targetDesc = null;
+            DockPanelState? targetState = null;
             Rect? targetBounds = null;
 
-            for (int i = 0; i < this.Panels.Count; i++)
+            for (int i = 0; i < this.Items.Count; i++)
             {
-                if (this.itemsStrip.ContainerFromIndex(i) is Control container)
+                if (this.ContainerFromIndex(i) is Control container)
                 {
-                    Point? topLeft = container.TranslatePoint(new Point(0, 0), this.itemsStrip);
+                    Point? topLeft = container.TranslatePoint(new Point(0, 0), this);
                     if (topLeft == null) continue;
 
                     Rect rect = new(topLeft.Value, container.Bounds.Size);
@@ -391,7 +370,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                     {
                         if (currentPos.Y >= rect.Top && currentPos.Y <= rect.Bottom)
                         {
-                            targetDesc = this.Panels[i];
+                            targetState = this.Items[i] as DockPanelState;
                             targetBounds = rect;
                             break;
                         }
@@ -400,7 +379,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                     {
                         if (currentPos.X >= rect.Left && currentPos.X <= rect.Right)
                         {
-                            targetDesc = this.Panels[i];
+                            targetState = this.Items[i] as DockPanelState;
                             targetBounds = rect;
                             break;
                         }
@@ -408,59 +387,58 @@ namespace PlugHub.Plugin.DockHost.Controls
                 }
             }
 
-            if (this.lastTargetDesc != null && this.lastTargetBounds.HasValue &&
+            if (this.lastTargetState != null && this.lastTargetBounds.HasValue &&
                 this.lastTargetBounds.Value.Contains(currentPos))
             {
                 return;
             }
 
-            if (this.lastTargetDesc != null && this.lastTargetBounds.HasValue &&
+            if (this.lastTargetState != null && this.lastTargetBounds.HasValue &&
                 !this.lastTargetBounds.Value.Contains(currentPos))
             {
-                this.lastTargetDesc = null;
+                this.lastTargetState = null;
                 this.lastTargetBounds = null;
             }
 
-            if (targetDesc == null || ReferenceEquals(targetDesc, pressedDesc))
+            if (targetState == null || ReferenceEquals(targetState, pressedState))
                 return;
 
-            if (!ReferenceEquals(targetDesc, this.lastTargetDesc))
+            if (!ReferenceEquals(targetState, this.lastTargetState))
             {
-                int targetIndex = this.Panels.IndexOf(targetDesc);
-                int currentIndexNow = this.Panels.IndexOf(pressedDesc);
+                int targetIndex = this.Items.IndexOf(targetState);
+                int currentIndexNow = this.Items.IndexOf(pressedState);
 
                 if (targetIndex >= 0 && targetIndex != currentIndexNow)
                 {
-                    this.Panels.RemoveAt(currentIndexNow);
-                    this.Panels.Insert(targetIndex, pressedDesc);
+                    ObservableCollection<DockPanelState> list =
+                        (ObservableCollection<DockPanelState>)this.ItemsSource;
 
-                    Debug.WriteLine($"[Reorder] Moved descriptor from {currentIndexNow} to {targetIndex}");
+                    list.RemoveAt(currentIndexNow);
+                    list.Insert(targetIndex, pressedState);
                 }
 
-                this.lastTargetDesc = targetDesc;
+                this.lastTargetState = targetState;
                 this.lastTargetBounds = targetBounds;
             }
         }
         private void OnGutterItemReleased(object? sender, RoutedEventArgs e)
         {
-            if (this.pressedRot != null && this.pressedDesc != null && !this.IsMoving)
+            if (this.pressedState != null && this.pressedRot != null)
             {
-                Debug.WriteLine("[Released] TogglePanel (click path)");
-                this.TogglePanel(this.pressedDesc, this.pressedRot);
+                if (!this.isMoving)
+                    this.TogglePanel(this.pressedState, this.pressedRot);
+                else
+                    this.PanelsReordered?.Invoke(this, new PanelsReorderedEventArgs(this.pressedState));
+
                 e.Handled = true;
             }
-            else
-            {
-                Debug.WriteLine("[Released] No toggle (drag path or missing pressed item)");
-            }
 
-            this.ClickPosition = null;
-            this.IsMoving = false;
+            // Reset state
+            this.clickPosition = null;
+            this.isMoving = false;
             this.pressedRot = null;
-            this.pressedDesc = null;
-
+            this.pressedState = null;
             this.Cursor = new Cursor(StandardCursorType.Arrow);
-            Debug.WriteLine("[Released] State reset, cursor restored to Arrow");
         }
 
         #endregion
@@ -469,32 +447,32 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         protected virtual void TogglePanel(DockPanelState state, Control sourceControl)
         {
-            if (this.ActiveState == state && state.IsVisible)
+            if (this.CurrentState == state && state.IsVisible)
                 this.ClosePanel();
             else
                 this.OpenPanel(state, sourceControl);
         }
         protected virtual void OpenPanel(DockPanelState state, Control sourceControl)
         {
-            this.ActiveState = null;
+            this.CurrentState = null;
 
-            if (this.Panels != null)
-                foreach (DockPanelState d in this.Panels)
+            if (this.ItemsSource != null)
+                foreach (DockPanelState d in this.ItemsSource)
                     d.IsVisible = false;
 
-            this.ActiveItem = sourceControl;
-            this.ActiveState = state;
-            this.ActiveState.IsVisible = true;
+            this.currentContent = sourceControl;
+            this.CurrentState = state;
+            this.CurrentState.IsVisible = true;
 
-            this.FlyoutExpanded?.Invoke(this, new FlyoutExtendedEventArgs(this.ActiveState, this.ActiveItem));
+            this.FlyoutExpanded?.Invoke(this, new FlyoutExtendedEventArgs(this.CurrentState, this.currentContent));
         }
         protected virtual void ClosePanel()
         {
-            if (this.ActiveState != null)
-                this.ActiveState.IsVisible = false;
+            if (this.CurrentState != null)
+                this.CurrentState.IsVisible = false;
         }
 
-        protected virtual void OnPanelsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             this.UpdateGutterItemContent();
 
@@ -502,11 +480,11 @@ namespace PlugHub.Plugin.DockHost.Controls
                 e.Action == NotifyCollectionChangedAction.Replace ||
                 e.Action == NotifyCollectionChangedAction.Reset)
             {
-                if (this.ActiveState != null && !this.Panels.Contains(this.ActiveState))
+                if (this.CurrentState != null && !this.Items.Contains(this.CurrentState))
                     this.ClosePanel();
             }
         }
-        protected virtual void OnDescriptorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        protected virtual void StatePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(DockPanelState.IsVisible))
             {
@@ -514,13 +492,13 @@ namespace PlugHub.Plugin.DockHost.Controls
 
                 if (d.IsVisible)
                 {
-                    this.ActiveContent = d.DockablePanel;
+                    this.PanelContent = d.DockablePanel;
                     this.IsExpanded = true;
                 }
-                else if (ReferenceEquals(this.ActiveState, d))
+                else if (ReferenceEquals(this.CurrentState, d))
                 {
-                    this.ActiveState = null;
-                    this.ActiveContent = null;
+                    this.CurrentState = null;
+                    this.PanelContent = null;
                     this.IsExpanded = false;
                 }
             }

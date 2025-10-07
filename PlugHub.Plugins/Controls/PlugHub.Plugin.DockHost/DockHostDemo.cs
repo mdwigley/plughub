@@ -96,7 +96,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Characters",
                     null,
-                    Factory: sp => new TextBlock { Text = "Character editor goes here" },
+                    Factory: sp => new TextBlock { Text = "Character editor goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -105,7 +105,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Quests",
                     null,
-                    Factory: sp => new TextBlock { Text = "Quest log goes here" },
+                    Factory: sp => new TextBlock { Text = "Quest log goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -114,7 +114,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Inventory",
                     null,
-                    Factory: sp => new TextBlock { Text = "Inventory manager goes here" },
+                    Factory: sp => new TextBlock { Text = "Inventory manager goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -123,7 +123,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Skills",
                     null,
-                    Factory: sp => new TextBlock { Text = "Skill tree goes here" },
+                    Factory: sp => new TextBlock { Text = "Skill tree goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -132,7 +132,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "World",
                     null,
-                    Factory: sp => new TextBlock { Text = "World map goes here" },
+                    Factory: sp => new TextBlock { Text = "World map goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -141,7 +141,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Factions",
                     null,
-                    Factory: sp => new TextBlock { Text = "Faction relations go here" },
+                    Factory: sp => new TextBlock { Text = "Faction relations go here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -150,7 +150,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Console",
                     null,
-                    Factory: sp => new TextBlock { Text = "Debug console goes here" },
+                    Factory: sp => new TextBlock { Text = "Debug console goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -159,7 +159,7 @@ namespace PlugHub.Plugin.DockHost
                     Version,
                     "Log",
                     null,
-                    Factory: sp => new TextBlock { Text = "Event log goes here" },
+                    Factory: sp => new TextBlock { Text = "Event log goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 )
             ];

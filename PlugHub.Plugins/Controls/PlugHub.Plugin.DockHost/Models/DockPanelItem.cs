@@ -13,9 +13,9 @@ namespace PlugHub.Plugin.DockHost.Models
         public ICommand Command { get; }
 
         private readonly IDockService service;
-        private readonly Guid controlId;
+        private readonly Guid dockControlId;
 
-        public DockPanelItem(Guid id, string header, IImage? icon, IDockService service, Guid controlId)
+        public DockPanelItem(Guid id, string header, IImage? icon, IDockService service, Guid dockControlId)
         {
             ArgumentNullException.ThrowIfNull(nameof(header));
             ArgumentNullException.ThrowIfNull(nameof(service));
@@ -24,14 +24,14 @@ namespace PlugHub.Plugin.DockHost.Models
             this.Header = header;
             this.Icon = icon;
             this.service = service;
-            this.controlId = controlId;
+            this.dockControlId = dockControlId;
 
             this.Command = new RelayCommand(this.Activate);
         }
 
         private void Activate()
         {
-            this.service.RequestPanel(this.controlId, this.Id);
+            this.service.RequestPanel(Guid.NewGuid(), this.dockControlId, this.Id);
         }
     }
 }

@@ -4,33 +4,33 @@ namespace PlugHub.Plugin.DockHost.Models
 {
     public class DockHostPanelData
     {
-        public Guid PluginID;
-        public Guid ControlID;
-        public Guid DescriptorID;
-        public Dock DockEdge;
-        public bool IsPinned;
-        public bool IsVisible;
+        public Guid ControlID { get; set; }
+        public Guid PluginID { get; set; }
+        public Guid DescriptorID { get; set; }
+        public Guid DockControlID { get; set; }
+        public Dock DockEdge { get; set; }
+        public bool IsPinned { get; set; }
     }
 
     public class DockHostControlData
     {
         public Guid ControlID { get; set; } = default;
 
-        public double FlyoutLeftLength { get; set; } = 250.0f;
-        public double FlyoutTopLength { get; set; } = 250.0f;
-        public double FlyoutRightLength { get; set; } = 250.0f;
-        public double FlyoutBottomLength { get; set; } = 250.0f;
+        public double LeftFlyoutLength { get; set; } = -1;
+        public double TopFlyoutLength { get; set; } = -1;
+        public double RightFlyoutLength { get; set; } = -1;
+        public double BottomFlyoutLength { get; set; } = -1;
 
-        public double PanelLeftLength { get; set; } = 250.0f;
-        public double PanelTopLength { get; set; } = 250.0f;
-        public double PanelRightLength { get; set; } = 250.0f;
-        public double PanelBottomLength { get; set; } = 250.0f;
+        public double LeftPanelLength { get; set; } = -1;
+        public double TopPanelLength { get; set; } = -1;
+        public double RightPanelLength { get; set; } = -1;
+        public double BottomPanelLength { get; set; } = -1;
 
         public List<DockHostPanelData> DockHostDataItems { get; set; } = [];
     }
 
     public class DockHostData
     {
-        List<DockHostControlData> DockHostControlDataItems { get; set; } = [];
+        public List<DockHostControlData> DockHostControlDataItems { get; set; } = [];
     }
 }

@@ -4,20 +4,18 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using PlugHub.Plugin.DockHost.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Models;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace PlugHub.Plugin.DockHost.Controls
 {
     public class DockControl : ContentControl
     {
-        public const int DEFAULT_PANEL_SIZE = 250;
+        public const int DEFAULT_PANEL_SIZE = 300;
 
         private sealed class DockControlMargins(bool hasTop, double topH, bool hasRight, double rightW, bool hasBottom, double bottomH, bool hasLeft, double leftW)
         {
@@ -32,16 +30,24 @@ namespace PlugHub.Plugin.DockHost.Controls
             public Thickness ForRight() => new(0, this.Top, this.Right, this.Bottom);
         }
 
+        private DockHostControlData? config;
+        private IDockService? dockService;
         private Grid? dropTargetsGrid;
+
         private Border? leftDropTarget;
         private Border? topDropTarget;
         private Border? rightDropTarget;
         private Border? bottomDropTarget;
 
         private DockGutter? leftGutter;
-        private DockGutter? rightGutter;
         private DockGutter? topGutter;
+        private DockGutter? rightGutter;
         private DockGutter? bottomGutter;
+
+        private ResizablePanel? leftResizePanel;
+        private ResizablePanel? topResizePanel;
+        private ResizablePanel? rightResizePanel;
+        private ResizablePanel? bottomResizePanel;
 
 
         #region DockControl: Control Properties
@@ -143,6 +149,40 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockControl: Unpinned Panel Properties
 
+        public static readonly StyledProperty<double> LeftFlyoutLengthProperty =
+            AvaloniaProperty.Register<DockControl, double>(nameof(LeftFlyoutLength), DEFAULT_PANEL_SIZE);
+        public double LeftFlyoutLength
+        {
+            get => this.GetValue(LeftFlyoutLengthProperty);
+            set => this.SetValue(LeftFlyoutLengthProperty, value);
+        }
+
+        public static readonly StyledProperty<double> RightFlyoutLengthProperty =
+            AvaloniaProperty.Register<DockControl, double>(nameof(RightFlyoutLength), DEFAULT_PANEL_SIZE);
+        public double RightFlyoutLength
+        {
+            get => this.GetValue(RightFlyoutLengthProperty);
+            set => this.SetValue(RightFlyoutLengthProperty, value);
+        }
+
+        public static readonly StyledProperty<double> TopFlyoutLengthProperty =
+            AvaloniaProperty.Register<DockControl, double>(nameof(TopFlyoutLength), DEFAULT_PANEL_SIZE);
+        public double TopFlyoutLength
+        {
+            get => this.GetValue(TopFlyoutLengthProperty);
+            set => this.SetValue(TopFlyoutLengthProperty, value);
+        }
+
+        public static readonly StyledProperty<double> BottomFlyoutLengthProperty =
+            AvaloniaProperty.Register<DockControl, double>(nameof(BottomFlyoutLength), DEFAULT_PANEL_SIZE);
+        public double BottomFlyoutLength
+        {
+            get => this.GetValue(BottomFlyoutLengthProperty);
+            set => this.SetValue(BottomFlyoutLengthProperty, value);
+        }
+
+        // *************************************************************** //
+
         public static readonly DirectProperty<DockControl, Thickness> LeftGutterMarginsProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(LeftGutterMargins), o => o.LeftGutterMargins, (o, v) => o.LeftGutterMargins = v, new Thickness(0));
         private Thickness leftGutterMargins;
@@ -178,6 +218,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             get => this.bottomGutterMargins;
             set => this.SetAndRaise(BottomGutterMarginsProperty, ref this.bottomGutterMargins, value);
         }
+
+        // *************************************************************** //
 
         public static readonly DirectProperty<DockControl, Thickness> LeftFlyoutMarginProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(LeftFlyoutMargin), o => o.LeftFlyoutMargin);
@@ -215,6 +257,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(BottomFlyoutMarginProperty, ref this.bottomFlyoutMargin, value);
         }
 
+        // *************************************************************** //
+
         public static readonly DirectProperty<DockControl, bool> HasExpandedFlyoutProperty =
             AvaloniaProperty.RegisterDirect<DockControl, bool>(nameof(HasExpandedFlyout), o => o.HasExpandedFlyout);
         private bool hasExpandedFlyout;
@@ -240,14 +284,23 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             DockServiceProperty.Changed.AddClassHandler<DockControl>((c, e) =>
             {
-                if (e.NewValue is IDockService service)
+                if (this.dockService == null && e.NewValue is IDockService service)
                 {
-                    service.RegisterDockControl(this);
+                    this.dockService = service;
+                    this.config = this.dockService.RegisterDockControl(this);
+                    this.config.ControlID = this.DockId;
                 }
             });
 
+            this.DetachedFromVisualTree += (s, e) =>
+            {
+                if (this.dockService == null) return;
+
+                this.dockService.SaveDockControl(this);
+            };
+
             this.LeftGutterMargins = new Thickness(0, 32, 0, 32);
-            this.RightGutterMargins = new Thickness(0, 32, 0, 32);
+            this.RightGutterMargins = new Thickness(0, 0, 0, 0);
             this.TopGutterMargins = new Thickness(0, 0, 0, 0);
             this.BottomGutterMargins = new Thickness(0, 0, 0, 0);
         }
@@ -258,20 +311,95 @@ namespace PlugHub.Plugin.DockHost.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            this.SetupOverlayGutters(e);
+
+            this.SetupConfig(e);
+            this.SetupExistingStates(e);
+            this.SetupMissingStates(e);
+            this.SetupGutters(e);
+            this.SetupGutterPanels(e);
+            this.SetupGutterPanelsResize(e);
             this.SetupMainGrid(e);
+            this.SetupMainGridSplittersResize(e);
             this.SetupDropTargets(e);
         }
-        private void SetupOverlayGutters(TemplateAppliedEventArgs e)
+
+        protected virtual void SetupConfig(TemplateAppliedEventArgs e)
         {
+            if (this.config is null)
+                return;
+
+            if (this.config.LeftFlyoutLength <= 0) this.config.LeftFlyoutLength = this.LeftFlyoutLength;
+            if (this.config.TopFlyoutLength <= 0) this.config.TopFlyoutLength = this.TopFlyoutLength;
+            if (this.config.RightFlyoutLength <= 0) this.config.RightFlyoutLength = this.RightFlyoutLength;
+            if (this.config.BottomFlyoutLength <= 0) this.config.BottomFlyoutLength = this.BottomFlyoutLength;
+
+            if (this.config.LeftPanelLength <= 0) this.config.LeftPanelLength = this.LeftPanelLength.Value;
+            if (this.config.TopPanelLength <= 0) this.config.TopPanelLength = this.TopPanelLength.Value;
+            if (this.config.RightPanelLength <= 0) this.config.RightPanelLength = this.RightPanelLength.Value;
+            if (this.config.BottomPanelLength <= 0) this.config.BottomPanelLength = this.BottomPanelLength.Value;
+        }
+        protected virtual void SetupExistingStates(TemplateAppliedEventArgs e)
+        {
+            List<DockPanelState> currentStates = [.. this.CollectDockPanelStates()];
+
+            if (this.config == null) return;
+
+            foreach (DockHostPanelData dto in this.config.DockHostDataItems)
+            {
+                DockPanelState? state = currentStates.FirstOrDefault(s => s.ControlId == dto.ControlID);
+
+                if (state == null) continue;
+
+                if (state.DockEdge != dto.DockEdge) state.DockEdge = dto.DockEdge;
+                if (state.IsPinned != dto.IsPinned) state.IsPinned = dto.IsPinned;
+
+                ObservableCollection<DockPanelState> slice = this.GetSlice(dto.DockEdge, dto.IsPinned);
+
+                if (!slice.Contains(state))
+                {
+                    slice.Add(state);
+                }
+                else
+                {
+                    int currentIndex = slice.IndexOf(state);
+                    int desiredIndex = this.config.DockHostDataItems.TakeWhile(x => x != dto).Count(x => x.DockEdge == dto.DockEdge && x.IsPinned == dto.IsPinned);
+
+                    if (currentIndex != desiredIndex)
+                        slice.Move(currentIndex, desiredIndex);
+                }
+            }
+        }
+        protected virtual void SetupMissingStates(TemplateAppliedEventArgs e)
+        {
+            if (this.config == null) return;
+
+            List<DockPanelState> currentStates = [.. this.CollectDockPanelStates()];
+
+            foreach (DockPanelState? state in currentStates)
+            {
+                if (!this.config.DockHostDataItems.Any(x => x.ControlID == state.ControlId))
+                {
+                    this.config.DockHostDataItems.Add(state.ToConfig());
+
+                    ObservableCollection<DockPanelState> slice = this.GetSlice(state.DockEdge, state.IsPinned);
+
+                    if (!slice.Contains(state)) slice.Add(state);
+                }
+            }
+        }
+        protected virtual void SetupGutters(TemplateAppliedEventArgs e)
+        {
+            if (this.config == null)
+                return;
+
             this.leftGutter = e.NameScope.Find<DockGutter>("PART_LeftGutter");
-            this.rightGutter = e.NameScope.Find<DockGutter>("PART_RightGutter");
             this.topGutter = e.NameScope.Find<DockGutter>("PART_TopGutter");
+            this.rightGutter = e.NameScope.Find<DockGutter>("PART_RightGutter");
             this.bottomGutter = e.NameScope.Find<DockGutter>("PART_BottomGutter");
 
             if (this.leftGutter != null)
             {
-                this.leftGutter.Panels = this.LeftUnpinned;
+                this.leftGutter.ItemsSource = this.LeftUnpinned;
                 this.leftGutter.DockEdge = Dock.Left;
                 this.leftGutter.PropertyChanged += (_, args) =>
                 {
@@ -285,25 +413,9 @@ namespace PlugHub.Plugin.DockHost.Controls
                         this.UpdateHasExpandedFlyout();
                 };
             }
-            if (this.rightGutter != null)
-            {
-                this.rightGutter.Panels = this.RightUnpinned;
-                this.rightGutter.DockEdge = Dock.Right;
-                this.rightGutter.PropertyChanged += (_, args) =>
-                {
-                    if (args.Property == BoundsProperty && args.NewValue is Rect rect)
-                        this.RecalculateMargins(this.leftGutter?.Bounds.Width ?? 0, rect.Width, this.topGutter?.Bounds.Height ?? 0, this.bottomGutter?.Bounds.Height ?? 0);
-
-                    if (args is AvaloniaPropertyChangedEventArgs hcp && hcp.Property == DockGutter.HasContentProperty && hcp.NewValue is bool rHas)
-                        this.RecalculateMargins(this.leftGutter?.Bounds.Width ?? 0, rHas ? this.rightGutter.Bounds.Width : 0, this.topGutter?.Bounds.Height ?? 0, this.bottomGutter?.Bounds.Height ?? 0);
-
-                    if (args is AvaloniaPropertyChangedEventArgs iep && iep.Property == DockGutter.IsExpandedProperty)
-                        this.UpdateHasExpandedFlyout();
-                };
-            }
             if (this.topGutter != null)
             {
-                this.topGutter.Panels = this.TopUnpinned;
+                this.topGutter.ItemsSource = this.TopUnpinned;
                 this.topGutter.DockEdge = Dock.Top;
                 this.topGutter.PropertyChanged += (_, args) =>
                 {
@@ -317,9 +429,25 @@ namespace PlugHub.Plugin.DockHost.Controls
                         this.UpdateHasExpandedFlyout();
                 };
             }
+            if (this.rightGutter != null)
+            {
+                this.rightGutter.ItemsSource = this.RightUnpinned;
+                this.rightGutter.DockEdge = Dock.Right;
+                this.rightGutter.PropertyChanged += (_, args) =>
+                {
+                    if (args.Property == BoundsProperty && args.NewValue is Rect rect)
+                        this.RecalculateMargins(this.leftGutter?.Bounds.Width ?? 0, rect.Width, this.topGutter?.Bounds.Height ?? 0, this.bottomGutter?.Bounds.Height ?? 0);
+
+                    if (args is AvaloniaPropertyChangedEventArgs hcp && hcp.Property == DockGutter.HasContentProperty && hcp.NewValue is bool rHas)
+                        this.RecalculateMargins(this.leftGutter?.Bounds.Width ?? 0, rHas ? this.rightGutter.Bounds.Width : 0, this.topGutter?.Bounds.Height ?? 0, this.bottomGutter?.Bounds.Height ?? 0);
+
+                    if (args is AvaloniaPropertyChangedEventArgs iep && iep.Property == DockGutter.IsExpandedProperty)
+                        this.UpdateHasExpandedFlyout();
+                };
+            }
             if (this.bottomGutter != null)
             {
-                this.bottomGutter.Panels = this.BottomUnpinned;
+                this.bottomGutter.ItemsSource = this.BottomUnpinned;
                 this.bottomGutter.DockEdge = Dock.Bottom;
                 this.bottomGutter.PropertyChanged += (_, args) =>
                 {
@@ -334,16 +462,93 @@ namespace PlugHub.Plugin.DockHost.Controls
                 };
             }
         }
-        private void SetupMainGrid(TemplateAppliedEventArgs e)
+        protected virtual void SetupGutterPanels(TemplateAppliedEventArgs e)
+        {
+            if (this.config == null)
+                return;
+
+            this.leftResizePanel = e.NameScope.Find<ResizablePanel>("PART_LeftFlyoutPanel");
+            this.topResizePanel = e.NameScope.Find<ResizablePanel>("PART_TopFlyoutPanel");
+            this.rightResizePanel = e.NameScope.Find<ResizablePanel>("PART_RightFlyoutPanel");
+            this.bottomResizePanel = e.NameScope.Find<ResizablePanel>("PART_BottomFlyoutPanel");
+
+            if (this.leftResizePanel != null)
+                this.leftResizePanel.PanelSize = this.config.LeftFlyoutLength;
+
+            if (this.topResizePanel != null)
+                this.topResizePanel.PanelSize = this.config.TopFlyoutLength;
+
+            if (this.rightResizePanel != null)
+                this.rightResizePanel.PanelSize = this.config.RightFlyoutLength;
+
+            if (this.bottomResizePanel != null)
+                this.bottomResizePanel.PanelSize = this.config.BottomFlyoutLength;
+
+            this.LeftFlyoutLength = this.leftResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+            this.TopFlyoutLength = this.topResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+            this.RightFlyoutLength = this.rightResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+            this.BottomFlyoutLength = this.bottomResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+
+            PropertyChanged += (_, args) =>
+            {
+                switch (args.Property)
+                {
+                    case AvaloniaProperty p when p == LeftFlyoutLengthProperty:
+                        if (this.leftResizePanel != null)
+                            this.leftResizePanel.PanelSize = this.LeftFlyoutLength;
+                        break;
+                    case AvaloniaProperty p when p == TopFlyoutLengthProperty:
+                        if (this.topResizePanel != null)
+                            this.topResizePanel.PanelSize = this.TopFlyoutLength;
+                        break;
+                    case AvaloniaProperty p when p == RightFlyoutLengthProperty:
+                        if (this.rightResizePanel != null)
+                            this.rightResizePanel.PanelSize = this.RightFlyoutLength;
+                        break;
+                    case AvaloniaProperty p when p == BottomFlyoutLengthProperty:
+                        if (this.bottomResizePanel != null)
+                            this.bottomResizePanel.PanelSize = this.BottomFlyoutLength;
+                        break;
+                }
+            };
+        }
+        protected virtual void SetupGutterPanelsResize(TemplateAppliedEventArgs e)
+        {
+            ResizablePanel?[] panels = [this.leftResizePanel, this.topResizePanel, this.rightResizePanel, this.bottomResizePanel];
+
+            foreach (ResizablePanel? panel in panels.Where(p => p != null))
+            {
+                panel!.DragComplete += (_, __) =>
+                {
+                    if (this.config == null) return;
+
+                    this.LeftFlyoutLength = this.leftResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+                    this.TopFlyoutLength = this.topResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+                    this.RightFlyoutLength = this.rightResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+                    this.BottomFlyoutLength = this.bottomResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+
+                    this.config.LeftFlyoutLength = this.LeftFlyoutLength;
+                    this.config.TopFlyoutLength = this.TopFlyoutLength;
+                    this.config.RightFlyoutLength = this.RightFlyoutLength;
+                    this.config.BottomFlyoutLength = this.BottomFlyoutLength;
+                };
+            }
+        }
+        protected virtual void SetupMainGrid(TemplateAppliedEventArgs e)
         {
             Grid? grid = e.NameScope.Find<Grid>("PART_RootGrid");
 
-            if (grid is null) return;
+            if (grid == null || this.config == null) return;
 
-            grid.ColumnDefinitions[0].Width = this.LeftPanelLength;
-            grid.ColumnDefinitions[4].Width = this.RightPanelLength;
-            grid.RowDefinitions[0].Height = this.TopPanelLength;
-            grid.RowDefinitions[4].Height = this.BottomPanelLength;
+            grid.ColumnDefinitions[0].Width = new GridLength(this.config.LeftPanelLength);
+            grid.RowDefinitions[0].Height = new GridLength(this.config.TopPanelLength);
+            grid.ColumnDefinitions[4].Width = new GridLength(this.config.RightPanelLength);
+            grid.RowDefinitions[4].Height = new GridLength(this.config.BottomPanelLength);
+
+            this.LeftPanelLength = grid.ColumnDefinitions[0].Width;
+            this.TopPanelLength = grid.RowDefinitions[0].Height;
+            this.RightPanelLength = grid.ColumnDefinitions[4].Width;
+            this.BottomPanelLength = grid.RowDefinitions[4].Height;
 
             PropertyChanged += (_, args) =>
             {
@@ -352,11 +557,11 @@ namespace PlugHub.Plugin.DockHost.Controls
                     case AvaloniaProperty p when p == LeftPanelLengthProperty:
                         grid.ColumnDefinitions[0].Width = this.LeftPanelLength;
                         break;
-                    case AvaloniaProperty p when p == RightPanelLengthProperty:
-                        grid.ColumnDefinitions[4].Width = this.RightPanelLength;
-                        break;
                     case AvaloniaProperty p when p == TopPanelLengthProperty:
                         grid.RowDefinitions[0].Height = this.TopPanelLength;
+                        break;
+                    case AvaloniaProperty p when p == RightPanelLengthProperty:
+                        grid.ColumnDefinitions[4].Width = this.RightPanelLength;
                         break;
                     case AvaloniaProperty p when p == BottomPanelLengthProperty:
                         grid.RowDefinitions[4].Height = this.BottomPanelLength;
@@ -364,7 +569,31 @@ namespace PlugHub.Plugin.DockHost.Controls
                 }
             };
         }
-        private void SetupDropTargets(TemplateAppliedEventArgs e)
+        protected virtual void SetupMainGridSplittersResize(TemplateAppliedEventArgs e)
+        {
+            Grid? grid = e.NameScope.Find<Grid>("PART_RootGrid");
+
+            if (grid is null || this.config is null) return;
+
+            foreach (GridSplitter splitter in grid.GetLogicalDescendants().OfType<GridSplitter>())
+            {
+                splitter.DragCompleted += (_, __) =>
+                {
+                    if (this.config == null) return;
+
+                    this.LeftPanelLength = grid.ColumnDefinitions[0].Width;
+                    this.TopPanelLength = grid.RowDefinitions[0].Height;
+                    this.RightPanelLength = grid.ColumnDefinitions[4].Width;
+                    this.BottomPanelLength = grid.RowDefinitions[4].Height;
+
+                    this.config.LeftPanelLength = this.LeftPanelLength.Value;
+                    this.config.TopPanelLength = this.TopPanelLength.Value;
+                    this.config.RightPanelLength = this.RightPanelLength.Value;
+                    this.config.BottomPanelLength = this.BottomPanelLength.Value;
+                };
+            }
+        }
+        protected virtual void SetupDropTargets(TemplateAppliedEventArgs e)
         {
             this.dropTargetsGrid = e.NameScope.Find<Grid>("PART_DropTargetsGrid");
 
@@ -372,29 +601,60 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.bottomDropTarget = e.NameScope.Find<Border>("PART_BottomDropTarget");
             this.leftDropTarget = e.NameScope.Find<Border>("PART_LeftDropTarget");
             this.rightDropTarget = e.NameScope.Find<Border>("PART_RightDropTarget");
-
-            Debug.WriteLine($"TopDropTarget handlers attached: {this.topDropTarget != null}");
         }
 
-        public DockHostControlData GetHostControlData()
+        public virtual DockHostControlData? ToConfig()
         {
-            DockHostControlData data = new()
+            if (this.config == null)
+                return null;
+
+            Dictionary<Guid, DockHostPanelData> byId = this.config.DockHostDataItems.ToDictionary(x => x.ControlID);
+            List<DockHostPanelData> orderedDtos = [];
+
+            foreach (DockPanelState state in this.CollectDockPanelStates())
+                if (byId.TryGetValue(state.ControlId, out DockHostPanelData? dto))
+                    orderedDtos.Add(dto);
+
+            foreach (DockHostPanelData dto in this.config.DockHostDataItems)
+                if (!orderedDtos.Contains(dto))
+                    orderedDtos.Add(dto);
+
+            this.config.DockHostDataItems = orderedDtos;
+
+            return this.config;
+        }
+
+        #endregion
+
+        #region DockControl: Event Handlers
+
+        private async void OnPanelStatePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not DockPanelState state)
+                return;
+
+            if (e.PropertyName == nameof(DockPanelState.IsPinned) ||
+                e.PropertyName == nameof(DockPanelState.DockEdge))
             {
-                PanelLeftLength = this.LeftPanelLength.Value,
-                PanelTopLength = this.TopPanelLength.Value,
-                PanelRightLength = this.RightPanelLength.Value,
-                PanelBottomLength = this.BottomPanelLength.Value,
+                if (state.DockablePanel != null)
+                    await HardDetachAsync(state.DockablePanel);
 
-                FlyoutLeftLength = this.leftGutter == null ? 0.0d : this.leftGutter.PanelSize,
-                FlyoutTopLength = this.topGutter == null ? 0.0d : this.topGutter.PanelSize,
-                FlyoutRightLength = this.rightGutter == null ? 0.0d : this.rightGutter.PanelSize,
-                FlyoutBottomLength = this.bottomGutter == null ? 0.0d : this.bottomGutter.PanelSize
-            };
+                DockHostPanelData? match = this.config?.DockHostDataItems.FirstOrDefault(x => x.ControlID == state.ControlId);
 
-            foreach (DockPanelState state in this.GetAllDockPanelStates())
-                data.DockHostDataItems.Add(state.GetHostPanelData());
+                if (match != null)
+                {
+                    match.IsPinned = state.IsPinned;
+                    match.DockEdge = state.DockEdge;
+                }
 
-            return data;
+                this.Reslice(state);
+            }
+        }
+
+        private void OnPanelCloseRequested(object? sender, RoutedEventArgs e)
+        {
+            if (sender is DockablePanel panel && panel.PanelState is DockPanelState state)
+                this.ClosePanel(state);
         }
 
         #endregion
@@ -408,8 +668,6 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         private void OnDockPanelDragStarted(object? sender, EventArgs e)
         {
-            Debug.WriteLine("[DockControl] Overlay should now be painted");
-
             this.SetDropTargetsVisible(true);
         }
         private void OnDockPanelDragProgressing(object? sender, PanelDragEventArgs e)
@@ -442,7 +700,6 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.bottomDropTarget.InvalidateVisual();
             }
         }
-
         private void OnDockPanelDragCompleted(object? sender, PanelDragEventArgs e)
         {
             this.SetDropTargetsVisible(false);
@@ -450,20 +707,20 @@ namespace PlugHub.Plugin.DockHost.Controls
             Point pos = e.PointerEvent.GetPosition(this.dropTargetsGrid);
 
             if (this.topDropTarget!.Bounds.Contains(pos))
-                this.Move(e.Descriptor, Dock.Top);
+                this.MovePanel(e.Descriptor, Dock.Top);
             else if (this.leftDropTarget!.Bounds.Contains(pos))
-                this.Move(e.Descriptor, Dock.Left);
+                this.MovePanel(e.Descriptor, Dock.Left);
             else if (this.rightDropTarget!.Bounds.Contains(pos))
-                this.Move(e.Descriptor, Dock.Right);
+                this.MovePanel(e.Descriptor, Dock.Right);
             else if (this.bottomDropTarget!.Bounds.Contains(pos))
-                this.Move(e.Descriptor, Dock.Bottom);
+                this.MovePanel(e.Descriptor, Dock.Bottom);
         }
 
         #endregion
 
-        #region DockControl: Panels & Slices
+        #region DockControl: Panel Upkeep
 
-        public IEnumerable<DockPanelState> GetAllDockPanelStates()
+        public IEnumerable<DockPanelState> CollectDockPanelStates()
         {
             return
             [
@@ -477,56 +734,20 @@ namespace PlugHub.Plugin.DockHost.Controls
                 .. this.BottomUnpinned,
             ];
         }
-
-        private async void Descriptor_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        public void AddPanel(DockPanelState state, Dock? edge = null, bool? pinned = null)
         {
-            if (sender is not DockPanelState d)
-                return;
+            this.AddToSlice(state);
 
-            if (e.PropertyName == nameof(DockPanelState.IsPinned))
-            {
-                await HardDetachAsync(d.DockablePanel);
-
-                this.ReinsertPanel(d);
-            }
-            else if (e.PropertyName == nameof(DockPanelState.DockEdge))
-            {
-                if (d.IsPinned)
-                    this.ReinsertPanel(d);
-                else
-                {
-                    if (d.DockablePanel is not null)
-                        await HardDetachAsync(d.DockablePanel);
-
-                    this.ReinsertPanel(d);
-                }
-            }
-        }
-        private void ReinsertPanel(DockPanelState d)
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                this.RemoveFromAllSlices(d);
-                this.AddToSlice(d);
-                this.RaiseHasFlags();
-            }, DispatcherPriority.Render);
-        }
-
-        public void Register(DockPanelState descriptor, Dock? edge = null, bool? pinned = null)
-        {
-            this.AddToSlice(descriptor);
-
-            // Apply optional state if provided
             if (edge.HasValue)
-                descriptor.DockEdge = edge.Value;
+                state.DockEdge = edge.Value;
 
             if (pinned.HasValue)
-                descriptor.IsPinned = pinned.Value;
+                state.IsPinned = pinned.Value;
 
-            descriptor.PropertyChanged -= this.Descriptor_PropertyChanged;
-            descriptor.PropertyChanged += this.Descriptor_PropertyChanged;
+            state.PropertyChanged -= this.OnPanelStatePropertyChanged;
+            state.PropertyChanged += this.OnPanelStatePropertyChanged;
 
-            if (descriptor.DockablePanel is { } panel)
+            if (state.DockablePanel is { } panel)
             {
                 panel.DragStarted -= this.OnDockPanelDragStarted;
                 panel.DragStarted += this.OnDockPanelDragStarted;
@@ -540,7 +761,70 @@ namespace PlugHub.Plugin.DockHost.Controls
                 panel.RemoveHandler(DockablePanel.CloseRequestedEvent, this.OnPanelCloseRequested);
                 panel.AddHandler(DockablePanel.CloseRequestedEvent, this.OnPanelCloseRequested);
             }
+
+            this.config?.DockHostDataItems.Add(state.ToConfig());
         }
+        public void MovePanel(DockPanelState state, Dock edge)
+        {
+            if (state == null || state.DockEdge == edge)
+                return;
+
+            if (this.config == null || !this.config.DockHostDataItems.Any(x => x.ControlID == state.ControlId))
+                return;
+
+            state.DockEdge = edge;
+
+            DockHostPanelData? dto = this.config.DockHostDataItems.FirstOrDefault(x => x.ControlID == state.ControlId);
+
+            if (dto != null) dto.DockEdge = edge;
+
+            this.InvalidateMeasure();
+        }
+        public void PinPanel(DockPanelState state, bool pinned)
+        {
+            if (state == null) return;
+
+            if (this.config == null || !this.config.DockHostDataItems.Any(x => x.ControlID == state.ControlId))
+                return;
+
+            state.IsPinned = pinned;
+
+            DockHostPanelData? dto = this.config.DockHostDataItems.FirstOrDefault(x => x.ControlID == state.ControlId);
+
+            if (dto != null) dto.IsPinned = pinned;
+
+            this.InvalidateMeasure();
+        }
+        public void ClosePanel(DockPanelState state)
+        {
+            if (state == null) return;
+
+            if (this.config == null || !this.config.DockHostDataItems.Any(x => x.ControlID == state.ControlId))
+                return;
+
+            this.RemoveFromAllSlices(state);
+
+            state.PropertyChanged -= this.OnPanelStatePropertyChanged;
+
+            if (state.DockablePanel is not null)
+            {
+                state.DockablePanel.DragStarted -= this.OnDockPanelDragStarted;
+                state.DockablePanel.DragCompleted -= this.OnDockPanelDragCompleted;
+                state.DockablePanel.DragProgressing -= this.OnDockPanelDragProgressing;
+                state.DockablePanel.RemoveHandler(DockablePanel.CloseRequestedEvent, this.OnPanelCloseRequested);
+            }
+
+            DockHostPanelData? dto = this.config.DockHostDataItems.FirstOrDefault(x => x.ControlID == state.ControlId);
+
+            if (dto != null) this.config.DockHostDataItems.Remove(dto);
+
+            this.InvalidateMeasure();
+        }
+
+        #endregion
+
+        #region DockControl: Slicing
+
         private ObservableCollection<DockPanelState> GetSlice(Dock edge, bool pinned) =>
             (edge, pinned) switch
             {
@@ -557,28 +841,19 @@ namespace PlugHub.Plugin.DockHost.Controls
         private void AddToSlice(DockPanelState d)
         {
             ObservableCollection<DockPanelState> slice = this.GetSlice(d.DockEdge, d.IsPinned);
+
             slice.Add(d);
 
-            if (d.IsPinned)
-            {
-                switch (d.DockEdge)
-                {
-                    case Dock.Left:
-                        this.LeftPanelLength = new GridLength(DEFAULT_PANEL_SIZE);
-                        break;
-                    case Dock.Right:
-                        this.RightPanelLength = new GridLength(DEFAULT_PANEL_SIZE);
-                        break;
-                    case Dock.Top:
-                        this.TopPanelLength = new GridLength(DEFAULT_PANEL_SIZE);
-                        break;
-                    case Dock.Bottom:
-                        this.BottomPanelLength = new GridLength(DEFAULT_PANEL_SIZE);
-                        break;
-                }
-            }
-
             this.RaiseHasFlags();
+        }
+        private void Reslice(DockPanelState d)
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                this.RemoveFromAllSlices(d);
+                this.AddToSlice(d);
+                this.RaiseHasFlags();
+            }, DispatcherPriority.Render);
         }
         private void RemoveFromAllSlices(DockPanelState d)
         {
@@ -592,53 +867,37 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.TopPinned.Remove(d);
             this.BottomPinned.Remove(d);
 
-            if (this.LeftPinned.Count == 0)
-                this.LeftPanelLength = new GridLength(0);
-
-            if (this.RightPinned.Count == 0)
-                this.RightPanelLength = new GridLength(0);
-
-            if (this.TopPinned.Count == 0)
-                this.TopPanelLength = new GridLength(0);
-
-            if (this.BottomPinned.Count == 0)
-                this.BottomPanelLength = new GridLength(0);
-
             this.RaiseHasFlags();
         }
         private void RaiseHasFlags()
         {
+            if (this.config == null) return;
+
             this.RaisePropertyChanged(HasLeftContentProperty, !this.HasLeftContent, this.HasLeftContent);
             this.RaisePropertyChanged(HasRightContentProperty, !this.HasRightContent, this.HasRightContent);
             this.RaisePropertyChanged(HasTopContentProperty, !this.HasTopContent, this.HasTopContent);
             this.RaisePropertyChanged(HasBottomContentProperty, !this.HasBottomContent, this.HasBottomContent);
-        }
 
-        private void OnPanelCloseRequested(object? sender, RoutedEventArgs e)
-        {
-            if (sender is DockablePanel panel && panel.PanelState is DockPanelState state)
-                this.ClosePanel(state);
-        }
-        public void ClosePanel(DockPanelState d)
-        {
-            if (d == null) return;
+            this.LeftPanelLength = this.HasLeftContent
+                ? new GridLength(this.config.LeftPanelLength)
+                : new GridLength(0);
 
-            this.RemoveFromAllSlices(d);
+            this.TopPanelLength = this.HasTopContent
+                ? new GridLength(this.config.TopPanelLength)
+                : new GridLength(0);
 
-            d.PropertyChanged -= this.Descriptor_PropertyChanged;
+            this.RightPanelLength = this.HasRightContent
+                ? new GridLength(this.config.RightPanelLength)
+                : new GridLength(0);
 
-            if (d.DockablePanel is not null)
-            {
-                d.DockablePanel.DragStarted -= this.OnDockPanelDragStarted;
-                d.DockablePanel.DragCompleted -= this.OnDockPanelDragCompleted;
-                d.DockablePanel.DragProgressing -= this.OnDockPanelDragProgressing;
-                d.DockablePanel.RemoveHandler(DockablePanel.CloseRequestedEvent, this.OnPanelCloseRequested);
-            }
+            this.BottomPanelLength = this.HasBottomContent
+                ? new GridLength(this.config.BottomPanelLength)
+                : new GridLength(0);
         }
 
         #endregion
 
-        #region DockControl: Layout & Public API
+        #region DockControl: Layout
 
         private void UpdateHasExpandedFlyout()
         {
@@ -690,22 +949,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.LeftGutterMargins = new Thickness(0, 32, 0, 32);
             }
 
-            if (hasRight)
-            {
-                if (hasTop && hasBottom)
-                    this.RightGutterMargins = new Thickness(0, 32, 0, 32);
-                else if (hasTop)
-                    this.RightGutterMargins = new Thickness(0, 32, 0, 0);
-                else if (hasBottom)
-                    this.RightGutterMargins = new Thickness(0, 0, 0, 32);
-                else
-                    this.RightGutterMargins = new Thickness(0);
-            }
-            else
-            {
-                this.RightGutterMargins = new Thickness(0, 32, 0, 32);
-            }
-
+            this.RightGutterMargins = new Thickness(0);
             this.TopGutterMargins = new Thickness(0);
             this.BottomGutterMargins = new Thickness(0);
         }
@@ -727,9 +971,6 @@ namespace PlugHub.Plugin.DockHost.Controls
                     case Panel container:
                         container.Children.Remove(panel);
                         break;
-                    default:
-                        Debug.WriteLine($"HardDetach: Encountered unexpected parent type: {parentType}");
-                        break;
                 }
                 panel.InvalidateMeasure();
                 panel.InvalidateArrange();
@@ -740,17 +981,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (panel.Parent != null)
             {
                 string? parentType = panel.Parent?.GetType().Name;
-                Debug.WriteLine($"HardDetach: Unable to detach panel, parent remains: {parentType}");
             }
-        }
-
-        public void Move(DockPanelState d, Dock edge)
-        {
-            if (d == null || d.DockEdge == edge) return;
-
-            d.DockEdge = edge;
-
-            this.InvalidateMeasure();
         }
 
         #endregion

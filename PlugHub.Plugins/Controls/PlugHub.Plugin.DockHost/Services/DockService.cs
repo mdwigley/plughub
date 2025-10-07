@@ -5,7 +5,11 @@ using PlugHub.Plugin.DockHost.Controls;
 using PlugHub.Plugin.DockHost.Interfaces.Plugins;
 using PlugHub.Plugin.DockHost.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Models;
+using PlugHub.Shared.Interfaces.Accessors;
+using PlugHub.Shared.Interfaces.Services.Configuration;
 using PlugHub.Shared.Interfaces.Services.Plugins;
+using PlugHub.Shared.Models;
+using PlugHub.Shared.Models.Configuration.Parameters;
 using System.Collections.Concurrent;
 
 namespace PlugHub.Plugin.DockHost.Services
@@ -13,6 +17,8 @@ namespace PlugHub.Plugin.DockHost.Services
     public class DockService : IDockService
     {
         private readonly ILogger<IDockService> logger;
+        private readonly IConfigService configService;
+        private readonly IConfigAccessorFor<DockHostData> configAccessor;
         private readonly List<DockPanelDescriptor> descriptors;
         private readonly IServiceProvider serviceProvider;
 
@@ -22,15 +28,22 @@ namespace PlugHub.Plugin.DockHost.Services
         public event EventHandler<DockPanelChangedEventArgs>? PanelsChanged;
         public event EventHandler<DockControlChangedEventArgs>? DockControlChanged;
 
-        public DockService(ILogger<IDockService> logger, IServiceProvider serviceProvider, IPluginResolver pluginResolver, IEnumerable<IPluginDockPanels> panelProviders)
+        public DockService(ILogger<IDockService> logger, IServiceProvider serviceProvider, IConfigService configService, IPluginResolver pluginResolver, IEnumerable<IPluginDockPanels> panelProviders)
         {
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(serviceProvider);
+            ArgumentNullException.ThrowIfNull(configService);
             ArgumentNullException.ThrowIfNull(pluginResolver);
             ArgumentNullException.ThrowIfNull(panelProviders);
 
             this.logger = logger;
             this.serviceProvider = serviceProvider;
+            this.configService = configService;
+
+            this.configService.RegisterConfig(
+                new ConfigFileParams(Owner: Token.New(), Read: Token.Blocked, Write: Token.Blocked),
+                out this.configAccessor
+            );
 
             List<DockPanelDescriptor> allDescriptors = [];
 
@@ -50,7 +63,7 @@ namespace PlugHub.Plugin.DockHost.Services
 
         #region DockService: Control Handling
 
-        public void RegisterDockControl(Control control)
+        public DockHostControlData RegisterDockControl(Control control)
         {
             ArgumentNullException.ThrowIfNull(control);
 
@@ -58,21 +71,46 @@ namespace PlugHub.Plugin.DockHost.Services
             {
                 this.logger.LogWarning("Attempted to register control of type {ControlType}, but only DockControl instances are supported.", control.GetType().Name);
 
-                return;
+                throw new InvalidOperationException("Attempted to register control of type unsupported type. MUst be a DockControl.");
             }
 
             this.controlsById[dock.DockId] = dock;
             this.logger.LogInformation("Registered dock control {ControlId} ({ControlType})", dock.DockId, dock.GetType().Name);
 
             DockControlChanged?.Invoke(this, new DockControlChangedEventArgs(dock.DockId, DockControlChangeType.Registered));
+
+            DockHostControlData controlData =
+                this.configAccessor.Get()
+                    .DockHostControlDataItems
+                    .FirstOrDefault(d => d.ControlID == dock.DockId) ?? new DockHostControlData();
+
+            return controlData;
         }
-        public void UnregisterDockControl(Guid controlId)
+        public void UnregisterDockControl(Guid controlId, bool save = true)
         {
             if (this.controlsById.TryRemove(controlId, out DockControl? removed))
             {
                 this.logger.LogInformation("Unregistered dock control {ControlId} ({ControlType})", controlId, removed.GetType().Name);
 
                 DockControlChanged?.Invoke(this, new DockControlChangedEventArgs(controlId, DockControlChangeType.Unregistered));
+
+                if (save)
+                {
+                    DockHostControlData? dto = removed.ToConfig();
+
+                    if (dto == null) return;
+
+                    DockHostData hostData = this.configAccessor.Get();
+
+                    int existing = hostData.DockHostControlDataItems.FindIndex(d => d.ControlID == controlId);
+
+                    if (existing >= 0)
+                        hostData.DockHostControlDataItems[existing] = dto;
+                    else
+                        hostData.DockHostControlDataItems.Add(dto);
+
+                    this.configAccessor.Save(hostData);
+                }
             }
         }
 
@@ -85,7 +123,6 @@ namespace PlugHub.Plugin.DockHost.Services
             return this.GetDescriptorsForHost(dockId)
                        .FirstOrDefault(d => d.DescriptorID == descriptorId);
         }
-
 
         #endregion
 
@@ -145,29 +182,29 @@ namespace PlugHub.Plugin.DockHost.Services
             return items;
         }
 
-        public DockPanelState? RequestPanel(Guid controlId, Guid panelId, Dock edge = Dock.Left, bool pinned = false)
+        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, Dock edge = Dock.Left, bool pinned = false)
         {
-            this.logger.LogInformation("Requesting panel {PanelId} for control {ControlId}", panelId, controlId);
+            this.logger.LogInformation("Requesting panel {DescriptorId} for control {ControlId}", descriptorId, dockControlId);
 
-            DockPanelDescriptor? descriptor = this.descriptors.FirstOrDefault(d => d.DescriptorID == panelId);
+            DockPanelDescriptor? descriptor = this.descriptors.FirstOrDefault(d => d.DescriptorID == descriptorId);
 
             if (descriptor is null)
             {
-                this.logger.LogWarning("No descriptor found for panel {PanelId}", panelId);
+                this.logger.LogWarning("No descriptor found for panel {DescriptorId}", descriptorId);
 
                 return null;
             }
 
-            if (!this.controlsById.TryGetValue(controlId, out DockControl? targetControl))
+            if (!this.controlsById.TryGetValue(dockControlId, out DockControl? targetControl))
             {
-                this.logger.LogWarning("No control registered with id {ControlId}", controlId);
+                this.logger.LogWarning("No control registered with id {ControlId}", dockControlId);
 
                 return null;
             }
 
-            if (descriptor.TargetedHosts != null && !descriptor.TargetedHosts.Contains(controlId))
+            if (descriptor.TargetedHosts != null && !descriptor.TargetedHosts.Contains(dockControlId))
             {
-                this.logger.LogInformation("Descriptor {PanelId} not targeted for control {ControlId}", panelId, controlId);
+                this.logger.LogInformation("Descriptor {PanelId} not targeted for control {ControlId}", descriptorId, dockControlId);
 
                 return null;
             }
@@ -193,7 +230,7 @@ namespace PlugHub.Plugin.DockHost.Services
 
             if (content is null)
             {
-                this.logger.LogWarning("Descriptor {PanelId} did not provide a valid ContentType, ViewModelType, or Factory", panelId);
+                this.logger.LogWarning("Descriptor {DescriptorId} did not provide a valid ContentType, ViewModelType, or Factory", descriptorId);
 
                 return null;
             }
@@ -204,14 +241,15 @@ namespace PlugHub.Plugin.DockHost.Services
                 edge: edge,
                 pinned: pinned,
                 visible: false,
+                controlId: controlId,
                 pluginId: descriptor.PluginID,
                 descriptorId: descriptor.DescriptorID,
-                controlId: controlId
+                dockControlId: dockControlId
             );
 
-            targetControl.Register(state);
+            targetControl.AddPanel(state);
 
-            this.logger.LogInformation("Panel {PanelId} added to control {ControlId}", panelId, controlId);
+            this.logger.LogInformation("Panel {DescriptorId} added to control {ControlId}", descriptorId, dockControlId);
 
             return state;
         }
@@ -220,9 +258,52 @@ namespace PlugHub.Plugin.DockHost.Services
 
         #region DockService: Panel Persistence
 
-        public void Save()
+        public void SaveDockControl(DockControl dockControl)
         {
+            if (dockControl == null) return;
 
+            DockHostControlData? dto = dockControl.ToConfig();
+            DockHostData config = this.configAccessor.Get();
+
+            if (config == null || dto == null) return;
+
+            DockHostControlData? existing = config.DockHostControlDataItems.FirstOrDefault(x => x.ControlID == dto.ControlID);
+
+            if (existing != null)
+            {
+                int index = config.DockHostControlDataItems.IndexOf(existing);
+
+                config.DockHostControlDataItems[index] = dto;
+            }
+            else
+            {
+                config.DockHostControlDataItems.Add(dto);
+            }
+
+            TaskCompletionSource tcs = new();
+
+            void Handler(object? s, ConfigServiceSaveCompletedEventArgs e)
+            {
+                if (e.ConfigType == typeof(DockHostData))
+                {
+                    this.configService.SyncSaveCompleted -= Handler;
+
+                    tcs.TrySetResult();
+                }
+            }
+
+            this.configService.SyncSaveCompleted += Handler;
+
+            try
+            {
+                this.configAccessor.SaveAsync(config);
+
+                tcs.Task.GetAwaiter().GetResult();
+            }
+            finally
+            {
+                this.configService.SyncSaveCompleted -= Handler;
+            }
         }
 
         #endregion

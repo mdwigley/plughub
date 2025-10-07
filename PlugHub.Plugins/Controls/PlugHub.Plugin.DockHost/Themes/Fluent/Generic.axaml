@@ -175,16 +175,13 @@
 		<Setter Property="Opacity" Value="0.5"/>
 	</Style>
 
+
 	<!-- Main Templates -->
 
 	<!-- ResizablePanel -->
 	<Style Selector="local|ResizablePanel">
 		<Setter Property="Background" Value="{DynamicResource LayerFillColorDefaultBrush}"/>
 		<Setter Property="ThumbBrush" Value="{DynamicResource AccentFillColorTertiaryBrush}"/>
-		<Setter Property="ThumbThickness" Value="8"/>
-		<Setter Property="MinimumSize" Value="16"/>
-		<Setter Property="MaximumSize" Value="512"/>
-		<Setter Property="ConstraintMode" Value="Parent"/>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate>
@@ -227,7 +224,6 @@
 
 	<!-- DockablePanel -->
 	<Style Selector="local|DockablePanel">
-		<Setter Property="DragThreshold" Value="4"/>
 		<Setter Property="BorderThickness" Value="1"/>
 		<Setter Property="BorderBrush" Value="Black"/>
 		<Setter Property="Background" Value="{DynamicResource SystemFillColorSolidNeutralBackgroundBrush}"/>
@@ -345,7 +341,6 @@
 									Background="Transparent"/>
 							</Grid>
 
-							<!-- Explicit Content binding -->
 							<ContentPresenter
 								Grid.Row="2"
 								Name="PART_ContentPresenter"
@@ -359,6 +354,7 @@
 
 	<!-- DockGutter -->
 	<Style Selector="local|DockGutter">
+
 		<Setter Property="Template">
 			<ControlTemplate>
 				<ScrollViewer
@@ -366,34 +362,34 @@
 					HorizontalScrollBarVisibility="Hidden"
 					VerticalScrollBarVisibility="Hidden"
 					ClipToBounds="True">
-
-					<ItemsControl
+					<ItemsPresenter
 						Name="PART_GutterItemStrip"
-						ItemsSource="{TemplateBinding Panels}"
 						DockPanel.Dock="{TemplateBinding DockEdge}"
-						ItemTemplate="{TemplateBinding GutterItemTemplate}">
-
-						<ItemsControl.ItemsPanel>
-							<ItemsPanelTemplate>
-								<StackPanel Orientation="{Binding ItemOrientation, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-							</ItemsPanelTemplate>
-						</ItemsControl.ItemsPanel>
-
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<local:RotatableContent
-									Rotation="{Binding GutterItemRotation, RelativeSource={RelativeSource AncestorType=local:DockGutter}}"
-									Tag="{Binding}">
-									<ContentPresenter
-										Content="{Binding}"
-										ContentTemplate="{Binding GutterItemTemplate, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-								</local:RotatableContent>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-
-					</ItemsControl>
+						ItemsPanel="{TemplateBinding ItemsPanel}"/>
 				</ScrollViewer>
 			</ControlTemplate>
+		</Setter>
+
+		<Setter Property="ItemsPanel">
+			<Setter.Value>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="{Binding ItemOrientation, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
+				</ItemsPanelTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<Setter Property="ItemTemplate">
+			<Setter.Value>
+				<DataTemplate>
+					<local:RotatableContent
+						Rotation="{Binding GutterItemRotation, RelativeSource={RelativeSource AncestorType=local:DockGutter}}"
+						Tag="{Binding}">
+						<ContentPresenter
+							Content="{Binding}"
+							ContentTemplate="{Binding GutterItemTemplate, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
+					</local:RotatableContent>
+				</DataTemplate>
+			</Setter.Value>
 		</Setter>
 	</Style>
 
@@ -404,20 +400,21 @@
 				<DataTemplate>
 					<Button Classes="gutter-item" Tag="{Binding}" Padding="0,5,11,6">
 						<Grid>
-							<TextBlock Text="{Binding Header}"
+							<TextBlock
+								Text="{Binding Header}"
 								FontSize="14"
 								FontWeight="Thin"
 								HorizontalAlignment="Center"
 								Margin="0,4,0,4" />
-
-							<!-- Disabled stroke -->
-							<Border BorderBrush="{DynamicResource TextFillColorDisabledBrush}"
-								BorderThickness="{Binding AccentBorderThickness, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-
-							<!-- Accent stroke -->
-							<Border Classes="accent-bar"
+							<Border
+								BorderBrush="{DynamicResource TextFillColorDisabledBrush}"
+								BorderThickness="{Binding AccentBorderThickness,
+								RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
+							<Border
+								Classes="accent-bar"
 								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
-								BorderThickness="{Binding AccentBorderThickness, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
+								BorderThickness="{Binding AccentBorderThickness,
+								RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
 						</Grid>
 					</Button>
 				</DataTemplate>
@@ -427,42 +424,42 @@
 
 	<!-- DockControl -->
 	<Style Selector="local|DockControl">
-		<Setter Property="TopPanelLength" Value="0"/>
-		<Setter Property="BottomPanelLength" Value="0"/>
-		<Setter Property="LeftPanelLength" Value="0"/>
-		<Setter Property="RightPanelLength" Value="0"/>
 		<Setter Property="Template">
 			<ControlTemplate TargetType="local:DockControl">
 				<Grid>
 					<!-- Base layout -->
-					<DockPanel>
+					<DockPanel Name="PART_RootDockPanel">
 
+						<!-- Left Gutter -->
 						<local:DockGutter
-							x:Name="PART_LeftGutter"
+							Name="PART_LeftGutter"
 							DockEdge="Left"
 							DockPanel.Dock="Left"
 							VerticalAlignment="Stretch"
 							Margin="{TemplateBinding LeftGutterMargins}"
 							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
 
+						<!-- Top Gutter -->
 						<local:DockGutter
-							x:Name="PART_RightGutter"
-							DockEdge="Right"
-							DockPanel.Dock="Right"
-							VerticalAlignment="Stretch"
-							Margin="{TemplateBinding RightGutterMargins}"
-							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
-
-						<local:DockGutter
-							x:Name="PART_TopGutter"
+							Name="PART_TopGutter"
 							DockEdge="Top"
 							DockPanel.Dock="Top"
 							HorizontalAlignment="Stretch"
 							Margin="{TemplateBinding TopGutterMargins}"
 							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
 
+						<!-- Right Gutter -->
 						<local:DockGutter
-							x:Name="PART_BottomGutter"
+							Name="PART_RightGutter"
+							DockEdge="Right"
+							DockPanel.Dock="Right"
+							VerticalAlignment="Stretch"
+							Margin="{TemplateBinding RightGutterMargins}"
+							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
+
+						<!-- Bottom Gutter -->
+						<local:DockGutter
+							Name="PART_BottomGutter"
 							DockEdge="Bottom"
 							DockPanel.Dock="Bottom"
 							HorizontalAlignment="Stretch"
@@ -470,6 +467,7 @@
 							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
 
 						<Grid Name="PART_RootGrid">
+
 							<Grid.RowDefinitions>
 								<RowDefinition Height="{TemplateBinding TopPanelLength}"/>
 								<RowDefinition Height="Auto"/>
@@ -494,6 +492,7 @@
 								IsVisible="{TemplateBinding HasTopContent}">
 
 								<ContentPresenter
+									Name="PART_TopPinnedPresenter"
 									Content="{Binding TopPinned, RelativeSource={RelativeSource TemplatedParent}}"
 									ContentTemplate="{TemplateBinding DockControlTopTabControl}" />
 							</Border>
@@ -515,6 +514,7 @@
 								IsVisible="{TemplateBinding HasLeftContent}">
 
 								<ContentPresenter
+									Name="PART_LeftPinnedPresenter"
 									Content="{Binding LeftPinned, RelativeSource={RelativeSource TemplatedParent}}"
 									ContentTemplate="{TemplateBinding DockControlBottomTabControl}" />
 							</Border>
@@ -549,6 +549,7 @@
 								IsVisible="{TemplateBinding HasRightContent}">
 
 								<ContentPresenter
+									Name="PART_RightPinnedPresenter"
 									Content="{Binding RightPinned, RelativeSource={RelativeSource TemplatedParent}}"
 									ContentTemplate="{TemplateBinding DockControlBottomTabControl}" />
 							</Border>
@@ -571,6 +572,7 @@
 								Classes="TopTabs">
 
 								<ContentPresenter
+									Name="PART_BottomPinnedPresenter"
 									Content="{Binding BottomPinned, RelativeSource={RelativeSource TemplatedParent}}"
 									ContentTemplate="{TemplateBinding DockControlBottomTabControl}"/>
 							</Border>
@@ -579,13 +581,13 @@
 
 					</DockPanel>
 
-					<!-- Overlay fly‑outs -->
+					<!-- Overlay resizers -->
 					<Grid Name="PART_OverlayGrid">
 
-						<!-- Left fly‑out -->
+						<!-- Left resizer -->
 						<local:ResizablePanel
-							x:Name="PART_LeftFlyouttPanel"
-							Background="{DynamicResource SystemAccentColor}"
+							Name="PART_LeftFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Left"
 							Width="{Binding PanelSize, ElementName=PART_LeftGutter}"
 							Height="{Binding Bounds.Height, ElementName=PART_LeftGutter}"
@@ -595,37 +597,17 @@
 							Margin="{TemplateBinding LeftFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding ActiveContent, ElementName=PART_LeftGutter}">
+								Content="{Binding PanelContent, ElementName=PART_LeftGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
 						</local:ResizablePanel>
 
-						<!-- Right fly‑out -->
+						<!-- Top resizer -->
 						<local:ResizablePanel
-							x:Name="PART_RightFlyouttPanel"
-							Background="{DynamicResource SystemAccentColor}"
-							DockEdge="Right"
-							Width="{Binding PanelSize, ElementName=PART_RightGutter}"
-							Height="{Binding Bounds.Height, ElementName=PART_RightGutter}"
-							IsVisible="{Binding IsExpanded, ElementName=PART_RightGutter}"
-							HorizontalAlignment="Right"
-							VerticalAlignment="Stretch"
-							Margin="{TemplateBinding RightFlyoutMargin}">
-							<av:TransitioningContentControl
-								IsTransitionReversed="False"
-								Content="{Binding ActiveContent, ElementName=PART_RightGutter}">
-								<av:TransitioningContentControl.PageTransition>
-									<an:CompositePageTransition/>
-								</av:TransitioningContentControl.PageTransition>
-							</av:TransitioningContentControl>
-						</local:ResizablePanel>
-
-						<!-- Top fly‑out -->
-						<local:ResizablePanel
-							x:Name="PART_TopFlyouttPanel"
-							Background="{DynamicResource SystemAccentColor}"
+							Name="PART_TopFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Top"
 							Height="{Binding PanelSize, ElementName=PART_TopGutter}"
 							Width="{Binding Bounds.Width, ElementName=PART_TopGutter}"
@@ -635,17 +617,37 @@
 							Margin="{TemplateBinding TopFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding ActiveContent, ElementName=PART_TopGutter}">
+								Content="{Binding PanelContent, ElementName=PART_TopGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
 						</local:ResizablePanel>
 
-						<!-- Bottom fly‑out -->
+						<!-- Right resizer -->
 						<local:ResizablePanel
-							x:Name="PART_BottomFlyouttPanel"
-							Background="{DynamicResource SystemAccentColor}"
+							Name="PART_RightFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
+							DockEdge="Right"
+							Width="{Binding PanelSize, ElementName=PART_RightGutter}"
+							Height="{Binding Bounds.Height, ElementName=PART_RightGutter}"
+							IsVisible="{Binding IsExpanded, ElementName=PART_RightGutter}"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Stretch"
+							Margin="{TemplateBinding RightFlyoutMargin}">
+							<av:TransitioningContentControl
+								IsTransitionReversed="False"
+								Content="{Binding PanelContent, ElementName=PART_RightGutter}">
+								<av:TransitioningContentControl.PageTransition>
+									<an:CompositePageTransition/>
+								</av:TransitioningContentControl.PageTransition>
+							</av:TransitioningContentControl>
+						</local:ResizablePanel>
+
+						<!-- Bottom resizer -->
+						<local:ResizablePanel
+							Name="PART_BottomFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Bottom"
 							Height="{Binding PanelSize, ElementName=PART_BottomGutter}"
 							Width="{Binding Bounds.Width, ElementName=PART_BottomGutter}"
@@ -655,7 +657,7 @@
 							Margin="{TemplateBinding BottomFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="False"
-								Content="{Binding ActiveContent, ElementName=PART_BottomGutter}">
+								Content="{Binding PanelContent, ElementName=PART_BottomGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
@@ -664,48 +666,52 @@
 
 					</Grid>
 
-					<!-- Drop targets overlay goes last so it renders on top -->
-					<Grid x:Name="PART_DropTargetsGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+					<!-- Drop dropzones -->
+					<Grid Name="PART_DropTargetsGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-						<!-- Top -->
-						<Border x:Name="PART_TopDropTarget"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Top"
-								Height="32"
-								Margin="128,0,128,0"
-								Opacity="0.25"
-								Classes="DropTarget"
-								IsHitTestVisible="True"/>
+						<!-- Left dropzone -->
+						<Border
+							Name="PART_LeftDropTarget"
+							VerticalAlignment="Stretch"
+							HorizontalAlignment="Left"
+							Width="32"
+							Margin="0,128,0,128"
+							Opacity="0.25"
+							Classes="DropTarget"
+							IsHitTestVisible="True"/>
 
-						<!-- Bottom -->
-						<Border x:Name="PART_BottomDropTarget"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Bottom"
-								Height="32"
-								Margin="128,0,128,0"
-								Opacity="0.25"
-								Classes="DropTarget"
-								IsHitTestVisible="True"/>
+						<!-- Top dropzone -->
+						<Border
+							Name="PART_TopDropTarget"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Height="32"
+							Margin="128,0,128,0"
+							Opacity="0.25"
+							Classes="DropTarget"
+							IsHitTestVisible="True"/>
 
-						<!-- Left -->
-						<Border x:Name="PART_LeftDropTarget"
-								VerticalAlignment="Stretch"
-								HorizontalAlignment="Left"
-								Width="32"
-								Margin="0,128,0,128"
-								Opacity="0.25"
-								Classes="DropTarget"
-								IsHitTestVisible="True"/>
+						<!-- Right dropzone -->
+						<Border
+							Name="PART_RightDropTarget"
+							VerticalAlignment="Stretch"
+							HorizontalAlignment="Right"
+							Width="32"
+							Margin="0,128,0,128"
+							Opacity="0.25"
+							Classes="DropTarget"
+							IsHitTestVisible="True"/>
 
-						<!-- Right -->
-						<Border x:Name="PART_RightDropTarget"
-								VerticalAlignment="Stretch"
-								HorizontalAlignment="Right"
-								Width="32"
-								Margin="0,128,0,128"
-								Opacity="0.25"
-								Classes="DropTarget"
-								IsHitTestVisible="True"/>
+						<!-- Bottom dropzone -->
+						<Border
+							Name="PART_BottomDropTarget"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Bottom"
+							Height="32"
+							Margin="128,0,128,0"
+							Opacity="0.25"
+							Classes="DropTarget"
+							IsHitTestVisible="True"/>
 
 					</Grid>
 				</Grid>
@@ -720,12 +726,12 @@
 				<DataTemplate>
 					<Border Name="BottomTabBorder" Padding="0" Margin="0,0,0,4">
 						<TabControl
-						  Classes=""
-						  ItemsSource="{Binding}"
-						  ClipToBounds="True"
-						  TabStripPlacement="Bottom"
-						  Padding="0"
-						  Margin="0">
+							Classes=""
+							ItemsSource="{Binding}"
+							ClipToBounds="True"
+							TabStripPlacement="Bottom"
+							Padding="0"
+							Margin="0">
 
 							<i:Interaction.Behaviors>
 								<behav:TabReorderBehavior/>
