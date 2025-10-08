@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -10,17 +11,68 @@ namespace PlugHub.Plugin.DockHost.Controls
 {
     public enum ResizeConstraintMode { Parent, Window, Custom }
 
+    public class ResizeEventArgs : RoutedEventArgs
+    {
+        public double OldSize { get; }
+        public double NewSize { get; }
+        public Orientation Orientation { get; }
+
+        public ResizeEventArgs(RoutedEvent routedEvent, double oldSize, double newSize, Orientation orientation)
+            : base(routedEvent)
+        {
+            this.OldSize = oldSize;
+            this.NewSize = newSize;
+            this.Orientation = orientation;
+        }
+    }
+    public class ResizeDeltaEventArgs : RoutedEventArgs
+    {
+        public double Delta { get; }
+        public double OldSize { get; }
+        public double NewSize { get; }
+        public Orientation Orientation { get; }
+
+        public ResizeDeltaEventArgs(RoutedEvent routedEvent, double delta, double oldSize, double newSize, Orientation orientation)
+            : base(routedEvent)
+        {
+            this.Delta = delta;
+            this.OldSize = oldSize;
+            this.NewSize = newSize;
+            this.Orientation = orientation;
+        }
+    }
+
     public class ResizablePanel : ContentControl
     {
         private Thumb? thumb;
 
-        public static readonly RoutedEvent<RoutedEventArgs> DragCompleteEvent =
-            RoutedEvent.Register<ResizablePanel, RoutedEventArgs>(nameof(DragComplete), RoutingStrategies.Bubble);
-        public event EventHandler<RoutedEventArgs> DragComplete
+        #region ResizablePanel: Event Properites
+
+        public static readonly RoutedEvent<ResizeEventArgs> ResizeStartedEvent =
+            RoutedEvent.Register<ResizablePanel, ResizeEventArgs>(nameof(ResizeStarted), RoutingStrategies.Bubble);
+        public event EventHandler<ResizeEventArgs> ResizeStarted
         {
-            add => this.AddHandler(DragCompleteEvent, value);
-            remove => this.RemoveHandler(DragCompleteEvent, value);
+            add => this.AddHandler(ResizeStartedEvent, value);
+            remove => this.RemoveHandler(ResizeStartedEvent, value);
         }
+
+        public static readonly RoutedEvent<ResizeDeltaEventArgs> ResizeDeltaEvent =
+            RoutedEvent.Register<ResizablePanel, ResizeDeltaEventArgs>(nameof(ResizeDelta), RoutingStrategies.Bubble);
+        public event EventHandler<ResizeDeltaEventArgs> ResizeDelta
+        {
+            add => this.AddHandler(ResizeDeltaEvent, value);
+            remove => this.RemoveHandler(ResizeDeltaEvent, value);
+        }
+
+        public static readonly RoutedEvent<ResizeEventArgs> ResizeCompletedEvent =
+            RoutedEvent.Register<ResizablePanel, ResizeEventArgs>(nameof(ResizeCompleted), RoutingStrategies.Bubble);
+        public event EventHandler<ResizeEventArgs> ResizeCompleted
+        {
+            add => this.AddHandler(ResizeCompletedEvent, value);
+            remove => this.RemoveHandler(ResizeCompletedEvent, value);
+        }
+
+        #endregion
 
         #region ResizablePanel: Thumb Properties
 
@@ -40,6 +92,31 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(ThumbBrushProperty, value);
         }
 
+        public static readonly StyledProperty<Cursor?> HorizontalResizeCursorProperty =
+            AvaloniaProperty.Register<ResizablePanel, Cursor?>(nameof(HorizontalResizeCursor), new Cursor(StandardCursorType.SizeWestEast));
+        public Cursor? HorizontalResizeCursor
+        {
+            get => this.GetValue(HorizontalResizeCursorProperty);
+            set => this.SetValue(HorizontalResizeCursorProperty, value);
+        }
+
+        public static readonly StyledProperty<Cursor?> VerticalResizeCursorProperty =
+            AvaloniaProperty.Register<ResizablePanel, Cursor?>(nameof(VerticalResizeCursor), new Cursor(StandardCursorType.SizeNorthSouth));
+        public Cursor? VerticalResizeCursor
+        {
+            get => this.GetValue(VerticalResizeCursorProperty);
+            set => this.SetValue(VerticalResizeCursorProperty, value);
+        }
+
+        public static readonly DirectProperty<ResizablePanel, bool> IsResizingProperty =
+            AvaloniaProperty.RegisterDirect<ResizablePanel, bool>(nameof(IsResizing), (Func<ResizablePanel, bool>)(o => o.IsResizing));
+        private bool isResizing;
+        public bool IsResizing
+        {
+            get => this.isResizing;
+            private set => this.SetAndRaise(IsResizingProperty, ref this.isResizing, value);
+        }
+
         #endregion
 
         #region ResizablePanel: Placement Properties
@@ -50,6 +127,15 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             get => this.GetValue(DockEdgeProperty);
             set => this.SetValue(DockEdgeProperty, value);
+        }
+
+        public static readonly DirectProperty<ResizablePanel, Orientation> OrientationProperty =
+            AvaloniaProperty.RegisterDirect<ResizablePanel, Orientation>(nameof(Orientation), o => o.Orientation);
+        private Orientation orientation;
+        public Orientation Orientation
+        {
+            get => this.orientation;
+            private set => this.SetAndRaise(OrientationProperty, ref this.orientation, value);
         }
 
         #endregion
@@ -114,7 +200,14 @@ namespace PlugHub.Plugin.DockHost.Controls
         public ResizablePanel()
         {
             PanelSizeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyPanelSize());
-            DockEdgeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => { x.ApplyPanelSize(); x.ApplyThumbStyle(); });
+
+            DockEdgeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) =>
+            {
+                x.ApplyPanelSize();
+                x.ApplyThumbStyle();
+                x.ApplyOrientation();
+            });
+
             ThumbThicknessProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyThumbStyle());
         }
 
@@ -126,15 +219,16 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             if (this.thumb != null)
             {
+                this.thumb.DragStarted -= this.Thumb_DragStarted;
                 this.thumb.DragDelta -= this.Thumb_DragDelta;
                 this.thumb.DragCompleted -= this.Thumb_DragCompleted;
-
             }
 
             this.thumb = e.NameScope.Find<Thumb>("PART_ResizeThumb");
 
             if (this.thumb != null)
             {
+                this.thumb.DragStarted += this.Thumb_DragStarted;
                 this.thumb.DragDelta += this.Thumb_DragDelta;
                 this.thumb.DragCompleted += this.Thumb_DragCompleted;
 
@@ -142,6 +236,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             }
 
             this.ApplyPanelSize();
+            this.ApplyOrientation();
         }
         protected override void ArrangeCore(Rect finalRect)
         {
@@ -183,7 +278,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                 case Dock.Left:
                 case Dock.Right:
                     this.thumb.VerticalAlignment = VerticalAlignment.Stretch;
-                    this.thumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+                    this.thumb.Cursor = this.HorizontalResizeCursor;
                     this.thumb.Width = this.ThumbThickness;
                     this.thumb.Height = double.NaN;
 
@@ -195,7 +290,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                 case Dock.Top:
                 case Dock.Bottom:
                     this.thumb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    this.thumb.Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
+                    this.thumb.Cursor = this.VerticalResizeCursor;
                     this.thumb.Height = this.ThumbThickness;
                     this.thumb.Width = double.NaN;
 
@@ -205,7 +300,27 @@ namespace PlugHub.Plugin.DockHost.Controls
                     break;
             }
         }
+        private void ApplyOrientation()
+        {
+            this.Orientation = (this.DockEdge == Dock.Left || this.DockEdge == Dock.Right)
+                ? Orientation.Vertical
+                : Orientation.Horizontal;
+        }
 
+        private void Thumb_DragStarted(object? sender, VectorEventArgs e)
+        {
+            e.Handled = true;
+
+            this.IsResizing = true;
+
+            ResizeEventArgs args = new(
+                ResizeStartedEvent,
+                oldSize: this.PanelSize,
+                newSize: this.PanelSize,
+                orientation: this.Orientation);
+
+            this.RaiseEvent(args);
+        }
         private void Thumb_DragDelta(object? sender, VectorEventArgs e)
         {
             e.Handled = true;
@@ -221,6 +336,9 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             double w = double.IsNaN(this.Width) ? this.Bounds.Width : this.Width;
             double h = double.IsNaN(this.Height) ? this.Bounds.Height : this.Height;
+
+            double oldSize = this.PanelSize;
+            double newSize = oldSize;
 
             switch (this.DockEdge)
             {
@@ -253,6 +371,15 @@ namespace PlugHub.Plugin.DockHost.Controls
                         break;
                     }
             }
+
+            ResizeDeltaEventArgs args = new(
+                ResizeDeltaEvent,
+                delta: newSize - oldSize,
+                oldSize: oldSize,
+                newSize: newSize,
+                orientation: this.Orientation);
+
+            this.RaiseEvent(args);
         }
         private (Visual surface, Size size)? TryGetConstraintSurface()
         {
@@ -276,10 +403,19 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             return null;
         }
-
         private void Thumb_DragCompleted(object? sender, VectorEventArgs e)
         {
-            this.RaiseEvent(new RoutedEventArgs(DragCompleteEvent));
+            e.Handled = true;
+
+            this.IsResizing = false;
+
+            ResizeEventArgs args = new(
+                ResizeCompletedEvent,
+                oldSize: this.PanelSize,
+                newSize: this.PanelSize,
+                orientation: this.Orientation);
+
+            this.RaiseEvent(args);
         }
 
         #endregion

@@ -1,5 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Metadata;
 using PlugHub.Plugin.DockHost.Controls;
+using PlugHub.Plugin.DockHost.Interfaces.Controls;
+using PlugHub.Plugin.DockHost.Interfaces.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -11,7 +14,7 @@ namespace PlugHub.Plugin.DockHost.Models
     /// Provides change notifications for data binding and can project itself into
     /// a persistence-friendly <see cref="DockHostPanelData"/> for configuration storage.
     /// </summary>
-    public class DockPanelState : INotifyPropertyChanged
+    public class DockPanelState : INotifyPropertyChanged, ISwitchable
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -21,25 +24,25 @@ namespace PlugHub.Plugin.DockHost.Models
         /// The unique identifier of this panel instance within the dock host.
         /// Assigned and persisted by the host; consumers cannot override it.
         /// </summary>
-        public Guid ControlId { get; init; } = Guid.NewGuid();
+        public Guid ControlId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The unique identifier of the plugin (or module) that produced this panel.
         /// This ties the panel back to its originating plugin for discovery or grouping.
         /// </summary>
-        public Guid PluginId { get; init; }
+        public Guid PluginId { get; set; }
 
         /// <summary>
         /// The identifier of the panel descriptor that defines the panel’s type/recipe.
         /// This allows the host to reconstitute the correct kind of panel on load.
         /// </summary>
-        public Guid DescriptorId { get; init; }
+        public Guid DescriptorId { get; set; }
 
         /// <summary>
         /// The identifier of the DockControl that owns this panel.
         /// Used to associate the panel with its parent dock host in persistence.
         /// </summary>
-        public Guid DockControlId { get; init; }
+        public Guid DockControlId { get; set; }
 
         #endregion
 
@@ -49,13 +52,14 @@ namespace PlugHub.Plugin.DockHost.Models
         /// The display text shown in the panel’s header area.
         /// Typically provided by the plugin or caller when the panel is created.
         /// </summary>
-        public string Header { get; init; }
+        public string Header { get; set; }
 
         /// <summary>
         /// The live Avalonia control representing this panel at runtime.
         /// Can be shown/hidden and binds back to this state object.
         /// </summary>
-        public DockablePanel DockablePanel { get; init; }
+        [Content]
+        public Control Content { get; set; }
 
         #endregion
 
@@ -78,24 +82,6 @@ namespace PlugHub.Plugin.DockHost.Models
             }
         }
 
-        private bool isVisible;
-        /// <summary>
-        /// Only meaningful for flyouts. Controls whether this panel is currently visible within a shared flyout container. 
-        /// Multiple panels can share the same flyout, so visibility is per-panel.
-        /// </summary>
-        public bool IsVisible
-        {
-            get => this.isVisible;
-            set
-            {
-                if (this.isVisible != value)
-                {
-                    this.isVisible = value;
-                    this.OnPropertyChanged();
-                }
-            }
-        }
-
         private Dock dockEdge;
         /// <summary>
         /// The edge of the host (Left, Right, Top, Bottom) that this panel is pinned or attached to.
@@ -113,29 +99,85 @@ namespace PlugHub.Plugin.DockHost.Models
             }
         }
 
+        private bool canClose = true;
+        /// <summary>
+        /// Determines whether the panel can be closed by the user. Defaults to true.
+        /// </summary>
+        public bool CanClose
+        {
+            get => this.canClose;
+            set
+            {
+                if (this.canClose != value)
+                {
+                    this.canClose = value;
+                    this.OnPropertyChanged();
+                }
+            }
+        }
+
         #endregion
 
-        public DockPanelState(string header, Control control, Dock edge = Dock.Left, bool pinned = false, bool visible = false, Guid controlId = default, Guid descriptorId = default, Guid pluginId = default, Guid dockControlId = default)
+        public DockPanelState()
+            : this(header: string.Empty, control: new ContentControl(), edge: Dock.Left, pinned: false, controlId: default, descriptorId: default, pluginId: default, dockControlId: default) { }
+        public DockPanelState(string header, Control control, Dock edge = Dock.Left, bool pinned = false, Guid controlId = default, Guid descriptorId = default, Guid pluginId = default, Guid dockControlId = default, bool canClose = true)
         {
             ArgumentNullException.ThrowIfNull(header);
             ArgumentNullException.ThrowIfNull(control);
 
             this.Header = header;
             this.isPinned = pinned;
-            this.isVisible = visible;
             this.dockEdge = edge;
+            this.canClose = canClose;
 
             this.ControlId = controlId == Guid.Empty ? Guid.NewGuid() : controlId;
             this.DescriptorId = descriptorId;
             this.PluginId = pluginId;
             this.DockControlId = dockControlId;
 
-            this.DockablePanel = new DockablePanel
+            this.Content = new DockablePanel
             {
                 Header = this.Header,
                 Content = control,
-                PanelState = this
+                DataContext = this
             };
+        }
+
+        public DockPanelState Normalize(DockControl owner)
+        {
+            // Ensure identity
+            if (this.ControlId == Guid.Empty)
+                this.ControlId = Guid.NewGuid();
+            if (this.DockControlId == Guid.Empty)
+                this.DockControlId = owner.DockId;
+
+            // Already a DockablePanel with correct DataContext
+            if (this.Content is DockablePanel dp && dp.DataContext == this)
+            {
+                dp.Header = this.Header; // always sync
+                return this;
+            }
+
+            // It's a DockablePanel but not wired correctly
+            if (this.Content is DockablePanel raw)
+            {
+                raw.DataContext = this;
+                raw.Header = this.Header;
+                this.Content = raw;
+                return this;
+            }
+
+            // Otherwise wrap whatever content was provided
+            this.Content = new DockablePanel
+            {
+                Header = this.Header,
+                Content = this.Content,
+                DataContext = this,
+                CanClose = this.CanClose
+            };
+            this.OnPropertyChanged(nameof(this.Content));
+
+            return this;
         }
 
         /// <summary>

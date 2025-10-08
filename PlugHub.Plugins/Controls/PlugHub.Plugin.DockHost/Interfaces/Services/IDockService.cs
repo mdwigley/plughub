@@ -141,7 +141,7 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
         /// <returns>
         /// A <see cref="DockHostControlData"/> representing the last known persisted state of the control, or a new/empty instance if no prior state was found.
         /// </returns>
-        public DockHostControlData RegisterDockControl(Control control);
+        public DockHostControlData? RegisterDockControl(Control control);
 
         /// <summary>
         /// Unregisters a previously registered dock control. Optionally saves its current state back into the persisted <see cref="DockHostData"/>.
@@ -168,8 +168,9 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
         /// <param name="descriptorId">The identifier of the panel descriptor that defines what type of panel to instantiate.</param>
         /// <param name="edge">The dock edge where the panel should be placed. Defaults to <see cref="Dock.Left"/>.</param>
         /// <param name="pinned">Whether the panel should be pinned when created. Defaults to <c>false</c>.</param>
+        /// <param name="canClose">Whether the panel can be closed by the user. Defaults to <c>true</c>.</param>
         /// <returns>The created <see cref="DockPanelState"/> if the panel was successfully instantiated and added; otherwise <c>null</c>.</returns>
-        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, Dock edge = Dock.Left, bool pinned = false);
+        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, Dock edge = Dock.Left, bool pinned = false, bool canClose = true);
 
         /// <summary>
         /// Persists the current layout and state of the specified <see cref="DockControl"/>.

@@ -1,10 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:av="using:Avalonia.Controls"
 		xmlns:an="using:Avalonia.Animation"
 		xmlns:i="using:Avalonia.Xaml.Interactivity"
 		xmlns:dnd="using:Avalonia.Xaml.Interactions.Draggable"
-        xmlns:local="clr-namespace:PlugHub.Plugin.DockHost.Controls"
+		xmlns:local="clr-namespace:PlugHub.Plugin.DockHost.Controls"
 		xmlns:behav="clr-namespace:PlugHub.Plugin.DockHost.Behaviors">
 
 	<Styles.Resources>
@@ -45,7 +45,6 @@
 		</DrawingBrush>
 	</Styles.Resources>
 
-
 	<!-- Custom Styles -->
 
 	<!-- ResizablePanel Styles -->
@@ -61,45 +60,30 @@
 		</Setter>
 	</Style>
 
-	<!-- DockablePanel Styles -->
-	<Style Selector="Border.path-button:pointerover">
-		<Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}"/>
+	<!-- ContentSwitcher Styles -->
+	<Style Selector="local|ContentSwitcher:pointerover:edge-left Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,0,0,4"/>
 	</Style>
-	<Style Selector="Border.path-button-close:pointerover">
-		<Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+	<Style Selector="local|ContentSwitcher:pointerover:edge-right Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,4,0,0"/>
 	</Style>
-	<Style Selector="Border.path-button:pointerover Path, Border.path-button-close:pointerover Path">
-		<Setter Property="Stroke" Value="{DynamicResource TextFillColorInverseBrush}"/>
-		<Setter Property="Fill" Value="{DynamicResource TextFillColorInverseBrush}"/>
+	<Style Selector="local|ContentSwitcher:pointerover:edge-top Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,4,0,0"/>
 	</Style>
-
-	<Style Selector="local|DockablePanel:unpinned /template/ #PART_ButtonPin"
-		   x:SetterTargetType="Border">
-		<Setter Property="IsVisible" Value="True"/>
-	</Style>
-	<Style Selector="local|DockablePanel:pinned /template/ #PART_ButtonPin"
-		   x:SetterTargetType="Border">
-		<Setter Property="IsVisible" Value="False"/>
-	</Style>
-	<Style Selector="local|DockablePanel:pinned /template/ #PART_ButtonUnpin"
-		   x:SetterTargetType="Border">
-		<Setter Property="IsVisible" Value="True"/>
-	</Style>
-	<Style Selector="local|DockablePanel:unpinned /template/ #PART_ButtonUnpin"
-		   x:SetterTargetType="Border">
-		<Setter Property="IsVisible" Value="False"/>
+	<Style Selector="local|ContentSwitcher:pointerover:edge-bottom Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,0,0,4"/>
 	</Style>
 
-	<!-- DockGutterItem Styles -->
-	<Style Selector="Button.gutter-item">
+	<!-- ContentSwitcherItem Styles -->
+	<Style Selector="Button.content-item">
 		<Setter Property="Background" Value="Transparent"/>
 		<Setter Property="BorderBrush" Value="Transparent"/>
 		<Setter Property="BorderThickness" Value="0"/>
 	</Style>
-	<Style Selector="Button.gutter-item:pointerover /template/ ContentPresenter">
+	<Style Selector="Button.content-item:pointerover /template/ ContentPresenter">
 		<Setter Property="Background" Value="Transparent"/>
 	</Style>
-	<Style Selector="Button.gutter-item .accent-bar" x:SetterTargetType="Border">
+	<Style Selector="Button.content-item .accent-bar" x:SetterTargetType="Border">
 		<Setter Property="Opacity" Value="0"/>
 		<Setter Property="Transitions">
 			<Transitions>
@@ -107,9 +91,51 @@
 			</Transitions>
 		</Setter>
 	</Style>
-	<Style Selector="Button.gutter-item:pointerover .accent-bar" x:SetterTargetType="Border">
+	<Style Selector="Button.content-item:pointerover .accent-bar" x:SetterTargetType="Border">
 		<Setter Property="Opacity" Value="1"/>
 	</Style>
+
+	<!-- DockablePanel Styles -->
+	<Style Selector="Grid.path-button:pointerover">
+		<Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}"/>
+	</Style>
+
+	<Style Selector="Grid.path-button-close:pointerover">
+		<Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+	</Style>
+
+	<Style Selector="Grid.path-button:pointerover Path,
+                 Grid.path-button-close:pointerover Path">
+		<Setter Property="Stroke" Value="{DynamicResource TextFillColorInverseBrush}"/>
+		<Setter Property="Fill" Value="{DynamicResource TextFillColorInverseBrush}"/>
+	</Style>
+
+	<Style Selector="local|DockablePanel:unpinned /template/ #PART_ButtonPin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+	<Style Selector="local|DockablePanel:pinned /template/ #PART_ButtonPin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="local|DockablePanel:pinned /template/ #PART_ButtonUnpin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+	<Style Selector="local|DockablePanel:unpinned /template/ #PART_ButtonUnpin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	<Style Selector="local|DockablePanel:nonclosable /template/ #PART_ButtonClose"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	<Style Selector="local|DockablePanel:closable /template/ #PART_ButtonClose"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
 
 	<!--DockControl Styles -->
 	<Style Selector="local|DockControl TabControl[TabStripPlacement=Bottom] TabItem">
@@ -222,6 +248,71 @@
 		</Setter>
 	</Style>
 
+	<!-- ContentSwitcher -->
+	<Style Selector="local|ContentSwitcher">
+
+		<Setter Property="Template">
+			<ControlTemplate>
+				<ScrollViewer
+					Name="PART_ContentItemScroller"
+					HorizontalScrollBarVisibility="Hidden"
+					VerticalScrollBarVisibility="Hidden"
+					ClipToBounds="True">
+					<ItemsPresenter
+						Name="PART_ContentItemStrip"
+						DockPanel.Dock="{TemplateBinding DockEdge}"
+						ItemsPanel="{TemplateBinding ItemsPanel}"/>
+				</ScrollViewer>
+			</ControlTemplate>
+		</Setter>
+
+		<Setter Property="ItemsPanel">
+			<Setter.Value>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=local:ContentSwitcher}}" />
+				</ItemsPanelTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<Setter Property="ItemTemplate">
+			<Setter.Value>
+				<DataTemplate>
+					<local:RotatableContent
+						Rotation="{Binding Rotation, RelativeSource={RelativeSource AncestorType=local:ContentSwitcher}}"
+						Tag="{Binding}">
+						<ContentPresenter
+							Content="{Binding}"
+							ContentTemplate="{Binding ContentItemTemplate, RelativeSource={RelativeSource AncestorType=local:ContentSwitcher}}" />
+					</local:RotatableContent>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- ContentItemTemplate -->
+		<Setter Property="ContentItemTemplate">
+			<Setter.Value>
+				<DataTemplate>
+					<Button Classes="content-item" Tag="{Binding}" Padding="0,5,11,6">
+						<Grid>
+							<TextBlock
+								Text="{Binding Header}"
+								FontSize="14"
+								FontWeight="Thin"
+								HorizontalAlignment="Center"
+								Margin="0,4,0,4" />
+							<Border
+								BorderBrush="{DynamicResource TextFillColorDisabledBrush}"/>
+							<Border
+								Classes="accent-bar"
+								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"/>
+						</Grid>
+					</Button>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+	</Style>
+
 	<!-- DockablePanel -->
 	<Style Selector="local|DockablePanel">
 		<Setter Property="BorderThickness" Value="1"/>
@@ -259,7 +350,7 @@
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="Auto"/>
 									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="32"/>
+									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
 
 								<TextBlock
@@ -284,51 +375,57 @@
 									Margin="0,0,8,0"
 									HorizontalAlignment="Right">
 
-									<!-- Pin button visible when unpinned -->
-									<Border
-										Name="PART_ButtonPin"
-										Width="16" Height="16"
-										Padding="1"
-										Classes="path-button"
-										Background="Transparent">
-										<Path
-											HorizontalAlignment="Center"
-											VerticalAlignment="Center"
-											Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-											Fill="{DynamicResource TextFillColorPrimaryBrush}"
-											StrokeThickness="1"
-											Data="M6 4H12V9H6ZM0 6H4V7H0ZM4 2H6V11H4Z" />
-									</Border>
+									<!-- Pin -->
+									<Grid Name="PART_ButtonPin"
+										  Classes="path-button"
+										  Width="16" Height="16">
+										<!-- Visual -->
+										<Path HorizontalAlignment="Center"
+											  VerticalAlignment="Center"
+											  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+											  StrokeThickness="1"
+											  Data="M6 4H12V9H6ZM0 6H4V7H0ZM4 2H6V11H4Z"/>
+										<!-- Overlay -->
+										<Border Name="PART_ButtonPinOverlay"
+												Background="Transparent"
+												IsHitTestVisible="True"
+												ZIndex="1000"/>
+									</Grid>
 
-									<!-- Unpin button visible when pinned -->
-									<Border
-										Name="PART_ButtonUnpin"
-										IsVisible="{TemplateBinding IsPinned}"
-										Width="16" Height="16"
-										Padding="1"
-										Classes="path-button"
-										Background="Transparent">
-										<Path
-											HorizontalAlignment="Center"
-											VerticalAlignment="Center"
-											Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-											Fill="{DynamicResource TextFillColorPrimaryBrush}"
-											StrokeThickness="1"
-											Data="M4 8V2H9V8Zm2 4V10H7v2ZM2 10V8h9v2Z" />
-									</Border>
+									<!-- Unpin -->
+									<Grid Name="PART_ButtonUnpin"
+										  Classes="path-button"
+										  Width="16" Height="16">
+										<!-- Visual -->
+										<Path HorizontalAlignment="Center"
+											  VerticalAlignment="Center"
+											  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+											  StrokeThickness="1"
+											  Data="M4 8V2H9V8Zm2 4V10H7v2ZM2 10V8h9v2Z"/>
+										<!-- Overlay -->
+										<Border Name="PART_ButtonUnpinOverlay"
+												Background="Transparent"
+												IsHitTestVisible="True"
+												ZIndex="1000"/>
+									</Grid>
 
-									<Border
-										Name="PART_ButtonClose"
-										Width="16" Height="16"
-										Classes="path-button-close"
-										Background="Transparent">
-										<Path
-											HorizontalAlignment="Left"
-											VerticalAlignment="Top"
-											Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-											StrokeThickness="4"
-											Data="M4,4 L12,12 M12,4 L4,12" />
-									</Border>
+									<!-- Close -->
+									<Grid Name="PART_ButtonClose"
+										  Classes="path-button-close"
+										  Width="16" Height="16">
+										<!-- Visual -->
+										<Path Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											  StrokeThickness="4"
+											  Data="M4,4 L12,12 M12,4 L4,12"/>
+										<!-- Overlay -->
+										<Border Name="PART_ButtonCloseOverlay"
+												Background="Transparent"
+												IsHitTestVisible="True"
+												ZIndex="1000"/>
+									</Grid>
+
 								</StackPanel>
 
 								<Border
@@ -352,78 +449,9 @@
 		</Setter>
 	</Style>
 
-	<!-- DockGutter -->
-	<Style Selector="local|DockGutter">
-
-		<Setter Property="Template">
-			<ControlTemplate>
-				<ScrollViewer
-					Name="PART_GutterScroller"
-					HorizontalScrollBarVisibility="Hidden"
-					VerticalScrollBarVisibility="Hidden"
-					ClipToBounds="True">
-					<ItemsPresenter
-						Name="PART_GutterItemStrip"
-						DockPanel.Dock="{TemplateBinding DockEdge}"
-						ItemsPanel="{TemplateBinding ItemsPanel}"/>
-				</ScrollViewer>
-			</ControlTemplate>
-		</Setter>
-
-		<Setter Property="ItemsPanel">
-			<Setter.Value>
-				<ItemsPanelTemplate>
-					<StackPanel Orientation="{Binding ItemOrientation, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-				</ItemsPanelTemplate>
-			</Setter.Value>
-		</Setter>
-
-		<Setter Property="ItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<local:RotatableContent
-						Rotation="{Binding GutterItemRotation, RelativeSource={RelativeSource AncestorType=local:DockGutter}}"
-						Tag="{Binding}">
-						<ContentPresenter
-							Content="{Binding}"
-							ContentTemplate="{Binding GutterItemTemplate, RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-					</local:RotatableContent>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-
-	<!-- DockGutterItem -->
-	<Style Selector="local|DockGutter">
-		<Setter Property="GutterItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<Button Classes="gutter-item" Tag="{Binding}" Padding="0,5,11,6">
-						<Grid>
-							<TextBlock
-								Text="{Binding Header}"
-								FontSize="14"
-								FontWeight="Thin"
-								HorizontalAlignment="Center"
-								Margin="0,4,0,4" />
-							<Border
-								BorderBrush="{DynamicResource TextFillColorDisabledBrush}"
-								BorderThickness="{Binding AccentBorderThickness,
-								RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-							<Border
-								Classes="accent-bar"
-								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
-								BorderThickness="{Binding AccentBorderThickness,
-								RelativeSource={RelativeSource AncestorType=local:DockGutter}}" />
-						</Grid>
-					</Button>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-
 	<!-- DockControl -->
 	<Style Selector="local|DockControl">
+
 		<Setter Property="Template">
 			<ControlTemplate TargetType="local:DockControl">
 				<Grid>
@@ -431,40 +459,40 @@
 					<DockPanel Name="PART_RootDockPanel">
 
 						<!-- Left Gutter -->
-						<local:DockGutter
+						<local:ContentSwitcher
 							Name="PART_LeftGutter"
 							DockEdge="Left"
 							DockPanel.Dock="Left"
 							VerticalAlignment="Stretch"
 							Margin="{TemplateBinding LeftGutterMargins}"
-							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<!-- Top Gutter -->
-						<local:DockGutter
+						<local:ContentSwitcher
 							Name="PART_TopGutter"
 							DockEdge="Top"
 							DockPanel.Dock="Top"
 							HorizontalAlignment="Stretch"
 							Margin="{TemplateBinding TopGutterMargins}"
-							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<!-- Right Gutter -->
-						<local:DockGutter
+						<local:ContentSwitcher
 							Name="PART_RightGutter"
 							DockEdge="Right"
 							DockPanel.Dock="Right"
 							VerticalAlignment="Stretch"
 							Margin="{TemplateBinding RightGutterMargins}"
-							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<!-- Bottom Gutter -->
-						<local:DockGutter
+						<local:ContentSwitcher
 							Name="PART_BottomGutter"
 							DockEdge="Bottom"
 							DockPanel.Dock="Bottom"
 							HorizontalAlignment="Stretch"
 							Margin="{TemplateBinding BottomGutterMargins}"
-							IsVisible="{Binding HasContent, RelativeSource={RelativeSource Self}}"/>
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<Grid Name="PART_RootGrid">
 
@@ -589,15 +617,13 @@
 							Name="PART_LeftFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Left"
-							Width="{Binding PanelSize, ElementName=PART_LeftGutter}"
-							Height="{Binding Bounds.Height, ElementName=PART_LeftGutter}"
-							IsVisible="{Binding IsExpanded, ElementName=PART_LeftGutter}"
+							IsVisible="{Binding IsOpen, ElementName=PART_LeftGutter}"
 							HorizontalAlignment="Left"
 							VerticalAlignment="Stretch"
 							Margin="{TemplateBinding LeftFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding PanelContent, ElementName=PART_LeftGutter}">
+								Content="{Binding ActiveContent, ElementName=PART_LeftGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
@@ -609,15 +635,13 @@
 							Name="PART_TopFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Top"
-							Height="{Binding PanelSize, ElementName=PART_TopGutter}"
-							Width="{Binding Bounds.Width, ElementName=PART_TopGutter}"
-							IsVisible="{Binding IsExpanded, ElementName=PART_TopGutter}"
+							IsVisible="{Binding IsOpen, ElementName=PART_TopGutter}"
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Top"
 							Margin="{TemplateBinding TopFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding PanelContent, ElementName=PART_TopGutter}">
+								Content="{Binding ActiveContent, ElementName=PART_TopGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
@@ -629,15 +653,13 @@
 							Name="PART_RightFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Right"
-							Width="{Binding PanelSize, ElementName=PART_RightGutter}"
-							Height="{Binding Bounds.Height, ElementName=PART_RightGutter}"
-							IsVisible="{Binding IsExpanded, ElementName=PART_RightGutter}"
+							IsVisible="{Binding IsOpen, ElementName=PART_RightGutter}"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Stretch"
 							Margin="{TemplateBinding RightFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="False"
-								Content="{Binding PanelContent, ElementName=PART_RightGutter}">
+								Content="{Binding ActiveContent, ElementName=PART_RightGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
@@ -649,15 +671,13 @@
 							Name="PART_BottomFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Bottom"
-							Height="{Binding PanelSize, ElementName=PART_BottomGutter}"
-							Width="{Binding Bounds.Width, ElementName=PART_BottomGutter}"
-							IsVisible="{Binding IsExpanded, ElementName=PART_BottomGutter}"
+							IsVisible="{Binding IsOpen, ElementName=PART_BottomGutter}"
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Bottom"
 							Margin="{TemplateBinding BottomFlyoutMargin}">
 							<av:TransitioningContentControl
 								IsTransitionReversed="False"
-								Content="{Binding PanelContent, ElementName=PART_BottomGutter}">
+								Content="{Binding ActiveContent, ElementName=PART_BottomGutter}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
@@ -717,10 +737,8 @@
 				</Grid>
 			</ControlTemplate>
 		</Setter>
-	</Style>
 
-	<!-- DockControlBottomTabControl -->
-	<Style Selector="local|DockControl">
+		<!-- DockControlBottomTabControl -->
 		<Setter Property="DockControlBottomTabControl">
 			<Setter.Value>
 				<DataTemplate>
@@ -746,7 +764,7 @@
 
 							<TabControl.ContentTemplate>
 								<DataTemplate>
-									<ContentControl Content="{Binding DockablePanel}" />
+									<ContentControl Content="{Binding Content}" />
 								</DataTemplate>
 							</TabControl.ContentTemplate>
 						</TabControl>
@@ -754,10 +772,8 @@
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
-	</Style>
 
-	<!-- DockControlTopTabControl -->
-	<Style Selector="local|DockControl">
+		<!-- DockControlTopTabControl -->
 		<Setter Property="DockControlTopTabControl">
 			<Setter.Value>
 				<DataTemplate>
@@ -782,7 +798,7 @@
 
 							<TabControl.ContentTemplate>
 								<DataTemplate>
-									<ContentControl Content="{Binding DockablePanel}" />
+									<ContentControl Content="{Binding Content}" />
 								</DataTemplate>
 							</TabControl.ContentTemplate>
 						</TabControl>
@@ -790,6 +806,7 @@
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
+
 	</Style>
 
 </Styles>

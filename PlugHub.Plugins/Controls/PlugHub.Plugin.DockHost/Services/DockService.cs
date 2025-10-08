@@ -63,7 +63,7 @@ namespace PlugHub.Plugin.DockHost.Services
 
         #region DockService: Control Handling
 
-        public DockHostControlData RegisterDockControl(Control control)
+        public DockHostControlData? RegisterDockControl(Control control)
         {
             ArgumentNullException.ThrowIfNull(control);
 
@@ -79,10 +79,10 @@ namespace PlugHub.Plugin.DockHost.Services
 
             DockControlChanged?.Invoke(this, new DockControlChangedEventArgs(dock.DockId, DockControlChangeType.Registered));
 
-            DockHostControlData controlData =
+            DockHostControlData? controlData =
                 this.configAccessor.Get()
                     .DockHostControlDataItems
-                    .FirstOrDefault(d => d.ControlID == dock.DockId) ?? new DockHostControlData();
+                    .FirstOrDefault(d => d.ControlID == dock.DockId);
 
             return controlData;
         }
@@ -182,7 +182,7 @@ namespace PlugHub.Plugin.DockHost.Services
             return items;
         }
 
-        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, Dock edge = Dock.Left, bool pinned = false)
+        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, Dock edge = Dock.Left, bool pinned = false, bool canClose = true)
         {
             this.logger.LogInformation("Requesting panel {DescriptorId} for control {ControlId}", descriptorId, dockControlId);
 
@@ -191,21 +191,18 @@ namespace PlugHub.Plugin.DockHost.Services
             if (descriptor is null)
             {
                 this.logger.LogWarning("No descriptor found for panel {DescriptorId}", descriptorId);
-
                 return null;
             }
 
             if (!this.controlsById.TryGetValue(dockControlId, out DockControl? targetControl))
             {
                 this.logger.LogWarning("No control registered with id {ControlId}", dockControlId);
-
                 return null;
             }
 
             if (descriptor.TargetedHosts != null && !descriptor.TargetedHosts.Contains(dockControlId))
             {
                 this.logger.LogInformation("Descriptor {PanelId} not targeted for control {ControlId}", descriptorId, dockControlId);
-
                 return null;
             }
 
@@ -231,7 +228,6 @@ namespace PlugHub.Plugin.DockHost.Services
             if (content is null)
             {
                 this.logger.LogWarning("Descriptor {DescriptorId} did not provide a valid ContentType, ViewModelType, or Factory", descriptorId);
-
                 return null;
             }
 
@@ -240,11 +236,11 @@ namespace PlugHub.Plugin.DockHost.Services
                 content,
                 edge: edge,
                 pinned: pinned,
-                visible: false,
                 controlId: controlId,
                 pluginId: descriptor.PluginID,
                 descriptorId: descriptor.DescriptorID,
-                dockControlId: dockControlId
+                dockControlId: dockControlId,
+                canClose: canClose
             );
 
             targetControl.AddPanel(state);
