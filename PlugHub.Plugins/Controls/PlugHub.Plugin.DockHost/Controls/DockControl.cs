@@ -45,6 +45,11 @@ namespace PlugHub.Plugin.DockHost.Controls
         private ContentSwitcher? rightGutter;
         private ContentSwitcher? bottomGutter;
 
+        private GridSplitter? leftSplitter;
+        private GridSplitter? topSplitter;
+        private GridSplitter? rightSplitter;
+        private GridSplitter? bottomSplitter;
+
         private ResizablePanel? leftResizePanel;
         private ResizablePanel? topResizePanel;
         private ResizablePanel? rightResizePanel;
@@ -303,7 +308,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             {
                 if (e.NewValue is IList<DockPanelState> list && s.isReady)
                 {
-                    foreach (var state in list.ToList())
+                    foreach (DockPanelState? state in list.ToList())
                     {
                         s.AddPanel(state.Normalize(this));
                         s.dockPanels.Remove(state);
@@ -409,22 +414,55 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         protected virtual void SetupGutterPanelsResize(TemplateAppliedEventArgs e)
         {
-            ResizablePanel?[] panels = [this.leftResizePanel, this.topResizePanel, this.rightResizePanel, this.bottomResizePanel];
-
-            foreach (ResizablePanel? panel in panels.Where(p => p != null))
+            void OnResizeCompleted(object? sender, EventArgs args)
             {
-                panel!.ResizeCompleted += (_, __) =>
-                {
-                    this.LeftFlyoutLength = this.leftResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
-                    this.TopFlyoutLength = this.topResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
-                    this.RightFlyoutLength = this.rightResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
-                    this.BottomFlyoutLength = this.bottomResizePanel?.ActualPanelSize ?? DEFAULT_PANEL_SIZE;
+                if (sender is not ResizablePanel panel)
+                    return;
 
-                    this.config.LeftFlyoutLength = this.LeftFlyoutLength;
-                    this.config.TopFlyoutLength = this.TopFlyoutLength;
-                    this.config.RightFlyoutLength = this.RightFlyoutLength;
-                    this.config.BottomFlyoutLength = this.BottomFlyoutLength;
-                };
+                if (panel.IsVisible && panel.ActualPanelSize > 0)
+                {
+                    if (panel == this.leftResizePanel)
+                    {
+                        this.LeftFlyoutLength = panel.ActualPanelSize;
+                        this.config.LeftFlyoutLength = this.LeftFlyoutLength;
+                    }
+                    else if (panel == this.topResizePanel)
+                    {
+                        this.TopFlyoutLength = panel.ActualPanelSize;
+                        this.config.TopFlyoutLength = this.TopFlyoutLength;
+                    }
+                    else if (panel == this.rightResizePanel)
+                    {
+                        this.RightFlyoutLength = panel.ActualPanelSize;
+                        this.config.RightFlyoutLength = this.RightFlyoutLength;
+                    }
+                    else if (panel == this.bottomResizePanel)
+                    {
+                        this.BottomFlyoutLength = panel.ActualPanelSize;
+                        this.config.BottomFlyoutLength = this.BottomFlyoutLength;
+                    }
+                }
+            }
+
+            if (this.leftResizePanel != null)
+            {
+                this.leftResizePanel.ResizeCompleted -= OnResizeCompleted;
+                this.leftResizePanel.ResizeCompleted += OnResizeCompleted;
+            }
+            if (this.topResizePanel != null)
+            {
+                this.topResizePanel.ResizeCompleted -= OnResizeCompleted;
+                this.topResizePanel.ResizeCompleted += OnResizeCompleted;
+            }
+            if (this.rightResizePanel != null)
+            {
+                this.rightResizePanel.ResizeCompleted -= OnResizeCompleted;
+                this.rightResizePanel.ResizeCompleted += OnResizeCompleted;
+            }
+            if (this.bottomResizePanel != null)
+            {
+                this.bottomResizePanel.ResizeCompleted -= OnResizeCompleted;
+                this.bottomResizePanel.ResizeCompleted += OnResizeCompleted;
             }
         }
         protected virtual void SetupMainGrid(TemplateAppliedEventArgs e)
@@ -437,6 +475,11 @@ namespace PlugHub.Plugin.DockHost.Controls
             grid.RowDefinitions[0].Height = new GridLength(this.config.TopPanelLength);
             grid.ColumnDefinitions[4].Width = new GridLength(this.config.RightPanelLength);
             grid.RowDefinitions[4].Height = new GridLength(this.config.BottomPanelLength);
+
+            this.leftSplitter = e.NameScope.Find<GridSplitter>("PART_LeftGridSplitter");
+            this.topSplitter = e.NameScope.Find<GridSplitter>("PART_TopGridSplitter");
+            this.rightSplitter = e.NameScope.Find<GridSplitter>("PART_RightGridSplitter");
+            this.bottomSplitter = e.NameScope.Find<GridSplitter>("PART_BottomGridSplitter");
 
             PropertyChanged += (_, args) =>
             {
@@ -465,20 +508,52 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             if (grid is null) return;
 
-            foreach (GridSplitter splitter in grid.GetLogicalDescendants().OfType<GridSplitter>())
+            void OnSplitterDragCompleted(object? sender, EventArgs args)
             {
-                splitter.DragCompleted += (_, __) =>
+                if (sender == this.leftSplitter)
                 {
                     this.LeftPanelLength = grid.ColumnDefinitions[0].Width;
-                    this.TopPanelLength = grid.RowDefinitions[0].Height;
-                    this.RightPanelLength = grid.ColumnDefinitions[4].Width;
-                    this.BottomPanelLength = grid.RowDefinitions[4].Height;
-
                     this.config.LeftPanelLength = this.LeftPanelLength.Value;
+                }
+                else if (sender == this.topSplitter)
+                {
+                    this.TopPanelLength = grid.RowDefinitions[0].Height;
                     this.config.TopPanelLength = this.TopPanelLength.Value;
+                }
+                else if (sender == this.rightSplitter)
+                {
+                    this.RightPanelLength = grid.ColumnDefinitions[4].Width;
                     this.config.RightPanelLength = this.RightPanelLength.Value;
+                }
+                else if (sender == this.bottomSplitter)
+                {
+                    this.BottomPanelLength = grid.RowDefinitions[4].Height;
                     this.config.BottomPanelLength = this.BottomPanelLength.Value;
-                };
+                }
+            }
+
+            if (this.leftSplitter != null)
+            {
+                this.leftSplitter.DragCompleted -= OnSplitterDragCompleted;
+                this.leftSplitter.DragCompleted += OnSplitterDragCompleted;
+            }
+
+            if (this.topSplitter != null)
+            {
+                this.topSplitter.DragCompleted -= OnSplitterDragCompleted;
+                this.topSplitter.DragCompleted += OnSplitterDragCompleted;
+            }
+
+            if (this.rightSplitter != null)
+            {
+                this.rightSplitter.DragCompleted -= OnSplitterDragCompleted;
+                this.rightSplitter.DragCompleted += OnSplitterDragCompleted;
+            }
+
+            if (this.bottomSplitter != null)
+            {
+                this.bottomSplitter.DragCompleted -= OnSplitterDragCompleted;
+                this.bottomSplitter.DragCompleted += OnSplitterDragCompleted;
             }
         }
         protected virtual void SetupDropTargets(TemplateAppliedEventArgs e)

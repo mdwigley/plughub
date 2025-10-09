@@ -174,6 +174,8 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             this.IsPinned = (this.DataContext as DockPanelState)?.IsPinned ?? false;
             this.CanClose = (this.DataContext as DockPanelState)?.CanClose ?? false;
+
+            this.OnApplyPseudoClasses(this, null);
         }
         protected virtual void OnApplyPseudoClasses(object? sender, AvaloniaPropertyChangedEventArgs? e)
         {
