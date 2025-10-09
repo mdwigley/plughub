@@ -526,12 +526,14 @@
 							</Border>
 
 							<!-- Top splitter -->
-							<GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5"
-										  Height="4"
-										  Background="Transparent"
-										  HorizontalAlignment="Stretch"
-										  ResizeDirection="Rows"
-										  IsVisible="{TemplateBinding HasTopContent}"/>
+							<GridSplitter
+								Name="PART_TopGridSplitter"
+								Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5"
+								Height="4"
+								Background="Transparent"
+								HorizontalAlignment="Stretch"
+								ResizeDirection="Rows"
+								IsVisible="{TemplateBinding HasTopContent}"/>
 
 							<!-- Left pinned -->
 							<Border
@@ -548,25 +550,30 @@
 							</Border>
 
 							<!-- Left splitter -->
-							<GridSplitter Grid.Row="2" Grid.Column="1"
-										  Width="4"
-										  Background="Transparent"
-										  VerticalAlignment="Stretch"
-										  ResizeDirection="Columns"
-										  IsVisible="{TemplateBinding HasLeftContent}"/>
+							<GridSplitter
+								Grid.Row="2" Grid.Column="1"
+								Name="PART_LeftGridSplitter"
+								Width="4"
+								Background="Transparent"
+								VerticalAlignment="Stretch"
+								ResizeDirection="Columns"
+								IsVisible="{TemplateBinding HasLeftContent}"/>
 
 							<!-- Main content -->
-							<ContentPresenter Grid.Row="2" Grid.Column="2"
-											  Content="{TemplateBinding Content}"
-											  ContentTemplate="{TemplateBinding ContentTemplate}" />
+							<ContentPresenter
+								Grid.Row="2" Grid.Column="2"
+								Content="{TemplateBinding Content}"
+								ContentTemplate="{TemplateBinding ContentTemplate}" />
 
 							<!-- Right splitter -->
-							<GridSplitter Grid.Row="2" Grid.Column="3"
-										  Width="4"
-										  Background="Transparent"
-										  VerticalAlignment="Stretch"
-										  ResizeDirection="Columns"
-										  IsVisible="{TemplateBinding HasRightContent}"/>
+							<GridSplitter
+								Grid.Row="2" Grid.Column="3"
+								Name="PART_RightGridSplitter"
+								Width="4"
+								Background="Transparent"
+								VerticalAlignment="Stretch"
+								ResizeDirection="Columns"
+								IsVisible="{TemplateBinding HasRightContent}"/>
 
 							<!-- Right pinned -->
 							<Border
@@ -584,6 +591,7 @@
 
 							<!-- Bottom splitter -->
 							<GridSplitter Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5"
+										  Name="PART_BottomGridSplitter"
 										  Height="4"
 										  Background="Transparent"
 										  HorizontalAlignment="Stretch"
