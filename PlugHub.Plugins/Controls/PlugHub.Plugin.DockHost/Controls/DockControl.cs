@@ -28,17 +28,20 @@ namespace PlugHub.Plugin.DockHost.Controls
             public Thickness ForRight() => new(0, this.Top, this.Right, this.Bottom);
         }
 
+        // Register the routed event
+        public static readonly RoutedEvent<RoutedEventArgs> DockControlReadyEvent =
+            RoutedEvent.Register<DockControl, RoutedEventArgs>(nameof(DockControlReady), RoutingStrategies.Bubble);
+        public event EventHandler<RoutedEventArgs> DockControlReady
+        {
+            add => this.AddHandler(DockControlReadyEvent, value);
+            remove => this.RemoveHandler(DockControlReadyEvent, value);
+        }
+
         #region DockControl: Internal Members
 
         private DockHostControlData config;
         private IDockService? dockService;
-        private Grid? dropTargetsGrid;
         private DockCompass? dockCompass;
-
-        private Border? leftDropTarget;
-        private Border? topDropTarget;
-        private Border? rightDropTarget;
-        private Border? bottomDropTarget;
 
         private ContentSwitcher? leftGutter;
         private ContentSwitcher? topGutter;
@@ -55,7 +58,9 @@ namespace PlugHub.Plugin.DockHost.Controls
         private ResizablePanel? rightResizePanel;
         private ResizablePanel? bottomResizePanel;
 
-        private bool isReady = false;
+        public bool IsConstructed { get; private set; } = false;
+        public bool IsHydrated { get; private set; } = false;
+        public bool IsReady { get; private set; } = true;
 
         #endregion
 
@@ -84,6 +89,14 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             get => this.dockPanels;
             set => this.SetAndRaise(DockPanelsProperty, ref this.dockPanels, value);
+        }
+
+        public static readonly StyledProperty<IDataTemplate?> DockControlMissingPanelProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlMissingPanel));
+        public IDataTemplate? DockControlMissingPanel
+        {
+            get => this.GetValue(DockControlMissingPanelProperty);
+            set => this.SetValue(DockControlMissingPanelProperty, value);
         }
 
         #endregion
@@ -307,14 +320,8 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             DockPanelsProperty.Changed.AddClassHandler<DockControl>((s, e) =>
             {
-                if (e.NewValue is IList<DockPanelState> list && s.isReady)
-                {
-                    foreach (DockPanelState? state in list.ToList())
-                    {
-                        s.AddPanel(state.Normalize(this));
-                        s.dockPanels.Remove(state);
-                    }
-                }
+                if (e.NewValue is IList<DockPanelState> list && s.IsConstructed)
+                    this.ProcessBufferedPanels(list);
             });
 
             DockServiceProperty.Changed.AddClassHandler<DockControl>((s, e) =>
@@ -353,11 +360,18 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.SetupGutterPanelsResize(e);
             this.SetupMainGrid(e);
             this.SetupMainGridSplittersResize(e);
-            this.SetupDropTargets(e);
 
-            this.isReady = true;
+            this.IsConstructed = true;
 
-            this.ProcessBufferedPanels();
+            this.ProcessBufferedPanels(this.DockPanels);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                this.NormalizeSlicesBySortOrder();
+                this.IsReady = true;
+                this.RaiseEvent(new RoutedEventArgs(DockControlReadyEvent));
+
+            }, DispatcherPriority.Background);
         }
 
         protected virtual void SetupGutters(TemplateAppliedEventArgs e)
@@ -512,7 +526,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             Grid? grid = e.NameScope.Find<Grid>("PART_RootGrid");
 
-            if (grid is null) return;
+            if (grid == null) return;
 
             void OnSplitterDragCompleted(object? sender, EventArgs args)
             {
@@ -562,28 +576,71 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.bottomSplitter.DragCompleted += OnSplitterDragCompleted;
             }
         }
-        protected virtual void SetupDropTargets(TemplateAppliedEventArgs e)
-        {
-            this.dropTargetsGrid = e.NameScope.Find<Grid>("PART_DropTargetsGrid");
 
-            this.topDropTarget = e.NameScope.Find<Border>("PART_TopDropTarget");
-            this.bottomDropTarget = e.NameScope.Find<Border>("PART_BottomDropTarget");
-            this.leftDropTarget = e.NameScope.Find<Border>("PART_LeftDropTarget");
-            this.rightDropTarget = e.NameScope.Find<Border>("PART_RightDropTarget");
-        }
-
-        protected virtual void ProcessBufferedPanels()
+        protected virtual void ProcessBufferedPanels(IList<DockPanelState> list)
         {
-            if (!this.isReady || this.dockPanels.Count == 0)
+            if (!this.IsConstructed || this.dockPanels.Count == 0)
                 return;
 
-            for (int i = this.dockPanels.Count - 1; i >= 0; i--)
+            // Phase 1: rehydrate persisted panels from config
+            if (this.IsHydrated == false)
             {
-                DockPanelState state = this.dockPanels[i];
+                if (this.config?.DockHostDataItems != null && this.dockService != null)
+                {
+                    foreach (DockHostPanelData persisted in this.config.DockHostDataItems)
+                    {
+                        if (list.Any(s => s.ControlId == persisted.ControlID)) continue;
+
+                        this.dockService.RequestPanel(
+                            persisted.ControlID,
+                            this.DockId,
+                            persisted.DescriptorID,
+                            persisted.SortOrder,
+                            persisted.DockEdge,
+                            persisted.IsPinned,
+                            canClose: true);
+                    }
+                }
+
+                this.IsHydrated = true;
+            }
+
+            // Phase 2: drain any buffered states (AXAML or MVVM‑requested)
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                DockPanelState state = list[i];
+
+                DockHostPanelData? persisted = this.config?.DockHostDataItems?
+                    .FirstOrDefault(d => d.ControlID == state.ControlId);
+
+                if (persisted != null)
+                    state.FromConfig(persisted);
 
                 this.AddPanel(state.Normalize(this));
-                this.dockPanels.RemoveAt(i);
+                list.RemoveAt(i);
             }
+        }
+        protected virtual void NormalizeSlicesBySortOrder()
+        {
+            void SortByOrder(ObservableCollection<DockPanelState> collection)
+            {
+                List<DockPanelState> sorted = [.. collection.OrderBy(p => p.SortOrder)];
+
+                collection.Clear();
+
+                foreach (DockPanelState? item in sorted)
+                    collection.Add(item);
+            }
+
+            SortByOrder(this.LeftPinned);
+            SortByOrder(this.RightPinned);
+            SortByOrder(this.TopPinned);
+            SortByOrder(this.BottomPinned);
+
+            SortByOrder(this.LeftUnpinned);
+            SortByOrder(this.RightUnpinned);
+            SortByOrder(this.TopUnpinned);
+            SortByOrder(this.BottomUnpinned);
         }
 
         private DockHostControlData NewConfig()
@@ -604,16 +661,22 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         public virtual DockHostControlData? ToConfig()
         {
-            Dictionary<Guid, DockHostPanelData> byId = this.config.DockHostDataItems.ToDictionary(x => x.ControlID);
+            Dictionary<Guid, DockHostPanelData> byId =
+                this.config.DockHostDataItems.ToDictionary(x => x.ControlID);
+
             List<DockHostPanelData> orderedDtos = [];
 
-            foreach (DockPanelState state in this.CollectDockPanelStates())
-                if (byId.TryGetValue(state.ControlId, out DockHostPanelData? dto))
-                    orderedDtos.Add(dto);
+            int order = 0;
 
-            foreach (DockHostPanelData dto in this.config.DockHostDataItems)
-                if (!orderedDtos.Contains(dto))
+            foreach (DockPanelState state in this.CollectDockPanelStates())
+            {
+                if (byId.TryGetValue(state.ControlId, out DockHostPanelData? dto))
+                {
+                    dto.SortOrder = order++;
+
                     orderedDtos.Add(dto);
+                }
+            }
 
             this.config.DockHostDataItems = orderedDtos;
 
@@ -674,7 +737,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         public IEnumerable<DockPanelState> CollectDockPanelStates()
         {
-            if (this.isReady == false)
+            if (this.IsConstructed == false)
                 return [.. this.dockPanels];
 
             return
@@ -689,7 +752,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         public void AddPanel(DockPanelState state)
         {
-            if (this.isReady == false)
+            if (this.IsConstructed == false)
             {
                 this.dockPanels.Add(state);
 
@@ -718,7 +781,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         public async Task MovePanel(DockPanelState state, Dock edge)
         {
-            if (this.isReady == false)
+            if (this.IsConstructed == false)
             {
                 DockPanelState? item = this.dockPanels.FirstOrDefault(x => x.ControlId == state.ControlId);
 
@@ -749,7 +812,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         public async Task PinPanel(DockPanelState state, bool pinned)
         {
-            if (this.isReady == false)
+            if (this.IsConstructed == false)
             {
                 DockPanelState? item = this.dockPanels.FirstOrDefault(x => x.ControlId == state.ControlId);
 
@@ -780,7 +843,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         public async Task ClosePanel(DockPanelState state)
         {
-            if (this.isReady == false)
+            if (this.IsConstructed == false)
             {
                 for (int i = this.dockPanels.Count - 1; i >= 0; i--)
                     if (this.dockPanels[i].ControlId == state.ControlId)
@@ -968,6 +1031,8 @@ namespace PlugHub.Plugin.DockHost.Controls
                     this.LeftGutterMargins = new Thickness(0, 32, 0, 0);
                 else if (hasBottom)
                     this.LeftGutterMargins = new Thickness(0, 0, 0, 32);
+                else if (hasRight)
+                    this.LeftGutterMargins = new Thickness(0);
                 else
                     this.LeftGutterMargins = new Thickness(0);
             }

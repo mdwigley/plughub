@@ -8,6 +8,7 @@ namespace PlugHub.Plugin.DockHost.Models
         public Guid PluginID { get; set; }
         public Guid DescriptorID { get; set; }
         public Guid DockControlID { get; set; }
+        public int SortOrder { get; set; }
         public Dock DockEdge { get; set; }
         public bool IsPinned { get; set; }
     }

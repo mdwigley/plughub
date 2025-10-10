@@ -54,16 +54,10 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
     /// <remarks>
     /// Initializes a new instance of the <see cref="DockPanelChangedEventArgs"/> class.
     /// </remarks>
-    /// <param name="controlId">The identifier of the dock control.</param>
     /// <param name="item">The panel item that changed.</param>
     /// <param name="changeType">The type of change that occurred.</param>
-    public sealed class DockPanelChangedEventArgs(Guid controlId, DockPanelItem item, DockPanelChangeType changeType) : EventArgs
+    public sealed class DockPanelChangedEventArgs(DockPanelItem item, DockPanelChangeType changeType) : EventArgs
     {
-        /// <summary>
-        /// Gets the identifier of the dock control associated with the change.
-        /// </summary>
-        public Guid ControlId { get; } = controlId;
-
         /// <summary>
         /// Gets the panel item involved in the change.
         /// </summary>
@@ -78,19 +72,25 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
     /// <summary>
     /// Provides event data for dock control change notifications.
     /// </summary>
-    /// <param name="controlId">The identifier of the dock control.</param>
+    /// <param name="control">The dock control that changed.</param>
     /// <param name="changeType">The type of change that occurred.</param>
-    public sealed class DockControlChangedEventArgs(Guid controlId, DockControlChangeType changeType) : EventArgs
+    public sealed class DockControlChangedEventArgs(DockControl control, DockControlChangeType changeType) : EventArgs
     {
         /// <summary>
         /// Gets the identifier of the dock control associated with the change.
         /// </summary>
-        public Guid ControlId { get; } = controlId;
+        public DockControl Control { get; } = control;
 
         /// <summary>
         /// Gets the type of change that occurred.
         /// </summary>
         public DockControlChangeType ChangeType { get; } = changeType;
+    }
+
+    public sealed class DockControlReadyEventArgs : EventArgs
+    {
+        public DockControlReadyEventArgs(DockControl control) => this.Control = control;
+        public DockControl Control { get; }
     }
 
     /// <summary>
@@ -109,6 +109,9 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
         /// Occurs when a dock control is registered or unregistered.
         /// </summary>
         public event EventHandler<DockControlChangedEventArgs>? DockControlChanged;
+
+
+        public event EventHandler<DockControlReadyEventArgs> DockControlReady;
 
         /// <summary>
         /// Finds a registered panel descriptor by its unique identifier for the given dock host.
@@ -161,16 +164,17 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
 
         /// <summary>
         /// Requests that a panel be instantiated and added to the specified dock control,
-        /// with optional initial docking configuration.
+        /// with optional initial docking configuration and global sort order.
         /// </summary>
         /// <param name="controlId">The unique identifier of the panel instance. Pass <see cref="Guid.Empty"/> to create a new panel identity, or supply a persisted value to reconstitute an existing panel.</param>
         /// <param name="dockControlId">The identifier of the dock control (host) that will own this panel.</param>
         /// <param name="descriptorId">The identifier of the panel descriptor that defines what type of panel to instantiate.</param>
+        /// <param name="sortOrder">The global sort order (flattened across all slices) to assign to the panel. Defaults to <c>0</c>.</param>
         /// <param name="edge">The dock edge where the panel should be placed. Defaults to <see cref="Dock.Left"/>.</param>
         /// <param name="pinned">Whether the panel should be pinned when created. Defaults to <c>false</c>.</param>
         /// <param name="canClose">Whether the panel can be closed by the user. Defaults to <c>true</c>.</param>
         /// <returns>The created <see cref="DockPanelState"/> if the panel was successfully instantiated and added; otherwise <c>null</c>.</returns>
-        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, Dock edge = Dock.Left, bool pinned = false, bool canClose = true);
+        DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, bool canClose = true);
 
         /// <summary>
         /// Persists the current layout and state of the specified <see cref="DockControl"/>.

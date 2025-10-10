@@ -11,35 +11,20 @@ namespace PlugHub.Plugin.DockHost.Controls
 {
     public enum ResizeConstraintMode { Parent, Window, Custom }
 
-    public class ResizeEventArgs : RoutedEventArgs
+    public class ResizeEventArgs(RoutedEvent routedEvent, double oldSize, double newSize, Orientation orientation)
+        : RoutedEventArgs(routedEvent)
     {
-        public double OldSize { get; }
-        public double NewSize { get; }
-        public Orientation Orientation { get; }
-
-        public ResizeEventArgs(RoutedEvent routedEvent, double oldSize, double newSize, Orientation orientation)
-            : base(routedEvent)
-        {
-            this.OldSize = oldSize;
-            this.NewSize = newSize;
-            this.Orientation = orientation;
-        }
+        public double OldSize { get; } = oldSize;
+        public double NewSize { get; } = newSize;
+        public Orientation Orientation { get; } = orientation;
     }
-    public class ResizeDeltaEventArgs : RoutedEventArgs
+    public class ResizeDeltaEventArgs(RoutedEvent routedEvent, double delta, double oldSize, double newSize, Orientation orientation)
+        : RoutedEventArgs(routedEvent)
     {
-        public double Delta { get; }
-        public double OldSize { get; }
-        public double NewSize { get; }
-        public Orientation Orientation { get; }
-
-        public ResizeDeltaEventArgs(RoutedEvent routedEvent, double delta, double oldSize, double newSize, Orientation orientation)
-            : base(routedEvent)
-        {
-            this.Delta = delta;
-            this.OldSize = oldSize;
-            this.NewSize = newSize;
-            this.Orientation = orientation;
-        }
+        public double Delta { get; } = delta;
+        public double OldSize { get; } = oldSize;
+        public double NewSize { get; } = newSize;
+        public Orientation Orientation { get; } = orientation;
     }
 
     public class ResizablePanel : ContentControl
@@ -326,7 +311,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             e.Handled = true;
 
             (Visual surface, Size size)? resolved = this.TryGetConstraintSurface();
-            if (resolved is null) return;
+            if (resolved == null) return;
 
             (Visual surface, Size size) = resolved.Value;
             Point pos = this.TranslatePoint(new Point(0, 0), surface) ?? default;

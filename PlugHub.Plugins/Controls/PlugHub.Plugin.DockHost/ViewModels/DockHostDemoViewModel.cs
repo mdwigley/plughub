@@ -1,12 +1,22 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
+using PlugHub.Plugin.DockHost.Controls;
 using PlugHub.Plugin.DockHost.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Models;
+using PlugHub.Shared.Interfaces.Accessors;
+using PlugHub.Shared.Interfaces.Services.Configuration;
+using PlugHub.Shared.Models;
+using PlugHub.Shared.Models.Configuration.Parameters;
 using PlugHub.Shared.ViewModels;
 using System.Collections.ObjectModel;
 
 namespace PlugHub.Plugin.DockHost.ViewModels
 {
+    public class DockHostDemoData
+    {
+        public bool FirstRun { get; set; } = false;
+    }
+
     public class DockHostDemoViewModel : BaseViewModel
     {
         #region DockHostDemoViewModel: Panel IDs
@@ -38,6 +48,8 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         #endregion
 
+        private readonly bool firstRun = false;
+
         public ObservableCollection<DockPanelState> DockPanels { get; } = [];
         public ObservableCollection<DockPanelItem> DockPanelItems { get; private set; } = [];
         public Guid DockId { get; set; } = Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d");
@@ -45,11 +57,26 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         private readonly ILogger<DockHostDemoViewModel> logger;
 
-        public DockHostDemoViewModel(ILogger<DockHostDemoViewModel> logger, IDockService dockService)
+        public DockHostDemoViewModel(ILogger<DockHostDemoViewModel> logger, IConfigService configService, IDockService dockService)
         {
             this.logger = logger;
             this.DockService = dockService;
             this.DockPanelItems = [.. dockService.GetPanelItems(this.DockId)];
+
+            configService.RegisterConfig(
+                new ConfigFileParams(Owner: Token.New(), Read: Token.Blocked, Write: Token.Blocked),
+                out IConfigAccessorFor<DockHostDemoData> accessor);
+
+            DockHostDemoData data = accessor.Get();
+
+            this.firstRun = data.FirstRun;
+
+            if (this.firstRun == false)
+            {
+                data.FirstRun = true;
+
+                accessor.Save(data);
+            }
 
             dockService.PanelsChanged += (s, e) =>
             {
@@ -57,8 +84,13 @@ namespace PlugHub.Plugin.DockHost.ViewModels
             };
             dockService.DockControlChanged += (s, e) =>
             {
-                if (e.ControlId == this.DockId && e.ChangeType == DockControlChangeType.Registered)
-                    this.ApplyDefaultPanels();
+                if (e.Control is DockControl control)
+                    if (this.firstRun == false)
+                        this.ApplyDefaultPanels();
+            };
+            dockService.DockControlReady += (s, e) =>
+            {
+
             };
         }
 

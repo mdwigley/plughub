@@ -6,14 +6,14 @@ using Avalonia.Input;
 
 namespace PlugHub.Plugin.DockHost.Controls
 {
-    [TemplatePart(Name = PartNorthCell, Type = typeof(Border))]
-    [TemplatePart(Name = PartSouthCell, Type = typeof(Border))]
-    [TemplatePart(Name = PartWestCell, Type = typeof(Border))]
-    [TemplatePart(Name = PartEastCell, Type = typeof(Border))]
-    [TemplatePart(Name = PartNorthRegion, Type = typeof(Border))]
-    [TemplatePart(Name = PartSouthRegion, Type = typeof(Border))]
-    [TemplatePart(Name = PartWestRegion, Type = typeof(Border))]
-    [TemplatePart(Name = PartEastRegion, Type = typeof(Border))]
+    [TemplatePart(Name = partNorthCell, Type = typeof(Border))]
+    [TemplatePart(Name = partSouthCell, Type = typeof(Border))]
+    [TemplatePart(Name = partWestCell, Type = typeof(Border))]
+    [TemplatePart(Name = partEastCell, Type = typeof(Border))]
+    [TemplatePart(Name = partNorthRegion, Type = typeof(Border))]
+    [TemplatePart(Name = partSouthRegion, Type = typeof(Border))]
+    [TemplatePart(Name = partWestRegion, Type = typeof(Border))]
+    [TemplatePart(Name = partEastRegion, Type = typeof(Border))]
     public class DockCompass : TemplatedControl
     {
         public static readonly DirectProperty<DockCompass, Dock?> ActiveEdgeProperty =
@@ -33,15 +33,15 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(IsDiagnosticModeProperty, value);
         }
 
-        private const string PartNorthCell = "PART_NorthCell";
-        private const string PartSouthCell = "PART_SouthCell";
-        private const string PartWestCell = "PART_WestCell";
-        private const string PartEastCell = "PART_EastCell";
+        private const string partNorthCell = "PART_NorthCell";
+        private const string partSouthCell = "PART_SouthCell";
+        private const string partWestCell = "PART_WestCell";
+        private const string partEastCell = "PART_EastCell";
 
-        private const string PartNorthRegion = "PART_NorthRegion";
-        private const string PartSouthRegion = "PART_SouthRegion";
-        private const string PartWestRegion = "PART_WestRegion";
-        private const string PartEastRegion = "PART_EastRegion";
+        private const string partNorthRegion = "PART_NorthRegion";
+        private const string partSouthRegion = "PART_SouthRegion";
+        private const string partWestRegion = "PART_WestRegion";
+        private const string partEastRegion = "PART_EastRegion";
 
         private Border? northCell, southCell, westCell, eastCell;
         private Border? northRegion, southRegion, westRegion, eastRegion;
@@ -54,15 +54,15 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             base.OnApplyTemplate(e);
 
-            this.northCell = e.NameScope.Find<Border>(PartNorthCell);
-            this.southCell = e.NameScope.Find<Border>(PartSouthCell);
-            this.westCell = e.NameScope.Find<Border>(PartWestCell);
-            this.eastCell = e.NameScope.Find<Border>(PartEastCell);
+            this.northCell = e.NameScope.Find<Border>(partNorthCell);
+            this.southCell = e.NameScope.Find<Border>(partSouthCell);
+            this.westCell = e.NameScope.Find<Border>(partWestCell);
+            this.eastCell = e.NameScope.Find<Border>(partEastCell);
 
-            this.northRegion = e.NameScope.Find<Border>(PartNorthRegion);
-            this.southRegion = e.NameScope.Find<Border>(PartSouthRegion);
-            this.westRegion = e.NameScope.Find<Border>(PartWestRegion);
-            this.eastRegion = e.NameScope.Find<Border>(PartEastRegion);
+            this.northRegion = e.NameScope.Find<Border>(partNorthRegion);
+            this.southRegion = e.NameScope.Find<Border>(partSouthRegion);
+            this.westRegion = e.NameScope.Find<Border>(partWestRegion);
+            this.eastRegion = e.NameScope.Find<Border>(partEastRegion);
 
             if (this.IsDiagnosticMode) this.Show();
         }
@@ -126,10 +126,14 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         private bool IsInside(Control? cell, Point posInCompass)
         {
-            if (cell is null) return false;
+            if (cell == null) return false;
+
             Point? topLeft = cell.TranslatePoint(new Point(0, 0), this);
-            if (topLeft is null) return false;
-            Rect rect = new Rect(topLeft.Value, cell.Bounds.Size);
+
+            if (topLeft == null) return false;
+
+            Rect rect = new(topLeft.Value, cell.Bounds.Size);
+
             return rect.Contains(posInCompass);
         }
         private void UpdateHighlights(Dock? edge)

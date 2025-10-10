@@ -65,6 +65,25 @@ namespace PlugHub.Plugin.DockHost.Models
 
         #region DockPanelState: Panel States
 
+        private int sortOrder;
+        /// <summary>
+        /// Global sort order in the flattened sequence of all panels across all slices.
+        /// This value is used to normalize and restore the relative ordering regardless
+        /// of which slice (pinned/unpinned, edge) the panel belongs to.
+        /// </summary>
+        public int SortOrder
+        {
+            get => this.sortOrder;
+            set
+            {
+                if (this.sortOrder != value)
+                {
+                    this.sortOrder = value;
+                    this.OnPropertyChanged();
+                }
+            }
+        }
+
         private bool isPinned;
         /// <summary>
         /// Determines whether the panel is docked in the main control area (true) or lives inside a flyout (false).
@@ -119,13 +138,14 @@ namespace PlugHub.Plugin.DockHost.Models
         #endregion
 
         public DockPanelState()
-            : this(header: string.Empty, control: new ContentControl(), edge: Dock.Left, pinned: false, controlId: default, descriptorId: default, pluginId: default, dockControlId: default) { }
-        public DockPanelState(string header, Control control, Dock edge = Dock.Left, bool pinned = false, Guid controlId = default, Guid descriptorId = default, Guid pluginId = default, Guid dockControlId = default, bool canClose = true)
+            : this(header: string.Empty, control: new ContentControl(), sortOrder: 0, edge: Dock.Left, pinned: false, controlId: default, descriptorId: default, pluginId: default, dockControlId: default) { }
+        public DockPanelState(string header, Control control, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, Guid controlId = default, Guid descriptorId = default, Guid pluginId = default, Guid dockControlId = default, bool canClose = true)
         {
             ArgumentNullException.ThrowIfNull(header);
             ArgumentNullException.ThrowIfNull(control);
 
             this.Header = header;
+            this.SortOrder = sortOrder;
             this.isPinned = pinned;
             this.dockEdge = edge;
             this.canClose = canClose;
@@ -196,6 +216,7 @@ namespace PlugHub.Plugin.DockHost.Models
             return new DockHostPanelData()
             {
                 ControlID = this.ControlId,
+                SortOrder = this.SortOrder,
                 PluginID = this.PluginId,
                 DescriptorID = this.DescriptorId,
                 DockControlID = this.DockControlId,
@@ -214,6 +235,7 @@ namespace PlugHub.Plugin.DockHost.Models
             ArgumentNullException.ThrowIfNull(data);
 
             this.ControlId = data.ControlID == Guid.Empty ? this.ControlId : data.ControlID;
+            this.SortOrder = data.SortOrder;
             this.PluginId = data.PluginID;
             this.DescriptorId = data.DescriptorID;
             this.DockControlId = data.DockControlID;

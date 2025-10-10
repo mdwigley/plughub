@@ -15,7 +15,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         protected override void OnAttached()
         {
             base.OnAttached();
-            if (this.AssociatedObject is null) return;
+            if (this.AssociatedObject == null) return;
 
             DragDrop.SetAllowDrop(this.AssociatedObject, true);
 
@@ -27,7 +27,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         }
         private void AttachToTabs()
         {
-            if (this.AssociatedObject is null) return;
+            if (this.AssociatedObject == null) return;
 
             foreach (TabItem tab in this.AssociatedObject.GetVisualDescendants().OfType<TabItem>())
             {
@@ -48,7 +48,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         {
             base.OnAttached();
 
-            if (this.AssociatedObject is null) return;
+            if (this.AssociatedObject == null) return;
 
             this.AssociatedObject.AddHandler(InputElement.PointerPressedEvent, this.OnPointerPressed, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
             this.AssociatedObject.AddHandler(InputElement.PointerMovedEvent, this.OnPointerMoved, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
@@ -56,7 +56,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         }
         protected override void OnDetaching()
         {
-            if (this.AssociatedObject is not null)
+            if (this.AssociatedObject != null)
             {
                 this.AssociatedObject.RemoveHandler(InputElement.PointerPressedEvent, (EventHandler<PointerPressedEventArgs>)this.OnPointerPressed);
                 this.AssociatedObject.RemoveHandler(InputElement.PointerMovedEvent, (EventHandler<PointerEventArgs>)this.OnPointerMoved);
@@ -103,7 +103,6 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         }
     }
 
-
     public class TabsReorderedEventArgs(DockPanelState item) : EventArgs
     {
         public DockPanelState Item { get; } = item;
@@ -118,7 +117,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         protected override void OnAttached()
         {
             base.OnAttached();
-            if (this.AssociatedObject is null) return;
+            if (this.AssociatedObject == null) return;
 
             DragDrop.SetAllowDrop(this.AssociatedObject, true);
             this.AssociatedObject.AddHandler(DragDrop.DragOverEvent, this.OnDragOver, RoutingStrategies.Bubble);
@@ -138,7 +137,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
 
             object? target = tab.DataContext;
 
-            if (e.Data.Get("tab") is not DockPanelState source || target is null || ReferenceEquals(source, target)) return;
+            if (e.Data.Get("tab") is not DockPanelState source || target == null || ReferenceEquals(source, target)) return;
 
             if (this.AssociatedObject?.ItemsSource is not IList items) return;
 

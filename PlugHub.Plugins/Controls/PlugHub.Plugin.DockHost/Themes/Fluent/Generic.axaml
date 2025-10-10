@@ -60,6 +60,7 @@
 		</Setter>
 	</Style>
 
+
 	<!-- ContentSwitcher Styles -->
 	<Style Selector="local|ContentSwitcher:pointerover:edge-left Border.accent-bar">
 		<Setter Property="BorderThickness" Value="0,0,0,4"/>
@@ -73,6 +74,7 @@
 	<Style Selector="local|ContentSwitcher:pointerover:edge-bottom Border.accent-bar">
 		<Setter Property="BorderThickness" Value="0,0,0,4"/>
 	</Style>
+
 
 	<!-- ContentSwitcherItem Styles -->
 	<Style Selector="Button.content-item">
@@ -94,6 +96,7 @@
 	<Style Selector="Button.content-item:pointerover .accent-bar" x:SetterTargetType="Border">
 		<Setter Property="Opacity" Value="1"/>
 	</Style>
+
 
 	<!-- DockablePanel Styles -->
 	<Style Selector="Grid.path-button:pointerover">
@@ -132,6 +135,29 @@
 	<Style Selector="local|DockablePanel:closable /template/ #PART_ButtonClose"
 		   x:SetterTargetType="Grid">
 		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
+
+	<!-- DockCompass Styles -->
+	<Style Selector="local|DockCompass:edge-top /template/ #PART_NorthRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+	<Style Selector="local|DockCompass:edge-bottom /template/ #PART_SouthRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+	<Style Selector="local|DockCompass:edge-left /template/ #PART_WestRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+	<Style Selector="local|DockCompass:edge-right /template/ #PART_EastRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
 	</Style>
 
 
@@ -447,13 +473,16 @@
 		</Setter>
 	</Style>
 
-
-
 	<!-- DockCompass -->
 	<Style Selector="local|DockCompass">
 		<Setter Property="Template">
 			<ControlTemplate>
 				<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+					<!-- Modal plane background -->
+					<Border Background="#33000000"
+							IsHitTestVisible="False"/>
+
 					<!-- Bottom layer: large highlight regions -->
 					<Grid>
 						<Grid.RowDefinitions>
@@ -470,12 +499,12 @@
 
 						<Border Name="PART_NorthRegion" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Background="Transparent"/>
 						<Border Name="PART_SouthRegion" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="Transparent"/>
-						<Border Name="PART_WestRegion" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Background="Transparent"/>
-						<Border Name="PART_EastRegion" Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Background="Transparent"/>
+						<Border Name="PART_WestRegion"  Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Background="Transparent"/>
+						<Border Name="PART_EastRegion"  Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Background="Transparent"/>
 					</Grid>
 
 					<!-- Top layer: centered petal grid with hit cells -->
-					<Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Height="200">
+					<Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="150">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
@@ -487,44 +516,104 @@
 							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
 
-						<!-- North cell (hit target + icon) -->
-						<Border Name="PART_NorthCell"
-								Grid.Row="0" Grid.Column="1"
-								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1">
-							<Border Background="#40FFFFFF">
-								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 30 L 100 30 L 100 100 L 20 100 Z"/>
-							</Border>
-						</Border>
-
-						<!-- South cell -->
-						<Border Name="PART_SouthCell"
-								Grid.Row="2" Grid.Column="1"
-								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1">
-							<Border Background="#40FFFFFF">
-								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 100 20 L 100 90 L 20 90 Z"/>
-							</Border>
-						</Border>
-
 						<!-- West cell -->
 						<Border Name="PART_WestCell"
 								Grid.Row="1" Grid.Column="0"
 								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1">
-							<Border Background="#40FFFFFF">
-								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 30 20 L 100 20 L 100 100 L 30 100 Z"/>
-							</Border>
+								BorderThickness="1"
+								CornerRadius="0">
+							<Border.Background>
+								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+									<GradientStop Color="#CCB0B0B0" Offset="0"/>
+									<GradientStop Color="#998B8B8B" Offset="1"/>
+								</LinearGradientBrush>
+							</Border.Background>
+
+							<!-- Optional subtle shadow for depth -->
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="8"
+												  Color="Black"
+												  Opacity="1"/>
+							</Border.Effect>
+
+							<!-- Icon -->
+							<PathIcon Width="24" Height="24"
+									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 30 20 L 100 20 L 100 100 L 30 100 Z"/>
+						</Border>
+
+						<!-- North cell -->
+						<Border Name="PART_NorthCell"
+								Grid.Row="0" Grid.Column="1"
+								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+								BorderThickness="1"
+								CornerRadius="0">
+							<Border.Background>
+								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+									<GradientStop Color="#CCB0B0B0" Offset="0"/>
+									<GradientStop Color="#998B8B8B" Offset="1"/>
+								</LinearGradientBrush>
+							</Border.Background>
+
+							<!-- Optional subtle shadow for depth -->
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="8"
+												  Color="Black"
+												  Opacity="1"/>
+							</Border.Effect>
+
+							<!-- Icon -->
+							<PathIcon Width="24" Height="24"
+									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 30 L 100 30 L 100 100 L 20 100 Z"/>
 						</Border>
 
 						<!-- East cell -->
 						<Border Name="PART_EastCell"
 								Grid.Row="1" Grid.Column="2"
 								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1">
-							<Border Background="#40FFFFFF">
-								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 90 20 L 90 100 L 20 100 Z"/>
-							</Border>
+								BorderThickness="1"
+								CornerRadius="0">
+							<Border.Background>
+								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+									<GradientStop Color="#CCB0B0B0" Offset="0"/>
+									<GradientStop Color="#998B8B8B" Offset="1"/>
+								</LinearGradientBrush>
+							</Border.Background>
+
+							<!-- Optional subtle shadow for depth -->
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="8"
+												  Color="Black"
+												  Opacity="1"/>
+							</Border.Effect>
+
+							<!-- Icon -->
+							<PathIcon Width="24" Height="24"
+									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 90 20 L 90 100 L 20 100 Z"/>
+						</Border>
+
+						<!-- South cell -->
+						<Border Name="PART_SouthCell"
+								Grid.Row="2" Grid.Column="1"
+								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+								BorderThickness="1"
+								CornerRadius="0">
+							<Border.Background>
+								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+									<GradientStop Color="#CCB0B0B0" Offset="0"/>
+									<GradientStop Color="#998B8B8B" Offset="1"/>
+								</LinearGradientBrush>
+							</Border.Background>
+
+							<!-- Optional subtle shadow for depth -->
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="8"
+												  Color="Black"
+												  Opacity="1"/>
+							</Border.Effect>
+
+							<!-- Icon -->
+							<PathIcon Width="24" Height="24"
+									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 100 20 L 100 90 L 20 90 Z"/>
 						</Border>
 
 						<!-- Center (disabled) -->
@@ -534,32 +623,6 @@
 			</ControlTemplate>
 		</Setter>
 	</Style>
-
-	<!-- Top edge highlight -->
-	<Style Selector="local|DockCompass:edge-top /template/ #PART_NorthRegion"
-		   x:SetterTargetType="Border">
-		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
-	</Style>
-
-	<!-- Bottom edge highlight -->
-	<Style Selector="local|DockCompass:edge-bottom /template/ #PART_SouthRegion"
-		   x:SetterTargetType="Border">
-		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
-	</Style>
-
-	<!-- Left edge highlight -->
-	<Style Selector="local|DockCompass:edge-left /template/ #PART_WestRegion"
-		   x:SetterTargetType="Border">
-		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
-	</Style>
-
-	<!-- Right edge highlight -->
-	<Style Selector="local|DockCompass:edge-right /template/ #PART_EastRegion"
-		   x:SetterTargetType="Border">
-		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
-	</Style>
-
-
 
 	<!-- DockControl -->
 	<Style Selector="local|DockControl">
@@ -806,7 +869,7 @@
 
 					</Grid>
 
-					<!-- Drop dropzones -->
+					<!-- Overlay redocker -->
 					<local:DockCompass Name="PART_DockCompass"/>
 
 				</Grid>
@@ -877,6 +940,34 @@
 								</DataTemplate>
 							</TabControl.ContentTemplate>
 						</TabControl>
+					</Border>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- DockControlMissingPanel-->
+		<Setter Property="DockControlMissingPanel">
+			<Setter.Value>
+				<DataTemplate>
+					<Border Padding="16" CornerRadius="4">
+						<StackPanel HorizontalAlignment="Left"
+									VerticalAlignment="Top"
+									Margin="8,8,0,0"
+									Spacing="8">
+
+							<TextBlock Text="Panel not found:" FontWeight="Bold" />
+
+							<TextBlock Text="This DockControl attempted to locate a panel registered with the following descriptor, but none was found."
+									   TextWrapping="Wrap"
+									   FontStyle="Italic"
+									   Margin="16,4,16,0"/>
+
+							<StackPanel Orientation="Horizontal" Spacing="4">
+								<TextBlock Text="Descriptor ID:" FontWeight="SemiBold"/>
+								<SelectableTextBlock Text="{Binding DescriptorId}" />
+							</StackPanel>
+
+						</StackPanel>
 					</Border>
 				</DataTemplate>
 			</Setter.Value>

@@ -46,12 +46,12 @@
 
 			<local:DockControl.DockPanels>
 				<m:DockPanelState
-					ControlId="635bd5e5-3190-4464-92a6-b2d21ee19097"
+					ControlId="f20b9424-0e75-404f-8b54-8138b6d599dc"
 					Header="Toolbox"
 					DockEdge="Left"
 					IsPinned="True"
 					CanClose="false">
-					<TextBlock Text="This is the toolbox" Margin="8"/>
+					<TextBlock Text="This is the toolbox" Margin="8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 				</m:DockPanelState>
 			</local:DockControl.DockPanels>
 
