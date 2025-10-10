@@ -45,22 +45,29 @@
 			DockService="{Binding DockService}">
 
 			<local:DockControl.DockPanels>
-				<m:DockPanelState 
-					ControlId="635bd5e5-3190-4464-92a6-b2d21ee19097" 
-					Header="Toolbox" 
-					DockEdge="Left" 
-					IsPinned="True" 
+				<m:DockPanelState
+					ControlId="635bd5e5-3190-4464-92a6-b2d21ee19097"
+					Header="Toolbox"
+					DockEdge="Left"
+					IsPinned="True"
 					CanClose="false">
 					<TextBlock Text="This is the toolbox" Margin="8"/>
 				</m:DockPanelState>
 			</local:DockControl.DockPanels>
 
-			<Border
-				HorizontalAlignment="Stretch"
-				VerticalAlignment="Stretch"
-				Background="#3E2F3F">
-				<TextBlock Text="Hello World!"/>
-			</Border>
+			<Grid>
+
+				<Border
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"
+					Background="#3E2F3F">
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="Hello World!"/>
+					</StackPanel>
+				</Border>
+
+			</Grid>
+
 		</local:DockControl>
 
 	</Grid>

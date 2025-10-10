@@ -4,13 +4,10 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Threading;
-using Microsoft.VisualBasic;
 using PlugHub.Plugin.DockHost.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Models;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 
 namespace PlugHub.Plugin.DockHost.Controls
 {
@@ -31,9 +28,12 @@ namespace PlugHub.Plugin.DockHost.Controls
             public Thickness ForRight() => new(0, this.Top, this.Right, this.Bottom);
         }
 
+        #region DockControl: Internal Members
+
         private DockHostControlData config;
         private IDockService? dockService;
         private Grid? dropTargetsGrid;
+        private DockCompass? dockCompass;
 
         private Border? leftDropTarget;
         private Border? topDropTarget;
@@ -56,6 +56,8 @@ namespace PlugHub.Plugin.DockHost.Controls
         private ResizablePanel? bottomResizePanel;
 
         private bool isReady = false;
+
+        #endregion
 
         #region DockControl: Control Properties
 
@@ -205,7 +207,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         public static readonly DirectProperty<DockControl, Thickness> LeftGutterMarginsProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(LeftGutterMargins), o => o.LeftGutterMargins, (o, v) => o.LeftGutterMargins = v, new Thickness(0));
-        private Thickness leftGutterMargins = new Thickness(0, 32, 0, 32);
+        private Thickness leftGutterMargins = new(0, 32, 0, 32);
         public Thickness LeftGutterMargins
         {
             get => this.leftGutterMargins;
@@ -214,7 +216,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         public static readonly DirectProperty<DockControl, Thickness> TopGutterMarginsProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(TopGutterMargins), o => o.TopGutterMargins, (o, v) => o.TopGutterMargins = v, new Thickness(0));
-        private Thickness topGutterMargins = new Thickness(0, 0, 0, 0);
+        private Thickness topGutterMargins = new(0, 0, 0, 0);
         public Thickness TopGutterMargins
         {
             get => this.topGutterMargins;
@@ -223,7 +225,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         public static readonly DirectProperty<DockControl, Thickness> RightGutterMarginsProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(RightGutterMargins), o => o.RightGutterMargins, (o, v) => o.RightGutterMargins = v, new Thickness(0));
-        private Thickness rightGutterMargins = new Thickness(0, 0, 0, 0);
+        private Thickness rightGutterMargins = new(0, 0, 0, 0);
         public Thickness RightGutterMargins
         {
             get => this.rightGutterMargins;
@@ -232,7 +234,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         public static readonly DirectProperty<DockControl, Thickness> BottomGutterMarginsProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(BottomGutterMargins), o => o.BottomGutterMargins, (o, v) => o.BottomGutterMargins = v, new Thickness(0));
-        private Thickness bottomGutterMargins = new Thickness(0, 0, 0, 0);
+        private Thickness bottomGutterMargins = new(0, 0, 0, 0);
         public Thickness BottomGutterMargins
         {
             get => this.bottomGutterMargins;
@@ -299,7 +301,6 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-
         public DockControl()
         {
             this.config = this.NewConfig();
@@ -341,6 +342,11 @@ namespace PlugHub.Plugin.DockHost.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
+
+            this.config.ControlID = this.DockId;
+
+            this.dockCompass = e.NameScope.Find<DockCompass>("PART_DockCompass");
+            this.dockCompass?.Hide();
 
             this.SetupGutters(e);
             this.SetupGutterPanels(e);
@@ -568,13 +574,16 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         protected virtual void ProcessBufferedPanels()
         {
-            if (this.isReady == false || this.dockPanels.Count == 0)
+            if (!this.isReady || this.dockPanels.Count == 0)
                 return;
 
-            foreach (DockPanelState state in this.dockPanels)
-                this.AddPanel(state.Normalize(this));
+            for (int i = this.dockPanels.Count - 1; i >= 0; i--)
+            {
+                DockPanelState state = this.dockPanels[i];
 
-            this.dockPanels.Clear();
+                this.AddPanel(state.Normalize(this));
+                this.dockPanels.RemoveAt(i);
+            }
         }
 
         private DockHostControlData NewConfig()
@@ -635,59 +644,28 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockControl: Drag & Drop
 
-        private void SetDropTargetsVisible(bool visible)
-        {
-            if (this.dropTargetsGrid is not null)
-                this.dropTargetsGrid.IsVisible = visible;
-        }
         private void OnDockPanelDragStarted(object? sender, EventArgs e)
         {
-            this.SetDropTargetsVisible(true);
+            this.dockCompass?.Show();
         }
         private void OnDockPanelDragProgressing(object? sender, PanelDragEventArgs e)
         {
-            Point pos = e.PointerEvent.GetPosition(this.dropTargetsGrid);
+            if (this.dockCompass == null) return;
 
-            this.topDropTarget!.Classes.Remove("IsPointerOver");
-            this.leftDropTarget!.Classes.Remove("IsPointerOver");
-            this.rightDropTarget!.Classes.Remove("IsPointerOver");
-            this.bottomDropTarget!.Classes.Remove("IsPointerOver");
+            Point pos = e.PointerEvent.GetPosition(this.dockCompass);
 
-            if (this.topDropTarget.Bounds.Contains(pos))
-            {
-                this.topDropTarget.Classes.Add("IsPointerOver");
-                this.topDropTarget.InvalidateVisual();
-            }
-            else if (this.leftDropTarget.Bounds.Contains(pos))
-            {
-                this.leftDropTarget.Classes.Add("IsPointerOver");
-                this.leftDropTarget.InvalidateVisual();
-            }
-            else if (this.rightDropTarget.Bounds.Contains(pos))
-            {
-                this.rightDropTarget.Classes.Add("IsPointerOver");
-                this.rightDropTarget.InvalidateVisual();
-            }
-            else if (this.bottomDropTarget.Bounds.Contains(pos))
-            {
-                this.bottomDropTarget.Classes.Add("IsPointerOver");
-                this.bottomDropTarget.InvalidateVisual();
-            }
+            this.dockCompass?.UpdatePointer(pos);
         }
         private async void OnDockPanelDragCompleted(object? sender, PanelDragEventArgs e)
         {
-            this.SetDropTargetsVisible(false);
+            if (this.dockCompass == null) return;
 
-            Point pos = e.PointerEvent.GetPosition(this.dropTargetsGrid);
+            Dock? update = this.dockCompass.ActiveEdge;
 
-            if (this.topDropTarget!.Bounds.Contains(pos))
-                await this.MovePanel(e.PanelState, Dock.Top);
-            else if (this.leftDropTarget!.Bounds.Contains(pos))
-                await this.MovePanel(e.PanelState, Dock.Left);
-            else if (this.rightDropTarget!.Bounds.Contains(pos))
-                await this.MovePanel(e.PanelState, Dock.Right);
-            else if (this.bottomDropTarget!.Bounds.Contains(pos))
-                await this.MovePanel(e.PanelState, Dock.Bottom);
+            if (update != null)
+                await this.MovePanel(e.PanelState, (Dock)update);
+
+            this.dockCompass.Hide();
         }
 
         #endregion
@@ -718,7 +696,15 @@ namespace PlugHub.Plugin.DockHost.Controls
                 return;
             }
 
-            this.config?.DockHostDataItems.Add(state.ToConfig());
+            if (this.config != null)
+            {
+                DockHostPanelData? existing = this.config.DockHostDataItems.FirstOrDefault(x => x.ControlID == state.ControlId);
+
+                if (existing == null)
+                    this.config.DockHostDataItems.Add(state.ToConfig());
+                else
+                    state.FromConfig(existing);
+            }
 
             Dispatcher.UIThread.Post(() =>
             {

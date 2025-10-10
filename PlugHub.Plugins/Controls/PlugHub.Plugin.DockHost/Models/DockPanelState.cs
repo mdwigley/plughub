@@ -203,5 +203,40 @@ namespace PlugHub.Plugin.DockHost.Models
                 DockEdge = this.DockEdge
             };
         }
+
+        /// <summary>
+        /// Updates this <see cref="DockPanelState"/> from a persisted
+        /// <see cref="DockHostPanelData"/> DTO.
+        /// </summary>
+        /// <param name="data">The persisted panel data to apply.</param>
+        public virtual void FromConfig(DockHostPanelData data)
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
+            this.ControlId = data.ControlID == Guid.Empty ? this.ControlId : data.ControlID;
+            this.PluginId = data.PluginID;
+            this.DescriptorId = data.DescriptorID;
+            this.DockControlId = data.DockControlID;
+
+            this.IsPinned = data.IsPinned;
+            this.DockEdge = data.DockEdge;
+
+            // Ensure Content is still a DockablePanel bound to this state
+            if (this.Content is DockablePanel dp)
+            {
+                dp.Header = this.Header;
+                dp.DataContext = this;
+            }
+            else
+            {
+                this.Content = new DockablePanel
+                {
+                    Header = this.Header,
+                    Content = this.Content,
+                    DataContext = this,
+                    CanClose = this.CanClose
+                };
+            }
+        }
     }
 }

@@ -79,10 +79,8 @@ namespace PlugHub.Plugin.DockHost.Services
 
             DockControlChanged?.Invoke(this, new DockControlChangedEventArgs(dock.DockId, DockControlChangeType.Registered));
 
-            DockHostControlData? controlData =
-                this.configAccessor.Get()
-                    .DockHostControlDataItems
-                    .FirstOrDefault(d => d.ControlID == dock.DockId);
+            DockHostData data = this.configAccessor.Get();
+            DockHostControlData? controlData = data.DockHostControlDataItems.FirstOrDefault(d => d.ControlID == dock.DockId);
 
             return controlData;
         }

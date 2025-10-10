@@ -99,11 +99,9 @@
 	<Style Selector="Grid.path-button:pointerover">
 		<Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}"/>
 	</Style>
-
 	<Style Selector="Grid.path-button-close:pointerover">
 		<Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
 	</Style>
-
 	<Style Selector="Grid.path-button:pointerover Path,
                  Grid.path-button-close:pointerover Path">
 		<Setter Property="Stroke" Value="{DynamicResource TextFillColorInverseBrush}"/>
@@ -449,6 +447,120 @@
 		</Setter>
 	</Style>
 
+
+
+	<!-- DockCompass -->
+	<Style Selector="local|DockCompass">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+					<!-- Bottom layer: large highlight regions -->
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="1*" />
+							<RowDefinition Height="3*" />
+							<RowDefinition Height="1*" />
+						</Grid.RowDefinitions>
+
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="1*" />
+							<ColumnDefinition Width="3*" />
+							<ColumnDefinition Width="1*" />
+						</Grid.ColumnDefinitions>
+
+						<Border Name="PART_NorthRegion" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Background="Transparent"/>
+						<Border Name="PART_SouthRegion" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="Transparent"/>
+						<Border Name="PART_WestRegion" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Background="Transparent"/>
+						<Border Name="PART_EastRegion" Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Background="Transparent"/>
+					</Grid>
+
+					<!-- Top layer: centered petal grid with hit cells -->
+					<Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Height="200">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+
+						<!-- North cell (hit target + icon) -->
+						<Border Name="PART_NorthCell"
+								Grid.Row="0" Grid.Column="1"
+								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+								BorderThickness="1">
+							<Border Background="#40FFFFFF">
+								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 30 L 100 30 L 100 100 L 20 100 Z"/>
+							</Border>
+						</Border>
+
+						<!-- South cell -->
+						<Border Name="PART_SouthCell"
+								Grid.Row="2" Grid.Column="1"
+								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+								BorderThickness="1">
+							<Border Background="#40FFFFFF">
+								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 100 20 L 100 90 L 20 90 Z"/>
+							</Border>
+						</Border>
+
+						<!-- West cell -->
+						<Border Name="PART_WestCell"
+								Grid.Row="1" Grid.Column="0"
+								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+								BorderThickness="1">
+							<Border Background="#40FFFFFF">
+								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 30 20 L 100 20 L 100 100 L 30 100 Z"/>
+							</Border>
+						</Border>
+
+						<!-- East cell -->
+						<Border Name="PART_EastCell"
+								Grid.Row="1" Grid.Column="2"
+								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+								BorderThickness="1">
+							<Border Background="#40FFFFFF">
+								<PathIcon Width="32" Height="32" Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 90 20 L 90 100 L 20 100 Z"/>
+							</Border>
+						</Border>
+
+						<!-- Center (disabled) -->
+						<Border Grid.Row="1" Grid.Column="1" Background="Transparent" IsHitTestVisible="False"/>
+					</Grid>
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<!-- Top edge highlight -->
+	<Style Selector="local|DockCompass:edge-top /template/ #PART_NorthRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+	</Style>
+
+	<!-- Bottom edge highlight -->
+	<Style Selector="local|DockCompass:edge-bottom /template/ #PART_SouthRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+	</Style>
+
+	<!-- Left edge highlight -->
+	<Style Selector="local|DockCompass:edge-left /template/ #PART_WestRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+	</Style>
+
+	<!-- Right edge highlight -->
+	<Style Selector="local|DockCompass:edge-right /template/ #PART_EastRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+	</Style>
+
+
+
 	<!-- DockControl -->
 	<Style Selector="local|DockControl">
 
@@ -695,9 +807,10 @@
 					</Grid>
 
 					<!-- Drop dropzones -->
-					<Grid Name="PART_DropTargetsGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+					<local:DockCompass Name="PART_DockCompass"/>
 
-						<!-- Left dropzone -->
+					<Grid Name="PART_DropTargetsGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+						<!-- Left dropzone
 						<Border
 							Name="PART_LeftDropTarget"
 							VerticalAlignment="Stretch"
@@ -706,9 +819,8 @@
 							Margin="0,128,0,128"
 							Opacity="0.25"
 							Classes="DropTarget"
-							IsHitTestVisible="True"/>
-
-						<!-- Top dropzone -->
+							IsHitTestVisible="True"/> -->
+						<!-- Top dropzone
 						<Border
 							Name="PART_TopDropTarget"
 							HorizontalAlignment="Stretch"
@@ -717,9 +829,8 @@
 							Margin="128,0,128,0"
 							Opacity="0.25"
 							Classes="DropTarget"
-							IsHitTestVisible="True"/>
-
-						<!-- Right dropzone -->
+							IsHitTestVisible="True"/> -->
+						<!-- Right dropzone 
 						<Border
 							Name="PART_RightDropTarget"
 							VerticalAlignment="Stretch"
@@ -728,9 +839,8 @@
 							Margin="0,128,0,128"
 							Opacity="0.25"
 							Classes="DropTarget"
-							IsHitTestVisible="True"/>
-
-						<!-- Bottom dropzone -->
+							IsHitTestVisible="True"/>-->
+						<!-- Bottom dropzone 
 						<Border
 							Name="PART_BottomDropTarget"
 							HorizontalAlignment="Stretch"
@@ -739,8 +849,7 @@
 							Margin="128,0,128,0"
 							Opacity="0.25"
 							Classes="DropTarget"
-							IsHitTestVisible="True"/>
-
+							IsHitTestVisible="True"/>-->
 					</Grid>
 				</Grid>
 			</ControlTemplate>
