@@ -438,7 +438,6 @@ namespace PlugHub.Plugin.DockHost.Controls
                 e.Handled = true;
             }
 
-            // Reset state
             this.clickPosition = null;
             this.isMoving = false;
             this.pressedRot = null;

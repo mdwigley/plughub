@@ -141,7 +141,6 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             base.OnApplyTemplate(e);
 
-            // Unhook old handlers if template is reapplied
             if (this.buttonPin != null)
                 this.buttonPin.PointerReleased -= this.PathButtonPin_PointerReleased;
             if (this.buttonUnpin != null)
@@ -149,7 +148,6 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (this.buttonClose != null)
                 this.buttonClose.PointerReleased -= this.PathButtonClose_PointerReleased;
 
-            // Find new template parts
             this.buttonPin = e.NameScope.Find<Grid>("PART_ButtonPin");
             this.buttonUnpin = e.NameScope.Find<Grid>("PART_ButtonUnpin");
             this.buttonClose = e.NameScope.Find<Grid>("PART_ButtonClose");

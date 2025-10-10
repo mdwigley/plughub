@@ -28,7 +28,6 @@ namespace PlugHub.Plugin.DockHost.Controls
             public Thickness ForRight() => new(0, this.Top, this.Right, this.Bottom);
         }
 
-        // Register the routed event
         public static readonly RoutedEvent<RoutedEventArgs> DockControlReadyEvent =
             RoutedEvent.Register<DockControl, RoutedEventArgs>(nameof(DockControlReady), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs> DockControlReady
@@ -582,7 +581,6 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (!this.IsConstructed || this.dockPanels.Count == 0)
                 return;
 
-            // Phase 1: rehydrate persisted panels from config
             if (this.IsHydrated == false)
             {
                 if (this.config?.DockHostDataItems != null && this.dockService != null)
@@ -605,7 +603,6 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.IsHydrated = true;
             }
 
-            // Phase 2: drain any buffered states (AXAML or MVVM‑requested)
             for (int i = list.Count - 1; i >= 0; i--)
             {
                 DockPanelState state = list[i];

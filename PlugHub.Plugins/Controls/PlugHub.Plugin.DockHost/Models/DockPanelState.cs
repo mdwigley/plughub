@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Metadata;
 using PlugHub.Plugin.DockHost.Controls;
 using PlugHub.Plugin.DockHost.Interfaces.Controls;
-using PlugHub.Plugin.DockHost.Interfaces.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -174,7 +173,7 @@ namespace PlugHub.Plugin.DockHost.Models
             // Already a DockablePanel with correct DataContext
             if (this.Content is DockablePanel dp && dp.DataContext == this)
             {
-                dp.Header = this.Header; // always sync
+                dp.Header = this.Header;
                 return this;
             }
 
