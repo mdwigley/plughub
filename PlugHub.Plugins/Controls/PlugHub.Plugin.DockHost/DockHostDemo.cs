@@ -7,9 +7,9 @@ using PlugHub.Shared.Models.Plugins;
 
 namespace PlugHub.Plugin.DockHost
 {
-    public class DockHostDemo : PluginBase, IPluginDependencyInjection, IPluginDockPanels, IPluginPages
+    public class DockHostDemo : PluginBase, IPluginDependencyInjection, IPluginPages, IPluginDockPanels
     {
-        #region DockControl: Key Fields
+        #region DockHostDemo: Key Fields
 
         public new static Guid PluginID { get; } = Guid.Parse("b738771e-50a7-4918-98a8-44e8b636441f");
         public new static string IconSource { get; } = "";
@@ -25,7 +25,7 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockControl: Metadata
+        #region DockHostDemo: Metadata
 
         public new static List<string> Tags { get; } =
         [
@@ -42,11 +42,12 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockControl: IPluginDependencyInjector
+        #region DockHostDemo: IPluginDependencyInjector
 
         public IEnumerable<PluginInjectorDescriptor> GetInjectionDescriptors()
         {
             return [
+                /* Interface Pages */
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("d87a0de8-0f62-43fe-970b-a5d6810bbe8f"),
@@ -61,12 +62,70 @@ namespace PlugHub.Plugin.DockHost
                     typeof(DockHostDemoViewModel),
                     typeof(DockHostDemoViewModel)
                 ),
+
+                /* DockHost Panels */
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("eb318b5f-6e8a-4fcf-a6a8-4c0b53a61fbc"),
+                    Version,
+                    typeof(DockHostPanelQuestView),
+                    typeof(DockHostPanelQuestView)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("1133438a-416c-45c4-bc6a-6f6340d72bd4"),
+                    Version,
+                    typeof(DockHostPanelQuestViewModel),
+                    typeof(DockHostPanelQuestViewModel)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("02a51a69-e585-4a4f-bbc6-366e366d6d44"),
+                    Version,
+                    typeof(DockHostPanelCharacterView),
+                    typeof(DockHostPanelCharacterView)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("75c2ec3f-3d9d-4065-9f8a-580084279c4d"),
+                    Version,
+                    typeof(DockHostPanelCharacterViewModel),
+                    typeof(DockHostPanelCharacterViewModel)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("daa2eaa0-c555-48ef-a6a4-60187447b151"),
+                    Version,
+                    typeof(DockHostPanelFactionView),
+                    typeof(DockHostPanelFactionView)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("fa1a6cf7-0573-4ae0-9608-d2e4739e5cae"),
+                    Version,
+                    typeof(DockHostPanelFactionViewModel),
+                    typeof(DockHostPanelFactionViewModel)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("5ffab2f5-8e73-454a-b05e-0a9f9750e835"),
+                    Version,
+                    typeof(DockHostPanelWorldView),
+                    typeof(DockHostPanelWorldView)
+                ),
+                new PluginInjectorDescriptor(
+                    PluginID,
+                    Guid.Parse("75b40e1e-7131-403f-8e79-e428da1980e5"),
+                    Version,
+                    typeof(DockHostPanelWorldViewModel),
+                    typeof(DockHostPanelWorldViewModel)
+                ),
             ];
         }
 
         #endregion
 
-        #region DockControl: IPluginPages
+        #region DockHostDemo: IPluginPages
 
         public IEnumerable<PluginPageDescriptor> GetPageDescriptors()
         {
@@ -84,19 +143,20 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockControl: IPluginDockPanels
+        #region DockHostDemo: IPluginDockPanels
 
         public IEnumerable<DockPanelDescriptor> GetDockPanelDescriptors()
         {
             return
             [
+                /* Dependency Injection */
                 new DockPanelDescriptor(
                     PluginID,
                     Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-111111111111"),
                     Version,
                     "Characters",
-                    null,
-                    Factory: sp => new TextBlock { Text = "Character editor goes here", Margin = new Avalonia.Thickness(8) },
+                    ContentType: typeof(DockHostPanelCharacterView),
+                    ViewModelType: typeof(DockHostPanelCharacterViewModel),
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -104,16 +164,35 @@ namespace PlugHub.Plugin.DockHost
                     Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-222222222222"),
                     Version,
                     "Quests",
-                    null,
-                    Factory: sp => new TextBlock { Text = "Quest log goes here", Margin = new Avalonia.Thickness(8) },
+                    ContentType: typeof(DockHostPanelQuestView),
+                    ViewModelType: typeof(DockHostPanelQuestViewModel),
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
+                new DockPanelDescriptor(
+                    PluginID,
+                    Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-555555555555"),
+                    Version,
+                    "World",
+                    ContentType: typeof(DockHostPanelWorldView),
+                    ViewModelType: typeof(DockHostPanelWorldViewModel),
+                    TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
+                ),
+                new DockPanelDescriptor(
+                    PluginID,
+                    Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-666666666666"),
+                    Version,
+                    "Factions",
+                    ContentType: typeof(DockHostPanelFactionView),
+                    ViewModelType: typeof(DockHostPanelFactionViewModel),
+                    TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
+                ),
+
+                /* Factories */
                 new DockPanelDescriptor(
                     PluginID,
                     Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-333333333333"),
                     Version,
                     "Inventory",
-                    null,
                     Factory: sp => new TextBlock { Text = "Inventory manager goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
@@ -122,26 +201,7 @@ namespace PlugHub.Plugin.DockHost
                     Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-444444444444"),
                     Version,
                     "Skills",
-                    null,
                     Factory: sp => new TextBlock { Text = "Skill tree goes here", Margin = new Avalonia.Thickness(8) },
-                    TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
-                ),
-                new DockPanelDescriptor(
-                    PluginID,
-                    Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-555555555555"),
-                    Version,
-                    "World",
-                    null,
-                    Factory: sp => new TextBlock { Text = "World map goes here", Margin = new Avalonia.Thickness(8) },
-                    TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
-                ),
-                new DockPanelDescriptor(
-                    PluginID,
-                    Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-666666666666"),
-                    Version,
-                    "Factions",
-                    null,
-                    Factory: sp => new TextBlock { Text = "Faction relations go here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
                 new DockPanelDescriptor(
@@ -149,7 +209,6 @@ namespace PlugHub.Plugin.DockHost
                     Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-777777777777"),
                     Version,
                     "Console",
-                    null,
                     Factory: sp => new TextBlock { Text = "Debug console goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 ),
@@ -158,7 +217,6 @@ namespace PlugHub.Plugin.DockHost
                     Guid.Parse("f1a3a5b2-1c2d-4e3f-9a10-888888888888"),
                     Version,
                     "Log",
-                    null,
                     Factory: sp => new TextBlock { Text = "Event log goes here", Margin = new Avalonia.Thickness(8) },
                     TargetedHosts: [Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d")]
                 )

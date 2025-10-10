@@ -8,7 +8,7 @@ namespace PlugHub.Plugin.DockHost
     public class DockHost : PluginBase, IPluginDependencyInjection, IPluginStyleInclusion
     {
 
-        #region DockControl: Key Fields
+        #region DockHost: Key Fields
 
         public new static Guid PluginID { get; } = Guid.Parse("1d0a560e-64f9-4989-b5e2-4fb4ad1a9b38");
         public new static string IconSource { get; } = "";
@@ -23,7 +23,7 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockControl: Metadata
+        #region DockHost: Metadata
 
         public new static List<string> Tags { get; } =
         [
@@ -40,7 +40,7 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockControl: IPluginDependencyInjector
+        #region DockHost: IPluginDependencyInjector
 
         public IEnumerable<PluginInjectorDescriptor> GetInjectionDescriptors()
         {
@@ -57,7 +57,7 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockControl: IPluginStyleInclusion
+        #region DockHost: IPluginStyleInclusion
 
         public IEnumerable<PluginStyleIncludeDescriptor> GetStyleIncludeDescriptors()
         {

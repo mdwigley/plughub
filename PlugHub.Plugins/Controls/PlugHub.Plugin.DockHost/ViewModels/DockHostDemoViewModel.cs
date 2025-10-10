@@ -48,14 +48,13 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         #endregion
 
+        private readonly ILogger<DockHostDemoViewModel> logger;
         private readonly bool firstRun = false;
 
         public ObservableCollection<DockPanelState> DockPanels { get; } = [];
         public ObservableCollection<DockPanelItem> DockPanelItems { get; private set; } = [];
         public Guid DockId { get; set; } = Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d");
         public IDockService DockService { get; set; }
-
-        private readonly ILogger<DockHostDemoViewModel> logger;
 
         public DockHostDemoViewModel(ILogger<DockHostDemoViewModel> logger, IConfigService configService, IDockService dockService)
         {

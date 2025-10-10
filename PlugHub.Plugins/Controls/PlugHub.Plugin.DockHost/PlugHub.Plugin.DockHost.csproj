@@ -23,11 +23,23 @@
 		<Compile Update="Views\DockControlDemoView.axaml.cs">
 			<DependentUpon>DockControlDemoView.axaml</DependentUpon>
 		</Compile>
+		<Compile Update="Views\DockHostPanelCharacterView.axaml.cs">
+			<DependentUpon>DockHostPanelCharacterView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelFactionView.axaml.cs">
+			<DependentUpon>DockHostPanelFactionView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelQuestView.axaml.cs">
+			<DependentUpon>DockHostPanelQuestView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelWorldView.axaml.cs">
+			<DependentUpon>DockHostPanelWorldView.axaml</DependentUpon>
+		</Compile>
 		<AvaloniaResource Include="Themes\Fluent\Generic.axaml" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\PlugHub.Shared\PlugHub.Shared.csproj" />
+		<ProjectReference Include="..\..\..\PlugHub.Shared\PlugHub.Shared.csproj" />
 	</ItemGroup>
 
 </Project>
