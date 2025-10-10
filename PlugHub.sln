@@ -19,13 +19,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Shared.Mock", "Plug
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Plugin.Mock", "PlugHub.Plugins\Diagnostics\PlugHub.Plugin.Mock\PlugHub.Plugin.Mock.csproj", "{A2739173-295A-B7C0-1C90-A92E8BFB8AAA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RPGDesigner", "RPGDesigner", "{CFA41622-B72B-4715-BC63-AFB71118FB4B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{A1CB0A90-5100-4DD4-A68E-11C3B1E8CF5B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Plugin.DockHost", "PlugHub.Plugins\Controls\PlugHub.Plugin.DockHost\PlugHub.Plugin.DockHost.csproj", "{5F898806-6916-40FA-0745-60B0BFD54256}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Plugin.RPGDesigner", "PlugHub.Plugins\RPGDesigner\PlugHub.Plugin.RPGDesigner\PlugHub.Plugin.RPGDesigner.csproj", "{F3C6C572-CFFD-1AB8-9CAF-2AB6839B6A69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
