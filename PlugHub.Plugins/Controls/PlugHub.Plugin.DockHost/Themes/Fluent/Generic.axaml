@@ -809,48 +809,6 @@
 					<!-- Drop dropzones -->
 					<local:DockCompass Name="PART_DockCompass"/>
 
-					<Grid Name="PART_DropTargetsGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-						<!-- Left dropzone
-						<Border
-							Name="PART_LeftDropTarget"
-							VerticalAlignment="Stretch"
-							HorizontalAlignment="Left"
-							Width="32"
-							Margin="0,128,0,128"
-							Opacity="0.25"
-							Classes="DropTarget"
-							IsHitTestVisible="True"/> -->
-						<!-- Top dropzone
-						<Border
-							Name="PART_TopDropTarget"
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Top"
-							Height="32"
-							Margin="128,0,128,0"
-							Opacity="0.25"
-							Classes="DropTarget"
-							IsHitTestVisible="True"/> -->
-						<!-- Right dropzone 
-						<Border
-							Name="PART_RightDropTarget"
-							VerticalAlignment="Stretch"
-							HorizontalAlignment="Right"
-							Width="32"
-							Margin="0,128,0,128"
-							Opacity="0.25"
-							Classes="DropTarget"
-							IsHitTestVisible="True"/>-->
-						<!-- Bottom dropzone 
-						<Border
-							Name="PART_BottomDropTarget"
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Bottom"
-							Height="32"
-							Margin="128,0,128,0"
-							Opacity="0.25"
-							Classes="DropTarget"
-							IsHitTestVisible="True"/>-->
-					</Grid>
 				</Grid>
 			</ControlTemplate>
 		</Setter>
