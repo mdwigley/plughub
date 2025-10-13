@@ -40,7 +40,7 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
-        #region DockHost: IPluginDependencyInjector
+        #region DockHost: IPluginDependencyInjection
 
         public IEnumerable<PluginInjectorDescriptor> GetInjectionDescriptors()
         {
