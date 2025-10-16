@@ -1,5 +1,4 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -18,10 +17,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Shared.Mock", "PlugHub.Plugins\Diagnostics\PlugHub.Shared.Mock\PlugHub.Shared.Mock.csproj", "{05455503-AD30-0FA7-7DF8-BCEC25D1D6DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Plugin.Mock", "PlugHub.Plugins\Diagnostics\PlugHub.Plugin.Mock\PlugHub.Plugin.Mock.csproj", "{A2739173-295A-B7C0-1C90-A92E8BFB8AAA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{A1CB0A90-5100-4DD4-A68E-11C3B1E8CF5B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlugHub.Plugin.DockHost", "PlugHub.Plugins\Controls\PlugHub.Plugin.DockHost\PlugHub.Plugin.DockHost.csproj", "{5F898806-6916-40FA-0745-60B0BFD54256}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +48,6 @@ Global
 		{A2739173-295A-B7C0-1C90-A92E8BFB8AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2739173-295A-B7C0-1C90-A92E8BFB8AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2739173-295A-B7C0-1C90-A92E8BFB8AAA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F898806-6916-40FA-0745-60B0BFD54256}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F898806-6916-40FA-0745-60B0BFD54256}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F898806-6916-40FA-0745-60B0BFD54256}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F898806-6916-40FA-0745-60B0BFD54256}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,8 +56,6 @@ Global
 		{BE98F26E-DC2B-4489-AC67-F846F27E9188} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{05455503-AD30-0FA7-7DF8-BCEC25D1D6DC} = {BE98F26E-DC2B-4489-AC67-F846F27E9188}
 		{A2739173-295A-B7C0-1C90-A92E8BFB8AAA} = {BE98F26E-DC2B-4489-AC67-F846F27E9188}
-		{A1CB0A90-5100-4DD4-A68E-11C3B1E8CF5B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{5F898806-6916-40FA-0745-60B0BFD54256} = {A1CB0A90-5100-4DD4-A68E-11C3B1E8CF5B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83CB65B8-011F-4ED7-BCD3-A6CFA935EF7E}
