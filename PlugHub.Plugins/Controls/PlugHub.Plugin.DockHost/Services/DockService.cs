@@ -13,8 +13,6 @@ using PlugHub.Shared.Models;
 using PlugHub.Shared.Models.Configuration.Parameters;
 using System.Collections.Concurrent;
 
-
-
 namespace PlugHub.Plugin.DockHost.Services
 {
     public class DockService : IDockService
@@ -145,7 +143,7 @@ namespace PlugHub.Plugin.DockHost.Services
 
             this.logger.LogInformation("Registered panel {Header} ({PanelId})", descriptor.Header, descriptor.DescriptorID);
 
-            DockPanelItem item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, this, Guid.Empty);
+            DockPanelItem item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, Guid.Empty);
 
             PanelsChanged?.Invoke(this, new DockPanelChangedEventArgs(item, DockPanelChangeType.Added));
         }
@@ -162,7 +160,7 @@ namespace PlugHub.Plugin.DockHost.Services
             this.descriptors.Remove(descriptor);
             this.logger.LogInformation("Removed panel {Header} ({PanelId})", descriptor.Header, descriptor.DescriptorID);
 
-            DockPanelItem item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, this, Guid.Empty);
+            DockPanelItem item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, Guid.Empty);
 
             PanelsChanged?.Invoke(this, new DockPanelChangedEventArgs(item, DockPanelChangeType.Removed));
         }
@@ -176,11 +174,11 @@ namespace PlugHub.Plugin.DockHost.Services
                 if (descriptor.TargetedHosts != null)
                 {
                     if (descriptor.TargetedHosts.Contains(controlId))
-                        items.Add(new DockPanelItem(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, this, controlId));
+                        items.Add(new DockPanelItem(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, controlId));
                 }
                 else
                 {
-                    items.Add(new DockPanelItem(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, this, controlId));
+                    items.Add(new DockPanelItem(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, controlId));
                 }
             }
 

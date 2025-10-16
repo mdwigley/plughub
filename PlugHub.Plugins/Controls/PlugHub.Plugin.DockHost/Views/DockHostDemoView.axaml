@@ -5,8 +5,7 @@
 			 xmlns:vm="using:PlugHub.Plugin.DockHost.ViewModels"
 			 xmlns:m="using:PlugHub.Plugin.DockHost.Models"
 			 xmlns:local="using:PlugHub.Plugin.DockHost.Controls"
-			 mc:Ignorable="d"
-			 d:DesignWidth="600" d:DesignHeight="400"
+			 mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
 			 x:Class="PlugHub.Plugin.DockHost.Views.DockHostDemoView"
 			 x:DataType="vm:DockHostDemoViewModel">
 
@@ -59,10 +58,9 @@
 
 				<Border
 					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch"
-					Background="#3E2F3F">
+					VerticalAlignment="Stretch">
 					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="Hello World!"/>
+						<TextBlock Text="Main content goes here"/>
 					</StackPanel>
 				</Border>
 

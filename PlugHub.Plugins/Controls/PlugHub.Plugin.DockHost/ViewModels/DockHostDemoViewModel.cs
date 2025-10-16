@@ -34,22 +34,18 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         #region DockHostDemoViewModel: Control IDs
 
-        public static readonly Guid RightPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-444444444444");
-        public static readonly Guid RightPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-555555555555");
-
-        public static readonly Guid TopPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-666666666666");
-        public static readonly Guid TopPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-777777777777");
-
-        public static readonly Guid LeftPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-888888888888");
-        public static readonly Guid LeftPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-999999999999");
-
-        public static readonly Guid BottomPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-aaaaaaaaaaaa");
-        public static readonly Guid BottomPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-bbbbbbbbbbbb");
+        public static readonly Guid RightPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-111111111111");
+        public static readonly Guid RightPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-222222222222");
+        public static readonly Guid TopPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-333333333333");
+        public static readonly Guid TopPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-444444444444");
+        public static readonly Guid LeftPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-555555555555");
+        public static readonly Guid LeftPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-666666666666");
+        public static readonly Guid BottomPanel1ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-777777777777");
+        public static readonly Guid BottomPanel2ControlId = Guid.Parse("a1b2c3d4-1111-2222-3333-888888888888");
 
         #endregion
 
         private readonly ILogger<DockHostDemoViewModel> logger;
-        private readonly bool firstRun = false;
 
         public ObservableCollection<DockPanelState> DockPanels { get; } = [];
         public ObservableCollection<DockPanelItem> DockPanelItems { get; private set; } = [];
@@ -68,9 +64,7 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
             DockHostDemoData data = accessor.Get();
 
-            this.firstRun = data.FirstRun;
-
-            if (this.firstRun == false)
+            if (data.FirstRun == false)
             {
                 data.FirstRun = true;
 
@@ -78,19 +72,16 @@ namespace PlugHub.Plugin.DockHost.ViewModels
             }
 
             dockService.PanelsChanged += (s, e) =>
-            {
                 this.DockPanelItems = [.. dockService.GetPanelItems(this.DockId)];
-            };
+
             dockService.DockControlChanged += (s, e) =>
             {
                 if (e.Control is DockControl control)
-                    if (this.firstRun == false)
+                    if (data.FirstRun == false)
                         this.ApplyDefaultPanels();
             };
-            dockService.DockControlReady += (s, e) =>
-            {
 
-            };
+            dockService.DockControlReady += (s, e) => { };
         }
 
         private void ApplyDefaultPanels()

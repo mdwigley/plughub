@@ -10,19 +10,22 @@ namespace PlugHub.Plugin.DockHost.Models
         public Guid Id { get; }
         public string Header { get; }
         public IImage? Icon { get; }
+
+        public string? Group { get; }
+        public string[]? Tags { get; }
+
         public ICommand Command { get; }
 
         private readonly IDockService service;
         private readonly Guid dockControlId;
 
-        public DockPanelItem(Guid id, string header, IImage? icon, IDockService service, Guid dockControlId)
+        public DockPanelItem(Guid id, string header, IImage? icon, string? group, string[]? tags, IDockService service, Guid dockControlId)
         {
-            ArgumentNullException.ThrowIfNull(nameof(header));
-            ArgumentNullException.ThrowIfNull(nameof(service));
-
             this.Id = id;
             this.Header = header;
             this.Icon = icon;
+            this.Group = group;
+            this.Tags = tags;
             this.service = service;
             this.dockControlId = dockControlId;
 
