@@ -24,7 +24,7 @@ namespace PlugHub.Plugin.DockHost.Services
         private readonly IServiceProvider serviceProvider;
 
         private readonly ConcurrentDictionary<Guid, DockControl> controlsById = new();
-        private readonly ConcurrentDictionary<Guid, List<DockPanelItem>> panelsByControl = new();
+        private readonly ConcurrentDictionary<Guid, List<DockItemEntry>> panelsByControl = new();
 
         public event EventHandler<DockPanelChangedEventArgs>? PanelsChanged;
         public event EventHandler<DockControlChangedEventArgs>? DockControlChanged;
@@ -143,7 +143,7 @@ namespace PlugHub.Plugin.DockHost.Services
 
             this.logger.LogInformation("Registered panel {Header} ({PanelId})", descriptor.Header, descriptor.DescriptorID);
 
-            DockPanelItem item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, Guid.Empty);
+            DockItemEntry item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, Guid.Empty);
 
             PanelsChanged?.Invoke(this, new DockPanelChangedEventArgs(item, DockPanelChangeType.Added));
         }
@@ -160,32 +160,32 @@ namespace PlugHub.Plugin.DockHost.Services
             this.descriptors.Remove(descriptor);
             this.logger.LogInformation("Removed panel {Header} ({PanelId})", descriptor.Header, descriptor.DescriptorID);
 
-            DockPanelItem item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, Guid.Empty);
+            DockItemEntry item = new(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, Guid.Empty);
 
             PanelsChanged?.Invoke(this, new DockPanelChangedEventArgs(item, DockPanelChangeType.Removed));
         }
 
-        public IReadOnlyList<DockPanelItem> GetPanelItems(Guid controlId)
+        public IReadOnlyList<DockItemEntry> GetPanelItems(Guid controlId)
         {
-            List<DockPanelItem> items = [];
+            List<DockItemEntry> items = [];
 
             foreach (DockPanelDescriptor descriptor in this.descriptors)
             {
                 if (descriptor.TargetedHosts != null)
                 {
                     if (descriptor.TargetedHosts.Contains(controlId))
-                        items.Add(new DockPanelItem(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, controlId));
+                        items.Add(new DockItemEntry(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, controlId));
                 }
                 else
                 {
-                    items.Add(new DockPanelItem(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, controlId));
+                    items.Add(new DockItemEntry(descriptor.DescriptorID, descriptor.Header, descriptor.Icon, descriptor.Group, descriptor.Tags, this, controlId));
                 }
             }
 
             return items;
         }
 
-        public DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, bool canClose = true)
+        public DockItemState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, bool canClose = true)
         {
             this.logger.LogInformation("Requesting panel {DescriptorId} for control {ControlId}", descriptorId, dockControlId);
 
@@ -210,7 +210,7 @@ namespace PlugHub.Plugin.DockHost.Services
 
             Control content = this.InstantiatePanelContent(descriptor, targetControl);
 
-            DockPanelState state = new(
+            DockItemState state = new(
                 header: descriptor?.Header ?? "Unavailable",
                 control: content,
                 sortOrder: sortOrder,

@@ -1,0 +1,182 @@
+<ResourceDictionary
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost">
+
+	<DrawingBrush
+		x:Key="CustomGridBrush"
+		TileMode="Tile"
+		Stretch="None"
+		DestinationRect="0,0,4,8">
+
+		<DrawingBrush.Drawing>
+			<DrawingGroup>
+				<!-- Transparent background -->
+				<GeometryDrawing Brush="Transparent">
+					<GeometryDrawing.Geometry>
+						<RectangleGeometry Rect="0,0,4,8" />
+					</GeometryDrawing.Geometry>
+				</GeometryDrawing>
+				<GeometryDrawing Brush="{DynamicResource TextFillColorDisabledBrush}">
+					<GeometryDrawing.Geometry>
+						<GeometryGroup>
+							<RectangleGeometry Rect="1,1,1,1" />
+							<RectangleGeometry Rect="1,3,1,1" />
+							<RectangleGeometry Rect="1,5,1,1" />
+							<RectangleGeometry Rect="1,7,1,1" />
+						</GeometryGroup>
+					</GeometryDrawing.Geometry>
+				</GeometryDrawing>
+				<GeometryDrawing Brush="{DynamicResource TextFillColorDisabledBrush}">
+					<GeometryDrawing.Geometry>
+						<GeometryGroup>
+							<RectangleGeometry Rect="3,2,1,1" />
+							<RectangleGeometry Rect="3,4,1,1" />
+							<RectangleGeometry Rect="3,6,1,1" />
+						</GeometryGroup>
+					</GeometryDrawing.Geometry>
+				</GeometryDrawing>
+			</DrawingGroup>
+		</DrawingBrush.Drawing>
+
+	</DrawingBrush>
+
+	<ControlTheme
+		x:Key="{x:Type dock:DockItem}"
+		TargetType="dock:DockItem">
+
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="BorderBrush" Value="Black"/>
+		<Setter Property="Background" Value="{DynamicResource SystemFillColorSolidNeutralBackgroundBrush}"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border
+						BorderThickness="{TemplateBinding BorderThickness}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						Background="{TemplateBinding Background}"
+						Padding="{TemplateBinding Padding}"
+						Margin="{TemplateBinding Margin}">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="2"/>
+								<RowDefinition Height="16"/>
+								<RowDefinition Height="*"/>
+							</Grid.RowDefinitions>
+
+							<Border
+							  Grid.Row="0"
+							  Background="{DynamicResource AccentFillColorDisabledBrush}"
+							  HorizontalAlignment="Stretch"
+							  VerticalAlignment="Stretch"/>
+
+							<Grid Grid.Row="1">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="24"/>
+								</Grid.RowDefinitions>
+
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+
+								<TextBlock
+									Grid.Row="0" Grid.Column="0"
+									Text="{TemplateBinding Header}"
+									FontSize="16"
+									FontWeight="Light"
+									Margin="4,0,0,0"/>
+
+								<Border
+									Grid.Row="0" Grid.Column="1"
+									Margin="4,0,4,0"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Center"
+									Height="8"
+									Background="{StaticResource CustomGridBrush}"/>
+
+								<StackPanel
+									Grid.Row="0"
+									Grid.Column="2"
+									Orientation="Horizontal"
+									Margin="0,0,8,0"
+									HorizontalAlignment="Right">
+
+									<!-- Pin -->
+									<Grid Name="PART_ButtonPin"
+										  Classes="path-button"
+										  Width="16" Height="16">
+										<!-- Visual -->
+										<Path HorizontalAlignment="Center"
+											  VerticalAlignment="Center"
+											  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+											  StrokeThickness="1"
+											  Data="M6 4H12V9H6ZM0 6H4V7H0ZM4 2H6V11H4Z"/>
+										<!-- Overlay -->
+										<Border Name="PART_ButtonPinOverlay"
+												Background="Transparent"
+												IsHitTestVisible="True"
+												ZIndex="1000"/>
+									</Grid>
+
+									<!-- Unpin -->
+									<Grid Name="PART_ButtonUnpin"
+										  Classes="path-button"
+										  Width="16" Height="16">
+										<!-- Visual -->
+										<Path HorizontalAlignment="Center"
+											  VerticalAlignment="Center"
+											  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+											  StrokeThickness="1"
+											  Data="M4 8V2H9V8Zm2 4V10H7v2ZM2 10V8h9v2Z"/>
+										<!-- Overlay -->
+										<Border Name="PART_ButtonUnpinOverlay"
+												Background="Transparent"
+												IsHitTestVisible="True"
+												ZIndex="1000"/>
+									</Grid>
+
+									<!-- Close -->
+									<Grid Name="PART_ButtonClose"
+										  Classes="path-button-close"
+										  Width="16" Height="16">
+										<!-- Visual -->
+										<Path Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+											  StrokeThickness="4"
+											  Data="M4,4 L12,12 M12,4 L4,12"/>
+										<!-- Overlay -->
+										<Border Name="PART_ButtonCloseOverlay"
+												Background="Transparent"
+												IsHitTestVisible="True"
+												ZIndex="1000"/>
+									</Grid>
+
+								</StackPanel>
+
+								<Border
+									Name="PART_DragHandle"
+									Grid.Row="0"
+									Grid.Column="0"
+									Grid.ColumnSpan="2"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Stretch"
+									Background="Transparent"/>
+							</Grid>
+
+							<ContentPresenter
+								Grid.Row="2"
+								Name="PART_ContentPresenter"
+								Content="{TemplateBinding Content}"/>
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</ControlTheme>
+
+</ResourceDictionary>

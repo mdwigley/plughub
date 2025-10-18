@@ -1,23 +1,30 @@
 <ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls">
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls">
 
 	<!-- ContentDeck Theme -->
-	<ControlTheme x:Key="{x:Type core:ContentDeck}"
-				  TargetType="core:ContentDeck">
+	<ControlTheme
+		x:Key="{x:Type core:ContentDeck}"
+		TargetType="core:ContentDeck">
 
 		<!-- Template -->
 		<Setter Property="Template">
 			<ControlTemplate>
-				<ScrollViewer Name="PART_ContentItemScroller"
-							  HorizontalScrollBarVisibility="Hidden"
-							  VerticalScrollBarVisibility="Hidden"
-							  ClipToBounds="True">
-					<ItemsPresenter Name="PART_ContentItemStrip"
-									DockPanel.Dock="{TemplateBinding DockEdge}"
-									ItemsPanel="{TemplateBinding ItemsPanel}" />
+
+				<ScrollViewer
+					Name="PART_ContentItemScroller"
+					HorizontalScrollBarVisibility="Hidden"
+					VerticalScrollBarVisibility="Hidden"
+					ClipToBounds="True">
+
+					<ItemsPresenter
+						Name="PART_ContentItemStrip"
+						DockPanel.Dock="{TemplateBinding DockEdge}"
+						ItemsPanel="{TemplateBinding ItemsPanel}" />
+
 				</ScrollViewer>
+
 			</ControlTemplate>
 		</Setter>
 
@@ -60,8 +67,7 @@
 								HorizontalAlignment="Center"
 								Margin="0,4,0,4" />
 
-							<Border
-								BorderBrush="{DynamicResource TextFillColorDisabledBrush}" />
+							<Border BorderBrush="{DynamicResource TextFillColorDisabledBrush}" />
 
 							<Border
 								Classes="accent-bar"

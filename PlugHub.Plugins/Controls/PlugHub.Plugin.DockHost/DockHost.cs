@@ -5,7 +5,7 @@ using PlugHub.Shared.Models.Plugins;
 
 namespace PlugHub.Plugin.DockHost
 {
-    public class DockHost : PluginBase, IPluginDependencyInjection, IPluginStyleInclusion
+    public class DockHost : PluginBase, IPluginDependencyInjection, IPluginResourceInclusion, IPluginStyleInclusion
     {
 
         #region DockHost: Key Fields
@@ -57,6 +57,22 @@ namespace PlugHub.Plugin.DockHost
 
         #endregion
 
+        #region DockHost: IPluginResourceInclusion
+
+        public IEnumerable<PluginResourceIncludeDescriptor> GetResourceIncludeDescriptors()
+        {
+            return [
+                new PluginResourceIncludeDescriptor(
+                    PluginID,
+                    Guid.Parse("bc60dfd7-cffd-4fcf-940a-ac4d0bf435f0"),
+                    Version,
+                    "avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Theme.axaml"
+                ),
+            ];
+        }
+
+        #endregion
+
         #region DockHost: IPluginStyleInclusion
 
         public IEnumerable<PluginStyleIncludeDescriptor> GetStyleIncludeDescriptors()
@@ -66,10 +82,12 @@ namespace PlugHub.Plugin.DockHost
                     PluginID,
                     Guid.Parse("58967054-6364-447d-a1bc-a2d307a05ea1"),
                     Version,
-                    "avares://PlugHub.Plugin.DockHost/Themes/Fluent/Generic.axaml"
+                    "avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Style.axaml"
                 )
             ];
         }
+
+
 
         #endregion
     }

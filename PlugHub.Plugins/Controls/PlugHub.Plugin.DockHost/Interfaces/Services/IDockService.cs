@@ -56,12 +56,12 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
     /// </remarks>
     /// <param name="item">The panel item that changed.</param>
     /// <param name="changeType">The type of change that occurred.</param>
-    public sealed class DockPanelChangedEventArgs(DockPanelItem item, DockPanelChangeType changeType) : EventArgs
+    public sealed class DockPanelChangedEventArgs(DockItemEntry item, DockPanelChangeType changeType) : EventArgs
     {
         /// <summary>
         /// Gets the panel item involved in the change.
         /// </summary>
-        public DockPanelItem Item { get; } = item;
+        public DockItemEntry Item { get; } = item;
 
         /// <summary>
         /// Gets the type of change that occurred.
@@ -133,7 +133,7 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
         /// </summary>
         /// <param name="controlId">The identifier of the dock control.</param>
         /// <returns>A read-only list of panel items that can be requested for this control.</returns>
-        public IReadOnlyList<DockPanelItem> GetPanelItems(Guid controlId);
+        public IReadOnlyList<DockItemEntry> GetPanelItems(Guid controlId);
 
         /// <summary>
         /// Registers a dock host control with the service and returns its persisted state,
@@ -173,8 +173,8 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
         /// <param name="edge">The dock edge where the panel should be placed. Defaults to <see cref="Dock.Left"/>.</param>
         /// <param name="pinned">Whether the panel should be pinned when created. Defaults to <c>false</c>.</param>
         /// <param name="canClose">Whether the panel can be closed by the user. Defaults to <c>true</c>.</param>
-        /// <returns>The created <see cref="DockPanelState"/> if the panel was successfully instantiated and added; otherwise <c>null</c>.</returns>
-        DockPanelState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, bool canClose = true);
+        /// <returns>The created <see cref="DockItemState"/> if the panel was successfully instantiated and added; otherwise <c>null</c>.</returns>
+        DockItemState? RequestPanel(Guid controlId, Guid dockControlId, Guid descriptorId, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, bool canClose = true);
 
         /// <summary>
         /// Persists the current layout and state of the specified <see cref="DockControl"/>.

@@ -47,8 +47,8 @@ namespace PlugHub.Plugin.DockHost.ViewModels
 
         private readonly ILogger<DockHostDemoViewModel> logger;
 
-        public ObservableCollection<DockPanelState> DockPanels { get; } = [];
-        public ObservableCollection<DockPanelItem> DockPanelItems { get; private set; } = [];
+        public ObservableCollection<DockItemState> DockPanels { get; } = [];
+        public ObservableCollection<DockItemEntry> DockPanelItems { get; private set; } = [];
         public Guid DockId { get; set; } = Guid.Parse("a878b465-1d57-4b00-9169-eabfa9fe702d");
         public IDockService DockService { get; set; }
 

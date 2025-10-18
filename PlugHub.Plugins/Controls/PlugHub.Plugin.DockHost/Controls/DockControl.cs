@@ -82,10 +82,10 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(DockServiceProperty, value);
         }
 
-        public static readonly DirectProperty<DockControl, IList<DockPanelState>> DockPanelsProperty =
-            AvaloniaProperty.RegisterDirect<DockControl, IList<DockPanelState>>(nameof(DockPanels), o => o.DockPanels, (o, v) => o.DockPanels = v);
-        private IList<DockPanelState> dockPanels = [];
-        public IList<DockPanelState> DockPanels
+        public static readonly DirectProperty<DockControl, IList<DockItemState>> DockPanelsProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, IList<DockItemState>>(nameof(DockPanels), o => o.DockPanels, (o, v) => o.DockPanels = v);
+        private IList<DockItemState> dockPanels = [];
+        public IList<DockItemState> DockPanels
         {
             get => this.dockPanels;
             set => this.SetAndRaise(DockPanelsProperty, ref this.dockPanels, value);
@@ -175,10 +175,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockControl: Pinned Collection Definitions
 
-        public ObservableCollection<DockPanelState> LeftPinned { get; } = [];
-        public ObservableCollection<DockPanelState> RightPinned { get; } = [];
-        public ObservableCollection<DockPanelState> TopPinned { get; } = [];
-        public ObservableCollection<DockPanelState> BottomPinned { get; } = [];
+        public ObservableCollection<DockItemState> LeftPinned { get; } = [];
+        public ObservableCollection<DockItemState> RightPinned { get; } = [];
+        public ObservableCollection<DockItemState> TopPinned { get; } = [];
+        public ObservableCollection<DockItemState> BottomPinned { get; } = [];
 
         #endregion
 
@@ -307,10 +307,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockControl: Unpinned Collection Definitions
 
-        public ObservableCollection<DockPanelState> LeftUnpinned { get; } = [];
-        public ObservableCollection<DockPanelState> RightUnpinned { get; } = [];
-        public ObservableCollection<DockPanelState> TopUnpinned { get; } = [];
-        public ObservableCollection<DockPanelState> BottomUnpinned { get; } = [];
+        public ObservableCollection<DockItemState> LeftUnpinned { get; } = [];
+        public ObservableCollection<DockItemState> RightUnpinned { get; } = [];
+        public ObservableCollection<DockItemState> TopUnpinned { get; } = [];
+        public ObservableCollection<DockItemState> BottomUnpinned { get; } = [];
 
         #endregion
 
@@ -320,7 +320,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             DockPanelsProperty.Changed.AddClassHandler<DockControl>((s, e) =>
             {
-                if (e.NewValue is IList<DockPanelState> list && s.IsConstructed)
+                if (e.NewValue is IList<DockItemState> list && s.IsConstructed)
                     this.ProcessBufferedPanels(list);
             });
 
@@ -577,7 +577,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             }
         }
 
-        protected virtual void ProcessBufferedPanels(IList<DockPanelState> list)
+        protected virtual void ProcessBufferedPanels(IList<DockItemState> list)
         {
             if (!this.IsConstructed || this.dockPanels.Count == 0)
                 return;
@@ -606,7 +606,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             for (int i = list.Count - 1; i >= 0; i--)
             {
-                DockPanelState state = list[i];
+                DockItemState state = list[i];
 
                 DockHostPanelData? persisted = this.config?.DockHostDataItems?
                     .FirstOrDefault(d => d.ControlID == state.ControlId);
@@ -620,13 +620,13 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         protected virtual void NormalizeSlicesBySortOrder()
         {
-            void SortByOrder(ObservableCollection<DockPanelState> collection)
+            void SortByOrder(ObservableCollection<DockItemState> collection)
             {
-                List<DockPanelState> sorted = [.. collection.OrderBy(p => p.SortOrder)];
+                List<DockItemState> sorted = [.. collection.OrderBy(p => p.SortOrder)];
 
                 collection.Clear();
 
-                foreach (DockPanelState? item in sorted)
+                foreach (DockItemState? item in sorted)
                     collection.Add(item);
             }
 
@@ -666,7 +666,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             int order = 0;
 
-            foreach (DockPanelState state in this.CollectDockPanelStates())
+            foreach (DockItemState state in this.CollectDockPanelStates())
             {
                 if (byId.TryGetValue(state.ControlId, out DockHostPanelData? dto))
                 {
@@ -687,17 +687,17 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         private async void OnPanelPinRequested(object? sender, EventArgs e)
         {
-            if (sender is DockablePanel panel && panel.DataContext is DockPanelState state)
+            if (sender is DockItem panel && panel.DataContext is DockItemState state)
                 await this.PinPanel(state, true);
         }
         private async void OnPanelUnpinRequested(object? sender, EventArgs e)
         {
-            if (sender is DockablePanel panel && panel.DataContext is DockPanelState state)
+            if (sender is DockItem panel && panel.DataContext is DockItemState state)
                 await this.PinPanel(state, false);
         }
         private async void OnPanelCloseRequested(object? sender, RoutedEventArgs e)
         {
-            if (sender is DockablePanel panel && panel.DataContext is DockPanelState state)
+            if (sender is DockItem panel && panel.DataContext is DockItemState state)
                 await this.ClosePanel(state);
         }
 
@@ -733,7 +733,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockControl: Panel Upkeep
 
-        public IEnumerable<DockPanelState> CollectDockPanelStates()
+        public IEnumerable<DockItemState> CollectDockPanelStates()
         {
             if (this.IsConstructed == false)
                 return [.. this.dockPanels];
@@ -748,7 +748,7 @@ namespace PlugHub.Plugin.DockHost.Controls
              .. this.TopUnpinned,
              .. this.BottomUnpinned];
         }
-        public void AddPanel(DockPanelState state)
+        public void AddPanel(DockItemState state)
         {
             if (this.IsConstructed == false)
             {
@@ -769,7 +769,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             Dispatcher.UIThread.Post(() =>
             {
-                if (state.Content is DockablePanel panel)
+                if (state.Content is DockItem panel)
                     this.HookPanel(panel);
 
                 this.AddToSlice(state);
@@ -777,11 +777,11 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             }, DispatcherPriority.Render);
         }
-        public async Task MovePanel(DockPanelState state, Dock edge)
+        public async Task MovePanel(DockItemState state, Dock edge)
         {
             if (this.IsConstructed == false)
             {
-                DockPanelState? item = this.dockPanels.FirstOrDefault(x => x.ControlId == state.ControlId);
+                DockItemState? item = this.dockPanels.FirstOrDefault(x => x.ControlId == state.ControlId);
 
                 if (item != null)
                     item.DockEdge = edge;
@@ -808,11 +808,11 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             }, DispatcherPriority.Render);
         }
-        public async Task PinPanel(DockPanelState state, bool pinned)
+        public async Task PinPanel(DockItemState state, bool pinned)
         {
             if (this.IsConstructed == false)
             {
-                DockPanelState? item = this.dockPanels.FirstOrDefault(x => x.ControlId == state.ControlId);
+                DockItemState? item = this.dockPanels.FirstOrDefault(x => x.ControlId == state.ControlId);
 
                 if (item != null)
                     item.IsPinned = pinned;
@@ -839,7 +839,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             }, DispatcherPriority.Render);
         }
-        public async Task ClosePanel(DockPanelState state)
+        public async Task ClosePanel(DockItemState state)
         {
             if (this.IsConstructed == false)
             {
@@ -861,7 +861,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             Dispatcher.UIThread.Post(() =>
             {
-                if (state.Content is DockablePanel panel)
+                if (state.Content is DockItem panel)
                     this.UnhookPanel(panel);
 
                 this.RemoveFromAllSlices(state);
@@ -870,7 +870,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             }, DispatcherPriority.Render);
         }
 
-        private void HookPanel(DockablePanel panel)
+        private void HookPanel(DockItem panel)
         {
             panel.DragStarted -= this.OnDockPanelDragStarted;
             panel.DragStarted += this.OnDockPanelDragStarted;
@@ -881,31 +881,31 @@ namespace PlugHub.Plugin.DockHost.Controls
             panel.DragProgressing -= this.OnDockPanelDragProgressing;
             panel.DragProgressing += this.OnDockPanelDragProgressing;
 
-            panel.RemoveHandler(DockablePanel.PinPanelEvent, this.OnPanelPinRequested);
-            panel.AddHandler(DockablePanel.PinPanelEvent, this.OnPanelPinRequested);
+            panel.RemoveHandler(DockItem.PinPanelEvent, this.OnPanelPinRequested);
+            panel.AddHandler(DockItem.PinPanelEvent, this.OnPanelPinRequested);
 
-            panel.RemoveHandler(DockablePanel.UnpinPanelEvent, this.OnPanelUnpinRequested);
-            panel.AddHandler(DockablePanel.UnpinPanelEvent, this.OnPanelUnpinRequested);
+            panel.RemoveHandler(DockItem.UnpinPanelEvent, this.OnPanelUnpinRequested);
+            panel.AddHandler(DockItem.UnpinPanelEvent, this.OnPanelUnpinRequested);
 
-            panel.RemoveHandler(DockablePanel.ClosePanelEvent, this.OnPanelCloseRequested);
-            panel.AddHandler(DockablePanel.ClosePanelEvent, this.OnPanelCloseRequested);
+            panel.RemoveHandler(DockItem.ClosePanelEvent, this.OnPanelCloseRequested);
+            panel.AddHandler(DockItem.ClosePanelEvent, this.OnPanelCloseRequested);
         }
-        private void UnhookPanel(DockablePanel panel)
+        private void UnhookPanel(DockItem panel)
         {
             panel.DragStarted -= this.OnDockPanelDragStarted;
             panel.DragCompleted -= this.OnDockPanelDragCompleted;
             panel.DragProgressing -= this.OnDockPanelDragProgressing;
 
-            panel.RemoveHandler(DockablePanel.PinPanelEvent, this.OnPanelPinRequested);
-            panel.RemoveHandler(DockablePanel.UnpinPanelEvent, this.OnPanelUnpinRequested);
-            panel.RemoveHandler(DockablePanel.ClosePanelEvent, this.OnPanelCloseRequested);
+            panel.RemoveHandler(DockItem.PinPanelEvent, this.OnPanelPinRequested);
+            panel.RemoveHandler(DockItem.UnpinPanelEvent, this.OnPanelUnpinRequested);
+            panel.RemoveHandler(DockItem.ClosePanelEvent, this.OnPanelCloseRequested);
         }
 
         #endregion
 
         #region DockControl: Slicing
 
-        private ObservableCollection<DockPanelState> GetSlice(Dock edge, bool pinned)
+        private ObservableCollection<DockItemState> GetSlice(Dock edge, bool pinned)
         {
             switch (edge, pinned)
             {
@@ -920,9 +920,9 @@ namespace PlugHub.Plugin.DockHost.Controls
             }
             throw new InvalidOperationException("Unknown edge/pin combination");
         }
-        private void AddToSlice(DockPanelState d)
+        private void AddToSlice(DockItemState d)
         {
-            ObservableCollection<DockPanelState> slice = this.GetSlice(d.DockEdge, d.IsPinned);
+            ObservableCollection<DockItemState> slice = this.GetSlice(d.DockEdge, d.IsPinned);
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -931,7 +931,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             }, DispatcherPriority.Render);
         }
-        private void Reslice(DockPanelState d)
+        private void Reslice(DockItemState d)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -941,7 +941,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             }, DispatcherPriority.Render);
         }
-        private void RemoveFromAllSlices(DockPanelState d)
+        private void RemoveFromAllSlices(DockItemState d)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {

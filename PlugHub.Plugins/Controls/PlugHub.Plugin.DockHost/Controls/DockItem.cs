@@ -8,14 +8,14 @@ using PlugHub.Plugin.DockHost.Utilities;
 
 namespace PlugHub.Plugin.DockHost.Controls
 {
-    public class PanelDragEventArgs(RoutedEvent routedEvent, Interactive source, DockPanelState descriptor, PointerEventArgs eventArgs)
+    public class PanelDragEventArgs(RoutedEvent routedEvent, Interactive source, DockItemState descriptor, PointerEventArgs eventArgs)
         : RoutedEventArgs(routedEvent, source)
     {
-        public DockPanelState PanelState { get; } = descriptor;
+        public DockItemState PanelState { get; } = descriptor;
         public PointerEventArgs PointerEvent { get; } = eventArgs;
     }
 
-    public class DockablePanel : ContentControl
+    public class DockItem : ContentControl
     {
         private Border? dragHandle;
         private Point? dragStart;
@@ -27,7 +27,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         #region DockablePanel: Drag Events
 
         public static readonly RoutedEvent<RoutedEventArgs> DragStartedEvent =
-            RoutedEvent.Register<DockablePanel, RoutedEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
+            RoutedEvent.Register<DockItem, RoutedEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs> DragStarted
         {
             add => this.AddHandler(DragStartedEvent, value);
@@ -35,7 +35,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<PanelDragEventArgs> DragProgressingEvent =
-            RoutedEvent.Register<DockablePanel, PanelDragEventArgs>(nameof(DragProgressing), RoutingStrategies.Bubble);
+            RoutedEvent.Register<DockItem, PanelDragEventArgs>(nameof(DragProgressing), RoutingStrategies.Bubble);
         public event EventHandler<PanelDragEventArgs> DragProgressing
         {
             add => this.AddHandler(DragProgressingEvent, value);
@@ -43,7 +43,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<PanelDragEventArgs> DragCompletedEvent =
-            RoutedEvent.Register<DockablePanel, PanelDragEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
+            RoutedEvent.Register<DockItem, PanelDragEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
         public event EventHandler<PanelDragEventArgs> DragCompleted
         {
             add => this.AddHandler(DragCompletedEvent, value);
@@ -55,7 +55,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         #region DockablePanel: State Mutation Events
 
         public static readonly RoutedEvent<RoutedEventArgs> PinPanelEvent =
-            RoutedEvent.Register<DockablePanel, RoutedEventArgs>(nameof(PinPanel), RoutingStrategies.Bubble);
+            RoutedEvent.Register<DockItem, RoutedEventArgs>(nameof(PinPanel), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs>? PinPanel
         {
             add => this.AddHandler(PinPanelEvent, value);
@@ -63,7 +63,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<RoutedEventArgs> UnpinPanelEvent =
-            RoutedEvent.Register<DockablePanel, RoutedEventArgs>(nameof(UnpinPanel), RoutingStrategies.Bubble);
+            RoutedEvent.Register<DockItem, RoutedEventArgs>(nameof(UnpinPanel), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs>? UnpinPanel
         {
             add => this.AddHandler(UnpinPanelEvent, value);
@@ -71,7 +71,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<RoutedEventArgs> ClosePanelEvent =
-            RoutedEvent.Register<DockablePanel, RoutedEventArgs>(nameof(ClosePanel), RoutingStrategies.Bubble);
+            RoutedEvent.Register<DockItem, RoutedEventArgs>(nameof(ClosePanel), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs>? ClosePanel
         {
             add => this.AddHandler(ClosePanelEvent, value);
@@ -83,7 +83,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         #region DockablePanel: Chrome Properties
 
         public static readonly StyledProperty<string> HeaderProperty =
-            AvaloniaProperty.Register<DockablePanel, string>(nameof(Header), "DockablePanel");
+            AvaloniaProperty.Register<DockItem, string>(nameof(Header), "DockablePanel");
         public string Header
         {
             get => this.GetValue(HeaderProperty);
@@ -91,7 +91,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<bool> IsPinnedProperty =
-            AvaloniaProperty.Register<DockablePanel, bool>(nameof(IsPinned), false);
+            AvaloniaProperty.Register<DockItem, bool>(nameof(IsPinned), false);
         public bool IsPinned
         {
             get => this.GetValue(IsPinnedProperty);
@@ -99,7 +99,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<bool> CanCloseProperty =
-            AvaloniaProperty.Register<DockablePanel, bool>(nameof(CanClose), true);
+            AvaloniaProperty.Register<DockItem, bool>(nameof(CanClose), true);
         public bool CanClose
         {
             get => this.GetValue(CanCloseProperty);
@@ -111,15 +111,15 @@ namespace PlugHub.Plugin.DockHost.Controls
         #region DockablePanel: Docking Properties
 
         public static readonly StyledProperty<double> DragThresholdProperty =
-            AvaloniaProperty.Register<DockablePanel, double>(nameof(DragThreshold), 4d);
+            AvaloniaProperty.Register<DockItem, double>(nameof(DragThreshold), 4d);
         public double DragThreshold
         {
             get => this.GetValue(DragThresholdProperty);
             set => this.SetValue(DragThresholdProperty, value);
         }
 
-        public static readonly DirectProperty<DockablePanel, bool> IsDraggingProperty =
-        AvaloniaProperty.RegisterDirect<DockablePanel, bool>(nameof(IsDragging), o => o.IsDragging, (o, v) => o.IsDragging = v);
+        public static readonly DirectProperty<DockItem, bool> IsDraggingProperty =
+        AvaloniaProperty.RegisterDirect<DockItem, bool>(nameof(IsDragging), o => o.IsDragging, (o, v) => o.IsDragging = v);
         private bool isDragging;
         public bool IsDragging
         {
@@ -129,10 +129,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        public DockablePanel()
+        public DockItem()
         {
-            IsPinnedProperty.Changed.AddClassHandler<DockablePanel>((x, e) => x.OnApplyPseudoClasses(x, e));
-            CanCloseProperty.Changed.AddClassHandler<DockablePanel>((x, e) => x.OnApplyPseudoClasses(x, e));
+            IsPinnedProperty.Changed.AddClassHandler<DockItem>((x, e) => x.OnApplyPseudoClasses(x, e));
+            CanCloseProperty.Changed.AddClassHandler<DockItem>((x, e) => x.OnApplyPseudoClasses(x, e));
         }
 
         #region DockablePanel: Chrome Updates
@@ -170,8 +170,8 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.dragHandle.AddHandler(PointerReleasedEvent, this.DragHandle_PointerReleased, RoutingStrategies.Bubble, handledEventsToo: true);
             }
 
-            this.IsPinned = (this.DataContext as DockPanelState)?.IsPinned ?? false;
-            this.CanClose = (this.DataContext as DockPanelState)?.CanClose ?? false;
+            this.IsPinned = (this.DataContext as DockItemState)?.IsPinned ?? false;
+            this.CanClose = (this.DataContext as DockItemState)?.CanClose ?? false;
 
             this.OnApplyPseudoClasses(this, null);
         }
@@ -216,13 +216,13 @@ namespace PlugHub.Plugin.DockHost.Controls
             }
 
             if (this.IsDragging)
-                if (this.DataContext is DockPanelState state)
+                if (this.DataContext is DockItemState state)
                     this.RaiseEvent(new PanelDragEventArgs(DragProgressingEvent, this, state, e));
 
         }
         protected virtual void DragHandle_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            if (this.DataContext is DockPanelState state)
+            if (this.DataContext is DockItemState state)
                 this.RaiseEvent(new PanelDragEventArgs(DragCompletedEvent, this, state, e));
 
             this.IsDragging = false;

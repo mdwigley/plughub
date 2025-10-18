@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Styling;
 using PlugHub.Shared.Attributes;
 using PlugHub.Shared.Models.Plugins;
 

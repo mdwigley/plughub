@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace PlugHub.Plugin.DockHost.Models
 {
-    public class DockPanelItem
+    public class DockItemEntry
     {
         public Guid Id { get; }
         public string Header { get; }
@@ -19,7 +19,7 @@ namespace PlugHub.Plugin.DockHost.Models
         private readonly IDockService service;
         private readonly Guid dockControlId;
 
-        public DockPanelItem(Guid id, string header, IImage? icon, string? group, string[]? tags, IDockService service, Guid dockControlId)
+        public DockItemEntry(Guid id, string header, IImage? icon, string? group, string[]? tags, IDockService service, Guid dockControlId)
         {
             this.Id = id;
             this.Header = header;

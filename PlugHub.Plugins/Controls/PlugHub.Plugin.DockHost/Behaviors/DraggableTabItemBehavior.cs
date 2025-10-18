@@ -103,16 +103,16 @@ namespace PlugHub.Plugin.DockHost.Behaviors
         }
     }
 
-    public class TabsReorderedEventArgs(DockPanelState item) : EventArgs
+    public class TabsReorderedEventArgs(DockItemState item) : EventArgs
     {
-        public DockPanelState Item { get; } = item;
+        public DockItemState Item { get; } = item;
     }
 
     public class TabReorderBehavior : Behavior<TabControl>
     {
         public event EventHandler<TabsReorderedEventArgs>? TabsReordered;
 
-        private DockPanelState? movedItem;
+        private DockItemState? movedItem;
 
         protected override void OnAttached()
         {
@@ -137,7 +137,7 @@ namespace PlugHub.Plugin.DockHost.Behaviors
 
             object? target = tab.DataContext;
 
-            if (e.Data.Get("tab") is not DockPanelState source || target == null || ReferenceEquals(source, target)) return;
+            if (e.Data.Get("tab") is not DockItemState source || target == null || ReferenceEquals(source, target)) return;
 
             if (this.AssociatedObject?.ItemsSource is not IList items) return;
 

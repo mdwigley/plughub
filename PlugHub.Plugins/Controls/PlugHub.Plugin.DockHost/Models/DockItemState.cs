@@ -13,7 +13,7 @@ namespace PlugHub.Plugin.DockHost.Models
     /// Provides change notifications for data binding and can project itself into
     /// a persistence-friendly <see cref="DockHostPanelData"/> for configuration storage.
     /// </summary>
-    public class DockPanelState : INotifyPropertyChanged, ISwitchable
+    public class DockItemState : INotifyPropertyChanged, ISwitchable
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -136,9 +136,9 @@ namespace PlugHub.Plugin.DockHost.Models
 
         #endregion
 
-        public DockPanelState()
+        public DockItemState()
             : this(header: string.Empty, control: new ContentControl(), sortOrder: 0, edge: Dock.Left, pinned: false, controlId: default, descriptorId: default, pluginId: default, dockControlId: default) { }
-        public DockPanelState(string header, Control control, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, Guid controlId = default, Guid descriptorId = default, Guid pluginId = default, Guid dockControlId = default, bool canClose = true)
+        public DockItemState(string header, Control control, int sortOrder = 0, Dock edge = Dock.Left, bool pinned = false, Guid controlId = default, Guid descriptorId = default, Guid pluginId = default, Guid dockControlId = default, bool canClose = true)
         {
             ArgumentNullException.ThrowIfNull(header);
             ArgumentNullException.ThrowIfNull(control);
@@ -154,7 +154,7 @@ namespace PlugHub.Plugin.DockHost.Models
             this.PluginId = pluginId;
             this.DockControlId = dockControlId;
 
-            this.Content = new DockablePanel
+            this.Content = new DockItem
             {
                 Header = this.Header,
                 Content = control,
@@ -162,7 +162,7 @@ namespace PlugHub.Plugin.DockHost.Models
             };
         }
 
-        public DockPanelState Normalize(DockControl owner)
+        public DockItemState Normalize(DockControl owner)
         {
             // Ensure identity
             if (this.ControlId == Guid.Empty)
@@ -171,14 +171,14 @@ namespace PlugHub.Plugin.DockHost.Models
                 this.DockControlId = owner.DockId;
 
             // Already a DockablePanel with correct DataContext
-            if (this.Content is DockablePanel dp && dp.DataContext == this)
+            if (this.Content is DockItem dp && dp.DataContext == this)
             {
                 dp.Header = this.Header;
                 return this;
             }
 
             // It's a DockablePanel but not wired correctly
-            if (this.Content is DockablePanel raw)
+            if (this.Content is DockItem raw)
             {
                 raw.DataContext = this;
                 raw.Header = this.Header;
@@ -187,7 +187,7 @@ namespace PlugHub.Plugin.DockHost.Models
             }
 
             // Otherwise wrap whatever content was provided
-            this.Content = new DockablePanel
+            this.Content = new DockItem
             {
                 Header = this.Header,
                 Content = this.Content,
@@ -225,7 +225,7 @@ namespace PlugHub.Plugin.DockHost.Models
         }
 
         /// <summary>
-        /// Updates this <see cref="DockPanelState"/> from a persisted
+        /// Updates this <see cref="DockItemState"/> from a persisted
         /// <see cref="DockHostPanelData"/> DTO.
         /// </summary>
         /// <param name="data">The persisted panel data to apply.</param>
@@ -243,14 +243,14 @@ namespace PlugHub.Plugin.DockHost.Models
             this.DockEdge = data.DockEdge;
 
             // Ensure Content is still a DockablePanel bound to this state
-            if (this.Content is DockablePanel dp)
+            if (this.Content is DockItem dp)
             {
                 dp.Header = this.Header;
                 dp.DataContext = this;
             }
             else
             {
-                this.Content = new DockablePanel
+                this.Content = new DockItem
                 {
                     Header = this.Header,
                     Content = this.Content,
