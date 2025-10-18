@@ -3,6 +3,12 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost">
 
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<dock:DockCompass></dock:DockCompass>
+		</Border>
+	</Design.PreviewWith>	
+	
 	<ControlTheme
 		x:Key="{x:Type dock:DockCompass}"
 		TargetType="dock:DockCompass">

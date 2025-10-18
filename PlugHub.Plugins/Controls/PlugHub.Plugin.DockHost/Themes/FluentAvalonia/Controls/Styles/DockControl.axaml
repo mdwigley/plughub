@@ -3,6 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost">
 
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<dock:DockControl>
+				<Border BorderBrush="Black" BorderThickness="3" Padding="100">
+					<TextBlock Text="Main Panel"/>
+				</Border>
+			</dock:DockControl>
+		</Border>
+	</Design.PreviewWith>
+
 	<Style Selector="dock|DockControl TabControl[TabStripPlacement=Bottom] TabItem">
 		<Setter Property="Padding" Value="0"/>
 		<Setter Property="Margin" Value="0"/>
