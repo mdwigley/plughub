@@ -6,13 +6,12 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
-using PlugHub.Plugin.DockHost.Interfaces.Controls;
-using PlugHub.Plugin.DockHost.Models;
+using PlugHub.Plugin.Controls.Interfaces.Controls;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace PlugHub.Plugin.DockHost.Controls
+namespace PlugHub.Plugin.Controls.Controls
 {
     public class ActiveContentChangedEventArgs(RoutedEvent routedEvent, object? oldItem, object? newItem)
         : RoutedEventArgs(routedEvent)
@@ -28,13 +27,13 @@ namespace PlugHub.Plugin.DockHost.Controls
         public int NewIndex { get; } = newIndex;
     }
 
-    public class ContentSwitcher : ItemsControl
+    public class ContentDeck : ItemsControl
     {
         private EventHandler<PointerPressedEventArgs>? defocusHandler;
 
         private Point? clickPosition;
         private bool isMoving;
-        private RotatableContent? pressedRot;
+        private RotationView? pressedRot;
         private ISwitchable? pressedState;
         private ISwitchable? lastTargetState;
         private Rect? lastTargetBounds;
@@ -46,7 +45,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
 
         public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
-            RoutedEvent.Register<ContentSwitcher, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ContentDeck, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs>? Opened
         {
             add => this.AddHandler(OpenedEvent, value);
@@ -54,7 +53,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
-            RoutedEvent.Register<ContentSwitcher, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ContentDeck, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
         public event EventHandler<RoutedEventArgs>? Closed
         {
             add => this.AddHandler(ClosedEvent, value);
@@ -62,7 +61,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<ActiveContentChangedEventArgs> ActiveContentChangedEvent =
-            RoutedEvent.Register<ContentSwitcher, ActiveContentChangedEventArgs>(nameof(ActiveContentChanged), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ContentDeck, ActiveContentChangedEventArgs>(nameof(ActiveContentChanged), RoutingStrategies.Bubble);
         public event EventHandler<ActiveContentChangedEventArgs>? ActiveContentChanged
         {
             add => this.AddHandler(ActiveContentChangedEvent, value);
@@ -70,7 +69,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<ItemsReorderedEventArgs> ItemsReorderedEvent =
-            RoutedEvent.Register<ContentSwitcher, ItemsReorderedEventArgs>(nameof(ItemsReordered), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ContentDeck, ItemsReorderedEventArgs>(nameof(ItemsReordered), RoutingStrategies.Bubble);
         public event EventHandler<ItemsReorderedEventArgs>? ItemsReordered
         {
             add => this.AddHandler(ItemsReorderedEvent, value);
@@ -80,7 +79,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         #region DockGutter: Style Properties
 
         public static readonly StyledProperty<Dock> DockEdgeProperty =
-            AvaloniaProperty.Register<ContentSwitcher, Dock>(nameof(DockEdge), Dock.Left);
+            AvaloniaProperty.Register<ContentDeck, Dock>(nameof(DockEdge), Dock.Left);
         public Dock DockEdge
         {
             get => this.GetValue(DockEdgeProperty);
@@ -88,7 +87,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<IDataTemplate?> ContentItemTemplateProperty =
-            AvaloniaProperty.Register<ContentSwitcher, IDataTemplate?>(nameof(ContentItemTemplate));
+            AvaloniaProperty.Register<ContentDeck, IDataTemplate?>(nameof(ContentItemTemplate));
         public IDataTemplate? ContentItemTemplate
         {
             get => this.GetValue(ContentItemTemplateProperty);
@@ -99,8 +98,8 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #region DockGutter: Direct Properties
 
-        public static readonly DirectProperty<ContentSwitcher, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<ContentSwitcher, bool>(nameof(IsOpen), o => o.IsOpen, (o, v) => o.IsOpen = v);
+        public static readonly DirectProperty<ContentDeck, bool> IsOpenProperty =
+            AvaloniaProperty.RegisterDirect<ContentDeck, bool>(nameof(IsOpen), o => o.IsOpen, (o, v) => o.IsOpen = v);
         private bool isOpen;
         public bool IsOpen
         {
@@ -108,8 +107,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetAndRaise(IsOpenProperty, ref this.isOpen, value);
         }
 
-        public static readonly DirectProperty<ContentSwitcher, bool> HasItemsProperty =
-            AvaloniaProperty.RegisterDirect<ContentSwitcher, bool>(nameof(HasItems), o => o.HasItems);
+        public static readonly DirectProperty<ContentDeck, bool> HasItemsProperty =
+            AvaloniaProperty.RegisterDirect<ContentDeck, bool>(nameof(HasItems), o => o.HasItems);
         private bool hasItems;
         public bool HasItems
         {
@@ -117,8 +116,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(HasItemsProperty, ref this.hasItems, value);
         }
 
-        public static readonly DirectProperty<ContentSwitcher, Orientation> OrientationProperty =
-            AvaloniaProperty.RegisterDirect<ContentSwitcher, Orientation>(nameof(Orientation), o => o.Orientation);
+        public static readonly DirectProperty<ContentDeck, Orientation> OrientationProperty =
+            AvaloniaProperty.RegisterDirect<ContentDeck, Orientation>(nameof(Orientation), o => o.Orientation);
         private Orientation orientation;
         public Orientation Orientation
         {
@@ -126,8 +125,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(OrientationProperty, ref this.orientation, value);
         }
 
-        public static readonly DirectProperty<ContentSwitcher, double> RotationProperty =
-            AvaloniaProperty.RegisterDirect<ContentSwitcher, double>(nameof(Rotation), o => o.Rotation, (o, v) => o.Rotation = v, 0);
+        public static readonly DirectProperty<ContentDeck, double> RotationProperty =
+            AvaloniaProperty.RegisterDirect<ContentDeck, double>(nameof(Rotation), o => o.Rotation, (o, v) => o.Rotation = v, 0);
         private double rotation;
         public double Rotation
         {
@@ -135,8 +134,8 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(RotationProperty, ref this.rotation, value);
         }
 
-        public static readonly DirectProperty<ContentSwitcher, object?> ActiveContentProperty =
-            AvaloniaProperty.RegisterDirect<ContentSwitcher, object?>(nameof(ActiveContent), o => o.ActiveContent, (o, v) => o.ActiveContent = v);
+        public static readonly DirectProperty<ContentDeck, object?> ActiveContentProperty =
+            AvaloniaProperty.RegisterDirect<ContentDeck, object?>(nameof(ActiveContent), o => o.ActiveContent, (o, v) => o.ActiveContent = v);
         private object? activeContent;
         public object? ActiveContent
         {
@@ -146,9 +145,9 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        public ContentSwitcher()
+        public ContentDeck()
         {
-            IsOpenProperty.Changed.AddClassHandler<ContentSwitcher>((x, e) =>
+            IsOpenProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
             {
                 if ((bool)e.NewValue!)
                     x.RaiseEvent(new RoutedEventArgs(OpenedEvent));
@@ -156,14 +155,14 @@ namespace PlugHub.Plugin.DockHost.Controls
                     x.RaiseEvent(new RoutedEventArgs(ClosedEvent));
             });
 
-            ActiveContentProperty.Changed.AddClassHandler<ContentSwitcher>((x, e) =>
+            ActiveContentProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
             {
                 x.RaiseEvent(new ActiveContentChangedEventArgs(ActiveContentChangedEvent, e.OldValue, e.NewValue));
             });
 
-            DockEdgeProperty.Changed.AddClassHandler<ContentSwitcher>((x, e) => x.UpdateOrientation());
+            DockEdgeProperty.Changed.AddClassHandler<ContentDeck>((x, e) => x.UpdateOrientation());
 
-            ItemsSourceProperty.Changed.AddClassHandler<ContentSwitcher>((x, e) =>
+            ItemsSourceProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
             {
                 if (e.OldValue is ObservableCollection<ISwitchable> oldColl)
                     oldColl.CollectionChanged -= x.CollectionChanged;
@@ -191,7 +190,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             ScrollViewer? scroller = e.NameScope.Find<ScrollViewer>("PART_ContentItemScroller");
 
-            scroller?.AddHandler(InputElement.PointerWheelChangedEvent, this.OnPointerWheelChanged, RoutingStrategies.Tunnel);
+            scroller?.AddHandler(PointerWheelChangedEvent, this.OnPointerWheelChanged, RoutingStrategies.Tunnel);
         }
 
         protected virtual void UpdateOrientation()
@@ -217,13 +216,13 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         private void HookClicks()
         {
-            this.RemoveHandler(InputElement.PointerPressedEvent, this.OnItemPressed);
-            this.RemoveHandler(InputElement.PointerMovedEvent, this.OnItemMoved);
-            this.RemoveHandler(InputElement.PointerReleasedEvent, this.OnItemReleased);
+            this.RemoveHandler(PointerPressedEvent, this.OnItemPressed);
+            this.RemoveHandler(PointerMovedEvent, this.OnItemMoved);
+            this.RemoveHandler(PointerReleasedEvent, this.OnItemReleased);
 
-            this.AddHandler(InputElement.PointerPressedEvent, this.OnItemPressed, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-            this.AddHandler(InputElement.PointerMovedEvent, this.OnItemMoved, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-            this.AddHandler(InputElement.PointerReleasedEvent, this.OnItemReleased, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+            this.AddHandler(PointerPressedEvent, this.OnItemPressed, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+            this.AddHandler(PointerMovedEvent, this.OnItemMoved, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+            this.AddHandler(PointerReleasedEvent, this.OnItemReleased, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         }
         private void HookDefocusClose()
         {
@@ -232,7 +231,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (topLevel == null) return;
 
             if (this.top != null && this.defocusHandler != null)
-                this.top.RemoveHandler(InputElement.PointerPressedEvent, this.defocusHandler);
+                this.top.RemoveHandler(PointerPressedEvent, this.defocusHandler);
 
             this.top = topLevel;
 
@@ -248,7 +247,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
                     if (this.ActiveContent is Visual content)
                     {
-                        ResizablePanel? host = content.FindAncestorOfType<ResizablePanel>(includeSelf: true);
+                        ResizeBox? host = content.FindAncestorOfType<ResizeBox>(includeSelf: true);
                         if (host != null && (ReferenceEquals(v, host) || host.IsVisualAncestorOf(v)))
                             return;
                     }
@@ -260,7 +259,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.ClosePanel();
             };
 
-            this.top.AddHandler(InputElement.PointerPressedEvent, this.defocusHandler, RoutingStrategies.Tunnel);
+            this.top.AddHandler(PointerPressedEvent, this.defocusHandler, RoutingStrategies.Tunnel);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -272,7 +271,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             if (this.top != null && this.defocusHandler != null)
-                this.top.RemoveHandler(InputElement.PointerPressedEvent, this.defocusHandler);
+                this.top.RemoveHandler(PointerPressedEvent, this.defocusHandler);
 
             this.defocusHandler = null;
             this.top = null;
@@ -307,7 +306,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             if (e.Source is Visual v)
             {
-                RotatableContent? rot = v.FindAncestorOfType<RotatableContent>(includeSelf: true);
+                RotationView? rot = v.FindAncestorOfType<RotationView>(includeSelf: true);
                 if (rot?.DataContext is ISwitchable d)
                 {
                     this.pressedRot = rot;
@@ -328,7 +327,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             double dy = current.Y - this.clickPosition.Value.Y;
             double distSq = dx * dx + dy * dy;
 
-            bool beyondThreshold = distSq > (4 * 4);
+            bool beyondThreshold = distSq > 4 * 4;
 
             if (!beyondThreshold)
                 return;

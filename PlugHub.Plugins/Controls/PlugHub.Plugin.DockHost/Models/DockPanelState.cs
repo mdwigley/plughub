@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using PlugHub.Plugin.Controls.Interfaces.Controls;
 using PlugHub.Plugin.DockHost.Controls;
-using PlugHub.Plugin.DockHost.Interfaces.Controls;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 

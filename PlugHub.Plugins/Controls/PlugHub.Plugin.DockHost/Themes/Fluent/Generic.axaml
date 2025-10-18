@@ -5,6 +5,7 @@
 		xmlns:i="using:Avalonia.Xaml.Interactivity"
 		xmlns:dnd="using:Avalonia.Xaml.Interactions.Draggable"
 		xmlns:local="clr-namespace:PlugHub.Plugin.DockHost.Controls"
+		xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls"
 		xmlns:behav="clr-namespace:PlugHub.Plugin.DockHost.Behaviors">
 
 	<Styles.Resources>
@@ -46,57 +47,6 @@
 	</Styles.Resources>
 
 	<!-- Custom Styles -->
-
-	<!-- ResizablePanel Styles -->
-	<Style Selector="local|ResizablePanel Thumb">
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate>
-					<Border Background="{TemplateBinding Background}"
-							BorderBrush="{TemplateBinding BorderBrush}"
-							BorderThickness="{TemplateBinding BorderThickness}" />
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-
-
-	<!-- ContentSwitcher Styles -->
-	<Style Selector="local|ContentSwitcher:pointerover:edge-left Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,0,0,4"/>
-	</Style>
-	<Style Selector="local|ContentSwitcher:pointerover:edge-right Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,4,0,0"/>
-	</Style>
-	<Style Selector="local|ContentSwitcher:pointerover:edge-top Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,4,0,0"/>
-	</Style>
-	<Style Selector="local|ContentSwitcher:pointerover:edge-bottom Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,0,0,4"/>
-	</Style>
-
-
-	<!-- ContentSwitcherItem Styles -->
-	<Style Selector="Button.content-item">
-		<Setter Property="Background" Value="Transparent"/>
-		<Setter Property="BorderBrush" Value="Transparent"/>
-		<Setter Property="BorderThickness" Value="0"/>
-	</Style>
-	<Style Selector="Button.content-item:pointerover /template/ ContentPresenter">
-		<Setter Property="Background" Value="Transparent"/>
-	</Style>
-	<Style Selector="Button.content-item .accent-bar" x:SetterTargetType="Border">
-		<Setter Property="Opacity" Value="0"/>
-		<Setter Property="Transitions">
-			<Transitions>
-				<DoubleTransition Property="Opacity" Duration="0:0:0.30"/>
-			</Transitions>
-		</Setter>
-	</Style>
-	<Style Selector="Button.content-item:pointerover .accent-bar" x:SetterTargetType="Border">
-		<Setter Property="Opacity" Value="1"/>
-	</Style>
-
 
 	<!-- DockablePanel Styles -->
 	<Style Selector="Grid.path-button:pointerover">
@@ -227,115 +177,6 @@
 
 
 	<!-- Main Templates -->
-
-	<!-- ResizablePanel -->
-	<Style Selector="local|ResizablePanel">
-		<Setter Property="Background" Value="{DynamicResource LayerFillColorDefaultBrush}"/>
-		<Setter Property="ThumbBrush" Value="{DynamicResource AccentFillColorTertiaryBrush}"/>
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate>
-					<Grid
-						IsVisible="{TemplateBinding IsVisible}"
-						Background="{TemplateBinding Background}">
-						<ContentPresenter
-							Name="PART_ContentPresenter"
-							Content="{TemplateBinding Content}"
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"/>
-						<Thumb
-							Name="PART_ResizeThumb"
-							Background="{TemplateBinding ThumbBrush}"/>
-					</Grid>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-
-	<!-- RotatableContent -->
-	<Style Selector="local|RotatableContent">
-		<Setter Property="Template">
-			<ControlTemplate>
-				<LayoutTransformControl>
-					<LayoutTransformControl.LayoutTransform>
-						<RotateTransform Angle="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}}" />
-					</LayoutTransformControl.LayoutTransform>
-
-					<ContentPresenter
-					  Name="PART_ContentPresenter"
-					  Content="{TemplateBinding Content}"
-					  ContentTemplate="{TemplateBinding ContentTemplate}"
-					  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-					  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-				</LayoutTransformControl>
-			</ControlTemplate>
-		</Setter>
-	</Style>
-
-	<!-- ContentSwitcher -->
-	<Style Selector="local|ContentSwitcher">
-
-		<Setter Property="Template">
-			<ControlTemplate>
-				<ScrollViewer
-					Name="PART_ContentItemScroller"
-					HorizontalScrollBarVisibility="Hidden"
-					VerticalScrollBarVisibility="Hidden"
-					ClipToBounds="True">
-					<ItemsPresenter
-						Name="PART_ContentItemStrip"
-						DockPanel.Dock="{TemplateBinding DockEdge}"
-						ItemsPanel="{TemplateBinding ItemsPanel}"/>
-				</ScrollViewer>
-			</ControlTemplate>
-		</Setter>
-
-		<Setter Property="ItemsPanel">
-			<Setter.Value>
-				<ItemsPanelTemplate>
-					<StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=local:ContentSwitcher}}" />
-				</ItemsPanelTemplate>
-			</Setter.Value>
-		</Setter>
-
-		<Setter Property="ItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<local:RotatableContent
-						Rotation="{Binding Rotation, RelativeSource={RelativeSource AncestorType=local:ContentSwitcher}}"
-						Tag="{Binding}">
-						<ContentPresenter
-							Content="{Binding}"
-							ContentTemplate="{Binding ContentItemTemplate, RelativeSource={RelativeSource AncestorType=local:ContentSwitcher}}" />
-					</local:RotatableContent>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-
-		<!-- ContentItemTemplate -->
-		<Setter Property="ContentItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<Button Classes="content-item" Tag="{Binding}" Padding="0,5,11,6">
-						<Grid>
-							<TextBlock
-								Text="{Binding Header}"
-								FontSize="14"
-								FontWeight="Thin"
-								HorizontalAlignment="Center"
-								Margin="0,4,0,4" />
-							<Border
-								BorderBrush="{DynamicResource TextFillColorDisabledBrush}"/>
-							<Border
-								Classes="accent-bar"
-								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"/>
-						</Grid>
-					</Button>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-
-	</Style>
 
 	<!-- DockablePanel -->
 	<Style Selector="local|DockablePanel">
@@ -634,7 +475,7 @@
 					<DockPanel Name="PART_RootDockPanel">
 
 						<!-- Left Gutter -->
-						<local:ContentSwitcher
+						<core:ContentDeck
 							Name="PART_LeftGutter"
 							DockEdge="Left"
 							DockPanel.Dock="Left"
@@ -643,7 +484,7 @@
 							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<!-- Top Gutter -->
-						<local:ContentSwitcher
+						<core:ContentDeck
 							Name="PART_TopGutter"
 							DockEdge="Top"
 							DockPanel.Dock="Top"
@@ -652,7 +493,7 @@
 							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<!-- Right Gutter -->
-						<local:ContentSwitcher
+						<core:ContentDeck
 							Name="PART_RightGutter"
 							DockEdge="Right"
 							DockPanel.Dock="Right"
@@ -661,7 +502,7 @@
 							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
 
 						<!-- Bottom Gutter -->
-						<local:ContentSwitcher
+						<core:ContentDeck
 							Name="PART_BottomGutter"
 							DockEdge="Bottom"
 							DockPanel.Dock="Bottom"
@@ -796,7 +637,7 @@
 					<Grid Name="PART_OverlayGrid">
 
 						<!-- Left resizer -->
-						<local:ResizablePanel
+						<core:ResizeBox
 							Name="PART_LeftFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Left"
@@ -811,10 +652,10 @@
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
-						</local:ResizablePanel>
+						</core:ResizeBox>
 
 						<!-- Top resizer -->
-						<local:ResizablePanel
+						<core:ResizeBox
 							Name="PART_TopFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Top"
@@ -829,10 +670,10 @@
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
-						</local:ResizablePanel>
+						</core:ResizeBox>
 
 						<!-- Right resizer -->
-						<local:ResizablePanel
+						<core:ResizeBox
 							Name="PART_RightFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Right"
@@ -847,10 +688,10 @@
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
-						</local:ResizablePanel>
+						</core:ResizeBox>
 
 						<!-- Bottom resizer -->
-						<local:ResizablePanel
+						<core:ResizeBox
 							Name="PART_BottomFlyoutPanel"
 							ThumbBrush="{DynamicResource SystemAccentColor}"
 							DockEdge="Bottom"
@@ -865,7 +706,7 @@
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
-						</local:ResizablePanel>
+						</core:ResizeBox>
 
 					</Grid>
 

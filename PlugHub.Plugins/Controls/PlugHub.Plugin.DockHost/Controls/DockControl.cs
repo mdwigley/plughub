@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using PlugHub.Plugin.Controls.Controls;
 using PlugHub.Plugin.DockHost.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Models;
 using System.Collections.ObjectModel;
@@ -42,20 +43,20 @@ namespace PlugHub.Plugin.DockHost.Controls
         private IDockService? dockService;
         private DockCompass? dockCompass;
 
-        private ContentSwitcher? leftGutter;
-        private ContentSwitcher? topGutter;
-        private ContentSwitcher? rightGutter;
-        private ContentSwitcher? bottomGutter;
+        private ContentDeck? leftGutter;
+        private ContentDeck? topGutter;
+        private ContentDeck? rightGutter;
+        private ContentDeck? bottomGutter;
 
         private GridSplitter? leftSplitter;
         private GridSplitter? topSplitter;
         private GridSplitter? rightSplitter;
         private GridSplitter? bottomSplitter;
 
-        private ResizablePanel? leftResizePanel;
-        private ResizablePanel? topResizePanel;
-        private ResizablePanel? rightResizePanel;
-        private ResizablePanel? bottomResizePanel;
+        private ResizeBox? leftResizePanel;
+        private ResizeBox? topResizePanel;
+        private ResizeBox? rightResizePanel;
+        private ResizeBox? bottomResizePanel;
 
         public bool IsConstructed { get; private set; } = false;
         public bool IsHydrated { get; private set; } = false;
@@ -375,12 +376,12 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         protected virtual void SetupGutters(TemplateAppliedEventArgs e)
         {
-            this.leftGutter = e.NameScope.Find<ContentSwitcher>("PART_LeftGutter");
-            this.topGutter = e.NameScope.Find<ContentSwitcher>("PART_TopGutter");
-            this.rightGutter = e.NameScope.Find<ContentSwitcher>("PART_RightGutter");
-            this.bottomGutter = e.NameScope.Find<ContentSwitcher>("PART_BottomGutter");
+            this.leftGutter = e.NameScope.Find<ContentDeck>("PART_LeftGutter");
+            this.topGutter = e.NameScope.Find<ContentDeck>("PART_TopGutter");
+            this.rightGutter = e.NameScope.Find<ContentDeck>("PART_RightGutter");
+            this.bottomGutter = e.NameScope.Find<ContentDeck>("PART_BottomGutter");
 
-            void InitGutter(ContentSwitcher? gutter, IEnumerable<object> items, Dock edge, Func<Rect, double> dimensionSelector, Func<bool, double> hasItemsSelector)
+            void InitGutter(ContentDeck? gutter, IEnumerable<object> items, Dock edge, Func<Rect, double> dimensionSelector, Func<bool, double> hasItemsSelector)
             {
                 if (gutter == null) return;
 
@@ -396,14 +397,14 @@ namespace PlugHub.Plugin.DockHost.Controls
                             this.topGutter?.Bounds.Height ?? 0,
                             this.bottomGutter?.Bounds.Height ?? 0);
 
-                    if (args is AvaloniaPropertyChangedEventArgs hcp && hcp.Property == ContentSwitcher.HasItemsProperty && hcp.NewValue is bool has)
+                    if (args is AvaloniaPropertyChangedEventArgs hcp && hcp.Property == ContentDeck.HasItemsProperty && hcp.NewValue is bool has)
                         this.RecalculateMargins(
                             edge == Dock.Left ? hasItemsSelector(has) : this.leftGutter?.Bounds.Width ?? 0,
                             edge == Dock.Right ? hasItemsSelector(has) : this.rightGutter?.Bounds.Width ?? 0,
                             edge == Dock.Top ? hasItemsSelector(has) : this.topGutter?.Bounds.Height ?? 0,
                             edge == Dock.Bottom ? hasItemsSelector(has) : this.bottomGutter?.Bounds.Height ?? 0);
 
-                    if (args is AvaloniaPropertyChangedEventArgs iep && iep.Property == ContentSwitcher.IsOpenProperty)
+                    if (args is AvaloniaPropertyChangedEventArgs iep && iep.Property == ContentDeck.IsOpenProperty)
                         this.UpdateHasOpenFlyout();
                 };
             }
@@ -415,9 +416,9 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         protected virtual void SetupGutterPanels(TemplateAppliedEventArgs e)
         {
-            ResizablePanel? InitPanel(string partName, double configLength)
+            ResizeBox? InitPanel(string partName, double configLength)
             {
-                ResizablePanel? panel = e.NameScope.Find<ResizablePanel>(partName);
+                ResizeBox? panel = e.NameScope.Find<ResizeBox>(partName);
 
                 if (panel == null) return null;
 
@@ -435,7 +436,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         {
             void OnResizeCompleted(object? sender, EventArgs args)
             {
-                if (sender is not ResizablePanel panel)
+                if (sender is not ResizeBox panel)
                     return;
 
                 if (panel.IsVisible && panel.ActualPanelSize > 0)

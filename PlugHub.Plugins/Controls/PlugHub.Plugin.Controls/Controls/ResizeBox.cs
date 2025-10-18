@@ -2,12 +2,11 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 
-namespace PlugHub.Plugin.DockHost.Controls
+namespace PlugHub.Plugin.Controls.Controls
 {
     public enum ResizeConstraintMode { Parent, Window, Custom }
 
@@ -27,14 +26,14 @@ namespace PlugHub.Plugin.DockHost.Controls
         public Orientation Orientation { get; } = orientation;
     }
 
-    public class ResizablePanel : ContentControl
+    public class ResizeBox : ContentControl
     {
         private Thumb? thumb;
 
-        #region ResizablePanel: Event Properites
+        #region ResizeBox: Event Properites
 
         public static readonly RoutedEvent<ResizeEventArgs> ResizeStartedEvent =
-            RoutedEvent.Register<ResizablePanel, ResizeEventArgs>(nameof(ResizeStarted), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ResizeBox, ResizeEventArgs>(nameof(ResizeStarted), RoutingStrategies.Bubble);
         public event EventHandler<ResizeEventArgs> ResizeStarted
         {
             add => this.AddHandler(ResizeStartedEvent, value);
@@ -42,7 +41,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<ResizeDeltaEventArgs> ResizeDeltaEvent =
-            RoutedEvent.Register<ResizablePanel, ResizeDeltaEventArgs>(nameof(ResizeDelta), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ResizeBox, ResizeDeltaEventArgs>(nameof(ResizeDelta), RoutingStrategies.Bubble);
         public event EventHandler<ResizeDeltaEventArgs> ResizeDelta
         {
             add => this.AddHandler(ResizeDeltaEvent, value);
@@ -50,7 +49,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly RoutedEvent<ResizeEventArgs> ResizeCompletedEvent =
-            RoutedEvent.Register<ResizablePanel, ResizeEventArgs>(nameof(ResizeCompleted), RoutingStrategies.Bubble);
+            RoutedEvent.Register<ResizeBox, ResizeEventArgs>(nameof(ResizeCompleted), RoutingStrategies.Bubble);
         public event EventHandler<ResizeEventArgs> ResizeCompleted
         {
             add => this.AddHandler(ResizeCompletedEvent, value);
@@ -59,10 +58,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region ResizablePanel: Thumb Properties
+        #region ResizeBox: Thumb Properties
 
         public static readonly StyledProperty<double> ThumbThicknessProperty =
-            AvaloniaProperty.Register<ResizablePanel, double>(nameof(ThumbThickness), 4);
+            AvaloniaProperty.Register<ResizeBox, double>(nameof(ThumbThickness), 4);
         public double ThumbThickness
         {
             get => this.GetValue(ThumbThicknessProperty);
@@ -70,7 +69,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<IBrush?> ThumbBrushProperty =
-            AvaloniaProperty.Register<ResizablePanel, IBrush?>(nameof(ThumbBrush));
+            AvaloniaProperty.Register<ResizeBox, IBrush?>(nameof(ThumbBrush));
         public IBrush? ThumbBrush
         {
             get => this.GetValue(ThumbBrushProperty);
@@ -78,7 +77,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<Cursor?> HorizontalResizeCursorProperty =
-            AvaloniaProperty.Register<ResizablePanel, Cursor?>(nameof(HorizontalResizeCursor), new Cursor(StandardCursorType.SizeWestEast));
+            AvaloniaProperty.Register<ResizeBox, Cursor?>(nameof(HorizontalResizeCursor), new Cursor(StandardCursorType.SizeWestEast));
         public Cursor? HorizontalResizeCursor
         {
             get => this.GetValue(HorizontalResizeCursorProperty);
@@ -86,15 +85,15 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<Cursor?> VerticalResizeCursorProperty =
-            AvaloniaProperty.Register<ResizablePanel, Cursor?>(nameof(VerticalResizeCursor), new Cursor(StandardCursorType.SizeNorthSouth));
+            AvaloniaProperty.Register<ResizeBox, Cursor?>(nameof(VerticalResizeCursor), new Cursor(StandardCursorType.SizeNorthSouth));
         public Cursor? VerticalResizeCursor
         {
             get => this.GetValue(VerticalResizeCursorProperty);
             set => this.SetValue(VerticalResizeCursorProperty, value);
         }
 
-        public static readonly DirectProperty<ResizablePanel, bool> IsResizingProperty =
-            AvaloniaProperty.RegisterDirect<ResizablePanel, bool>(nameof(IsResizing), (Func<ResizablePanel, bool>)(o => o.IsResizing));
+        public static readonly DirectProperty<ResizeBox, bool> IsResizingProperty =
+            AvaloniaProperty.RegisterDirect<ResizeBox, bool>(nameof(IsResizing), o => o.IsResizing);
         private bool isResizing;
         public bool IsResizing
         {
@@ -104,18 +103,18 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region ResizablePanel: Placement Properties
+        #region ResizeBox: Placement Properties
 
         public static readonly StyledProperty<Dock> DockEdgeProperty =
-            AvaloniaProperty.Register<ResizablePanel, Dock>(nameof(DockEdge), Dock.Left);
+            AvaloniaProperty.Register<ResizeBox, Dock>(nameof(DockEdge), Dock.Left);
         public Dock DockEdge
         {
             get => this.GetValue(DockEdgeProperty);
             set => this.SetValue(DockEdgeProperty, value);
         }
 
-        public static readonly DirectProperty<ResizablePanel, Orientation> OrientationProperty =
-            AvaloniaProperty.RegisterDirect<ResizablePanel, Orientation>(nameof(Orientation), o => o.Orientation);
+        public static readonly DirectProperty<ResizeBox, Orientation> OrientationProperty =
+            AvaloniaProperty.RegisterDirect<ResizeBox, Orientation>(nameof(Orientation), o => o.Orientation);
         private Orientation orientation;
         public Orientation Orientation
         {
@@ -125,10 +124,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region ResizablePanel: Panel Size Properties
+        #region ResizeBox: Panel Size Properties
 
         public static readonly StyledProperty<double> PanelSizeProperty =
-            AvaloniaProperty.Register<ResizablePanel, double>(nameof(PanelSize), 300);
+            AvaloniaProperty.Register<ResizeBox, double>(nameof(PanelSize), 300);
         public double PanelSize
         {
             get => this.GetValue(PanelSizeProperty);
@@ -136,7 +135,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<double> MinimumSizeProperty =
-            AvaloniaProperty.Register<ResizablePanel, double>(nameof(MinimumSize), 2);
+            AvaloniaProperty.Register<ResizeBox, double>(nameof(MinimumSize), 2);
         public double MinimumSize
         {
             get => this.GetValue(MinimumSizeProperty);
@@ -144,15 +143,15 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<double> MaximumSizeProperty =
-            AvaloniaProperty.Register<ResizablePanel, double>(nameof(MaximumSize), double.NaN);
+            AvaloniaProperty.Register<ResizeBox, double>(nameof(MaximumSize), double.NaN);
         public double MaximumSize
         {
             get => this.GetValue(MaximumSizeProperty);
             set => this.SetValue(MaximumSizeProperty, value);
         }
 
-        public static readonly DirectProperty<ResizablePanel, double> ActualPanelSizeProperty =
-            AvaloniaProperty.RegisterDirect<ResizablePanel, double>(nameof(ResizablePanel.ActualPanelSize), (Func<ResizablePanel, double>)(o => o.ActualPanelSize));
+        public static readonly DirectProperty<ResizeBox, double> ActualPanelSizeProperty =
+            AvaloniaProperty.RegisterDirect<ResizeBox, double>(nameof(ActualPanelSize), o => o.ActualPanelSize);
         private double actualPanelSize;
         public double ActualPanelSize
         {
@@ -162,10 +161,10 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region ResizablePanel: Size Constrtaints Properties
+        #region ResizeBox: Size Constrtaints Properties
 
         public static readonly StyledProperty<ResizeConstraintMode> ConstraintModeProperty =
-            AvaloniaProperty.Register<ResizablePanel, ResizeConstraintMode>(nameof(ConstraintMode), ResizeConstraintMode.Window);
+            AvaloniaProperty.Register<ResizeBox, ResizeConstraintMode>(nameof(ConstraintMode), ResizeConstraintMode.Window);
         public ResizeConstraintMode ConstraintMode
         {
             get => this.GetValue(ConstraintModeProperty);
@@ -173,7 +172,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
 
         public static readonly StyledProperty<Visual?> ConstraintTargetProperty =
-            AvaloniaProperty.Register<ResizablePanel, Visual?>(nameof(ConstraintTarget));
+            AvaloniaProperty.Register<ResizeBox, Visual?>(nameof(ConstraintTarget));
         public Visual? ConstraintTarget
         {
             get => this.GetValue(ConstraintTargetProperty);
@@ -182,21 +181,21 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        public ResizablePanel()
+        public ResizeBox()
         {
-            PanelSizeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyPanelSize());
+            PanelSizeProperty.Changed.AddClassHandler<ResizeBox>((x, e) => x.ApplyPanelSize());
 
-            DockEdgeProperty.Changed.AddClassHandler<ResizablePanel>((x, e) =>
+            DockEdgeProperty.Changed.AddClassHandler<ResizeBox>((x, e) =>
             {
                 x.ApplyPanelSize();
                 x.ApplyThumbStyle();
                 x.ApplyOrientation();
             });
 
-            ThumbThicknessProperty.Changed.AddClassHandler<ResizablePanel>((x, e) => x.ApplyThumbStyle());
+            ThumbThicknessProperty.Changed.AddClassHandler<ResizeBox>((x, e) => x.ApplyThumbStyle());
         }
 
-        #region ResizablePanel: Overrides
+        #region ResizeBox: Overrides
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -236,7 +235,7 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region ResizablePanel: Event Handlers
+        #region ResizeBox: Event Handlers
 
         private void ApplyPanelSize()
         {
@@ -287,7 +286,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         private void ApplyOrientation()
         {
-            this.Orientation = (this.DockEdge == Dock.Left || this.DockEdge == Dock.Right)
+            this.Orientation = this.DockEdge == Dock.Left || this.DockEdge == Dock.Right
                 ? Orientation.Vertical
                 : Orientation.Horizontal;
         }

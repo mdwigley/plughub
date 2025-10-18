@@ -69,56 +69,64 @@ namespace PlugHub.Plugin.DockHost
                     Guid.Parse("eb318b5f-6e8a-4fcf-a6a8-4c0b53a61fbc"),
                     Version,
                     typeof(DockHostPanelQuestView),
-                    typeof(DockHostPanelQuestView)
+                    typeof(DockHostPanelQuestView),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("1133438a-416c-45c4-bc6a-6f6340d72bd4"),
                     Version,
                     typeof(DockHostPanelQuestViewModel),
-                    typeof(DockHostPanelQuestViewModel)
+                    typeof(DockHostPanelQuestViewModel),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("02a51a69-e585-4a4f-bbc6-366e366d6d44"),
                     Version,
                     typeof(DockHostPanelCharacterView),
-                    typeof(DockHostPanelCharacterView)
+                    typeof(DockHostPanelCharacterView),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("75c2ec3f-3d9d-4065-9f8a-580084279c4d"),
                     Version,
                     typeof(DockHostPanelCharacterViewModel),
-                    typeof(DockHostPanelCharacterViewModel)
+                    typeof(DockHostPanelCharacterViewModel),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("daa2eaa0-c555-48ef-a6a4-60187447b151"),
                     Version,
                     typeof(DockHostPanelFactionView),
-                    typeof(DockHostPanelFactionView)
+                    typeof(DockHostPanelFactionView),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("fa1a6cf7-0573-4ae0-9608-d2e4739e5cae"),
                     Version,
                     typeof(DockHostPanelFactionViewModel),
-                    typeof(DockHostPanelFactionViewModel)
+                    typeof(DockHostPanelFactionViewModel),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("5ffab2f5-8e73-454a-b05e-0a9f9750e835"),
                     Version,
                     typeof(DockHostPanelWorldView),
-                    typeof(DockHostPanelWorldView)
+                    typeof(DockHostPanelWorldView),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
                 new PluginInjectorDescriptor(
                     PluginID,
                     Guid.Parse("75b40e1e-7131-403f-8e79-e428da1980e5"),
                     Version,
                     typeof(DockHostPanelWorldViewModel),
-                    typeof(DockHostPanelWorldViewModel)
+                    typeof(DockHostPanelWorldViewModel),
+                    Lifetime: Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
                 ),
             ];
         }

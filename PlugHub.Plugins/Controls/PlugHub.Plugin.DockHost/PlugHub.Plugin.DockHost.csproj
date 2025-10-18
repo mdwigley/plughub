@@ -10,8 +10,6 @@
 	<ItemGroup>
 		<!--Avalonia-->
 		<PackageReference Include="Avalonia" Version="11.3.2" />
-		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.2" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.2" />
 		<!--Avalonia Extras-->
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<!--Avalonia Behaviors-->
@@ -35,11 +33,15 @@
 		<Compile Update="Views\DockHostPanelWorldView.axaml.cs">
 			<DependentUpon>DockHostPanelWorldView.axaml</DependentUpon>
 		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 		<AvaloniaResource Include="Themes\Fluent\Generic.axaml" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\PlugHub.Shared\PlugHub.Shared.csproj" />
+		<ProjectReference Include="..\PlugHub.Plugin.Controls\PlugHub.Plugin.Controls.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -17,7 +17,7 @@ It integrates seamlessly with the PlugHub plugin ecosystem, exposing services, s
 - **Panel descriptors**: Declarative `DockPanelDescriptor`s that register panels (e.g., Characters, Quests, Inventory, Console) with targeted hosts.
 - **Demo implementation**: `DockHostDemo` plugin showcasing how to register panels, pages, and views against the DockHost system.
 - **Drag-drop support**: Behaviors (`DraggableTabItemBehavior`, `TabReorderBehavior`) enabling tab reordering and panel movement.
-- **Content switching**: `ContentSwitcher` control with routed events for opening, closing, active content changes, and item reordering.
+- **Content switching**: `ContentDeck` control with routed events for opening, closing, active content changes, and item reordering.
 - **Style and theming**: Fluent-style resources included via `Generic.axaml` for consistent look and feel.
 - **Extensible architecture**: Designed to be extended with custom panels, services, and themes.
 

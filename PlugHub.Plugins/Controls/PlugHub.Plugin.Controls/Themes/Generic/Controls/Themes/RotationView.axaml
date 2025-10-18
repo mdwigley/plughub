@@ -1,0 +1,29 @@
+<ResourceDictionary
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls">
+
+	<!-- RotationView Theme -->
+	<ControlTheme x:Key="{x:Type core:RotationView}"
+				  TargetType="core:RotationView">
+
+		<Setter Property="Template">
+			<ControlTemplate>
+				<LayoutTransformControl>
+					<LayoutTransformControl.LayoutTransform>
+						<RotateTransform Angle="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}}" />
+					</LayoutTransformControl.LayoutTransform>
+
+					<ContentPresenter
+						Name="PART_ContentPresenter"
+						Content="{TemplateBinding Content}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+						VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+
+				</LayoutTransformControl>
+			</ControlTemplate>
+		</Setter>
+
+	</ControlTheme>
+</ResourceDictionary>
