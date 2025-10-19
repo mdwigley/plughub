@@ -277,14 +277,14 @@ namespace PlugHub
 
             resources.MergedDictionaries.Add(new ResourceInclude(new Uri("avares://PlugHub/"))
             {
-                Source = new Uri("avares://PlugHub/Styles/Generic.axaml")
+                Source = new Uri("avares://PlugHub/Themes/FluentAvalonia/Theme.axaml")
             });
 
             AddPluginResources(resources, logger);
 
             styles.Add(new StyleInclude(new Uri("avares://PlugHub/"))
             {
-                Source = new Uri("avares://PlugHub/Styles/Icons.axaml")
+                Source = new Uri("avares://PlugHub/Themes/FluentAvalonia/Style.axaml")
             });
 
             AddPluginStyles(styles, logger);
@@ -292,7 +292,7 @@ namespace PlugHub
 
         private static void AddPluginResources(IResourceDictionary resources, ILogger<App> logger)
         {
-            IEnumerable<IPluginResourceInclusion>? providers = serviceProvider?.GetServices<IPluginResourceInclusion>();
+            IEnumerable<IPluginResourceInclusion> providers = serviceProvider?.GetServices<IPluginResourceInclusion>() ?? [];
             IPluginResolver? resolver = serviceProvider?.GetRequiredService<IPluginResolver>();
 
             IReadOnlyList<PluginResourceIncludeDescriptor>? descriptors = resolver?.ResolveAndOrder<IPluginResourceInclusion, PluginResourceIncludeDescriptor>(providers);
@@ -344,7 +344,7 @@ namespace PlugHub
             if (Application.Current?.Styles is null)
                 return;
 
-            IEnumerable<IPluginStyleInclusion>? providers = serviceProvider?.GetServices<IPluginStyleInclusion>();
+            IEnumerable<IPluginStyleInclusion> providers = serviceProvider?.GetServices<IPluginStyleInclusion>() ?? [];
             IPluginResolver? resolver = serviceProvider?.GetRequiredService<IPluginResolver>();
 
             IReadOnlyList<PluginStyleIncludeDescriptor>? descriptors = resolver?.ResolveAndOrder<IPluginStyleInclusion, PluginStyleIncludeDescriptor>(providers);
