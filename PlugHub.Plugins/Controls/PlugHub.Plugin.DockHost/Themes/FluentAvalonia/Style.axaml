@@ -1,0 +1,9 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<StyleInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/Styles/DockCompass.axaml" />
+	<StyleInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/Styles/DockControl.axaml" />
+	<StyleInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/Styles/DockItem.axaml" />
+
+</Styles>

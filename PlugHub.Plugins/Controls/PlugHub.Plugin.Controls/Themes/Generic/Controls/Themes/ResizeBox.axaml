@@ -1,0 +1,42 @@
+<ResourceDictionary
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls">
+
+	<!-- ResizeBox Theme -->
+	<ControlTheme x:Key="{x:Type core:ResizeBox}"
+				  TargetType="core:ResizeBox">
+
+		<!-- Default property values -->
+		<Setter Property="Background" Value="{DynamicResource PlugHub.SecondaryBackgroundBrush}" />
+		<Setter Property="ThumbBrush" Value="{DynamicResource PlugHub.AccentFillBrush}" />
+
+		<!-- Control template -->
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid Background="{TemplateBinding Background}">
+					<ContentPresenter Name="PART_ContentPresenter"
+									  Content="{TemplateBinding Content}"
+									  HorizontalAlignment="Stretch"
+									  VerticalAlignment="Stretch" />
+					<Thumb Name="PART_ResizeThumb"
+						   Background="{TemplateBinding ThumbBrush}" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+
+		<!-- Scoped styles for template parts -->
+		<Style Selector="^ /template/ Thumb#PART_ResizeThumb">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Border Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}" />
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+	</ControlTheme>
+</ResourceDictionary>

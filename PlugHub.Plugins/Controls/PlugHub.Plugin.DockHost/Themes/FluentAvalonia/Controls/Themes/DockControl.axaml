@@ -1,0 +1,373 @@
+<ResourceDictionary
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:i="using:Avalonia.Xaml.Interactivity"
+	xmlns:av="using:Avalonia.Controls"
+	xmlns:an="using:Avalonia.Animation"
+	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls"
+	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost"
+	xmlns:behav="clr-namespace:PlugHub.Plugin.DockHost.Behaviors">
+
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<dock:DockControl>
+				<Border BorderBrush="Black" BorderThickness="3" Padding="100">
+					<TextBlock Text="Main Panel"/>
+				</Border>
+			</dock:DockControl>
+		</Border>
+	</Design.PreviewWith>
+
+	<ControlTheme
+		x:Key="{x:Type dock:DockControl}"
+		TargetType="dock:DockControl">
+
+		<Setter Property="Template">
+			<ControlTemplate TargetType="dock:DockControl">
+				<Grid>
+					<!-- Base layout -->
+					<DockPanel Name="PART_RootDockPanel">
+
+						<!-- Left Gutter -->
+						<core:ContentDeck
+							Name="PART_LeftGutter"
+							DockEdge="Left"
+							DockPanel.Dock="Left"
+							VerticalAlignment="Stretch"
+							Margin="{TemplateBinding LeftGutterMargins}"
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
+
+						<!-- Top Gutter -->
+						<core:ContentDeck
+							Name="PART_TopGutter"
+							DockEdge="Top"
+							DockPanel.Dock="Top"
+							HorizontalAlignment="Stretch"
+							Margin="{TemplateBinding TopGutterMargins}"
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
+
+						<!-- Right Gutter -->
+						<core:ContentDeck
+							Name="PART_RightGutter"
+							DockEdge="Right"
+							DockPanel.Dock="Right"
+							VerticalAlignment="Stretch"
+							Margin="{TemplateBinding RightGutterMargins}"
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
+
+						<!-- Bottom Gutter -->
+						<core:ContentDeck
+							Name="PART_BottomGutter"
+							DockEdge="Bottom"
+							DockPanel.Dock="Bottom"
+							HorizontalAlignment="Stretch"
+							Margin="{TemplateBinding BottomGutterMargins}"
+							IsVisible="{Binding HasItems, RelativeSource={RelativeSource Self}}"/>
+
+						<Grid Name="PART_RootGrid">
+
+							<Grid.RowDefinitions>
+								<RowDefinition Height="{TemplateBinding TopPanelLength}"/>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition Height="{TemplateBinding BottomPanelLength}"/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="{TemplateBinding LeftPanelLength}"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="{TemplateBinding RightPanelLength}"/>
+							</Grid.ColumnDefinitions>
+
+							<!-- Top pinned -->
+							<Border
+								Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								ClipToBounds="True"
+								IsVisible="{TemplateBinding HasTopContent}">
+
+								<ContentPresenter
+									Name="PART_TopPinnedPresenter"
+									Content="{Binding TopPinned, RelativeSource={RelativeSource TemplatedParent}}"
+									ContentTemplate="{TemplateBinding DockControlTopTabControl}" />
+							</Border>
+
+							<!-- Top splitter -->
+							<GridSplitter
+								Name="PART_TopGridSplitter"
+								Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5"
+								Height="4"
+								Background="Transparent"
+								HorizontalAlignment="Stretch"
+								ResizeDirection="Rows"
+								IsVisible="{TemplateBinding HasTopContent}"/>
+
+							<!-- Left pinned -->
+							<Border
+								Grid.Row="2" Grid.Column="0"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								ClipToBounds="True"
+								IsVisible="{TemplateBinding HasLeftContent}">
+
+								<ContentPresenter
+									Name="PART_LeftPinnedPresenter"
+									Content="{Binding LeftPinned, RelativeSource={RelativeSource TemplatedParent}}"
+									ContentTemplate="{TemplateBinding DockControlBottomTabControl}" />
+							</Border>
+
+							<!-- Left splitter -->
+							<GridSplitter
+								Grid.Row="2" Grid.Column="1"
+								Name="PART_LeftGridSplitter"
+								Width="4"
+								Background="Transparent"
+								VerticalAlignment="Stretch"
+								ResizeDirection="Columns"
+								IsVisible="{TemplateBinding HasLeftContent}"/>
+
+							<!-- Main content -->
+							<ContentPresenter
+								Grid.Row="2" Grid.Column="2"
+								Content="{TemplateBinding Content}"
+								ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+							<!-- Right splitter -->
+							<GridSplitter
+								Grid.Row="2" Grid.Column="3"
+								Name="PART_RightGridSplitter"
+								Width="4"
+								Background="Transparent"
+								VerticalAlignment="Stretch"
+								ResizeDirection="Columns"
+								IsVisible="{TemplateBinding HasRightContent}"/>
+
+							<!-- Right pinned -->
+							<Border
+								Grid.Row="2" Grid.Column="4"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								ClipToBounds="True"
+								IsVisible="{TemplateBinding HasRightContent}">
+
+								<ContentPresenter
+									Name="PART_RightPinnedPresenter"
+									Content="{Binding RightPinned, RelativeSource={RelativeSource TemplatedParent}}"
+									ContentTemplate="{TemplateBinding DockControlBottomTabControl}" />
+							</Border>
+
+							<!-- Bottom splitter -->
+							<GridSplitter Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5"
+										  Name="PART_BottomGridSplitter"
+										  Height="4"
+										  Background="Transparent"
+										  HorizontalAlignment="Stretch"
+										  ResizeDirection="Rows"
+										  IsVisible="{TemplateBinding HasBottomContent}"/>
+
+							<!-- Bottom pinned -->
+							<Border
+								Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="5"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								ClipToBounds="True"
+								IsVisible="{TemplateBinding HasBottomContent}"
+								Classes="TopTabs">
+
+								<ContentPresenter
+									Name="PART_BottomPinnedPresenter"
+									Content="{Binding BottomPinned, RelativeSource={RelativeSource TemplatedParent}}"
+									ContentTemplate="{TemplateBinding DockControlBottomTabControl}"/>
+							</Border>
+
+						</Grid>
+
+					</DockPanel>
+
+					<!-- Overlay resizers -->
+					<Grid Name="PART_OverlayGrid">
+
+						<!-- Left resizer -->
+						<core:ResizeBox
+							Name="PART_LeftFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
+							DockEdge="Left"
+							IsVisible="{Binding IsOpen, ElementName=PART_LeftGutter}"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Stretch"
+							Margin="{TemplateBinding LeftFlyoutMargin}">
+							<av:TransitioningContentControl
+								IsTransitionReversed="True"
+								Content="{Binding ActiveContent, ElementName=PART_LeftGutter}">
+								<av:TransitioningContentControl.PageTransition>
+									<an:CompositePageTransition/>
+								</av:TransitioningContentControl.PageTransition>
+							</av:TransitioningContentControl>
+						</core:ResizeBox>
+
+						<!-- Top resizer -->
+						<core:ResizeBox
+							Name="PART_TopFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
+							DockEdge="Top"
+							IsVisible="{Binding IsOpen, ElementName=PART_TopGutter}"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Margin="{TemplateBinding TopFlyoutMargin}">
+							<av:TransitioningContentControl
+								IsTransitionReversed="True"
+								Content="{Binding ActiveContent, ElementName=PART_TopGutter}">
+								<av:TransitioningContentControl.PageTransition>
+									<an:CompositePageTransition/>
+								</av:TransitioningContentControl.PageTransition>
+							</av:TransitioningContentControl>
+						</core:ResizeBox>
+
+						<!-- Right resizer -->
+						<core:ResizeBox
+							Name="PART_RightFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
+							DockEdge="Right"
+							IsVisible="{Binding IsOpen, ElementName=PART_RightGutter}"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Stretch"
+							Margin="{TemplateBinding RightFlyoutMargin}">
+							<av:TransitioningContentControl
+								IsTransitionReversed="False"
+								Content="{Binding ActiveContent, ElementName=PART_RightGutter}">
+								<av:TransitioningContentControl.PageTransition>
+									<an:CompositePageTransition/>
+								</av:TransitioningContentControl.PageTransition>
+							</av:TransitioningContentControl>
+						</core:ResizeBox>
+
+						<!-- Bottom resizer -->
+						<core:ResizeBox
+							Name="PART_BottomFlyoutPanel"
+							ThumbBrush="{DynamicResource SystemAccentColor}"
+							DockEdge="Bottom"
+							IsVisible="{Binding IsOpen, ElementName=PART_BottomGutter}"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Bottom"
+							Margin="{TemplateBinding BottomFlyoutMargin}">
+							<av:TransitioningContentControl
+								IsTransitionReversed="False"
+								Content="{Binding ActiveContent, ElementName=PART_BottomGutter}">
+								<av:TransitioningContentControl.PageTransition>
+									<an:CompositePageTransition/>
+								</av:TransitioningContentControl.PageTransition>
+							</av:TransitioningContentControl>
+						</core:ResizeBox>
+
+					</Grid>
+
+					<!-- Overlay redocker -->
+					<dock:DockCompass Name="PART_DockCompass"/>
+
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+
+		<!-- DockControlBottomTabControl -->
+		<Setter Property="DockControlBottomTabControl">
+			<Setter.Value>
+				<DataTemplate>
+					<Border Name="BottomTabBorder" Padding="0" Margin="0,0,0,4">
+						<TabControl
+							Classes=""
+							ItemsSource="{Binding}"
+							ClipToBounds="True"
+							TabStripPlacement="Bottom"
+							Padding="0"
+							Margin="0">
+
+							<i:Interaction.Behaviors>
+								<behav:TabReorderBehavior/>
+								<behav:AttachDraggableTabsBehavior/>
+							</i:Interaction.Behaviors>
+
+							<TabControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Header}" FontSize="14"/>
+								</DataTemplate>
+							</TabControl.ItemTemplate>
+
+							<TabControl.ContentTemplate>
+								<DataTemplate>
+									<ContentControl Content="{Binding Content}" />
+								</DataTemplate>
+							</TabControl.ContentTemplate>
+						</TabControl>
+					</Border>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- DockControlTopTabControl -->
+		<Setter Property="DockControlTopTabControl">
+			<Setter.Value>
+				<DataTemplate>
+					<Border Name="TopTabBorder" Padding="0" Margin="0">
+						<TabControl
+							ItemsSource="{Binding}"
+							ClipToBounds="True"
+							TabStripPlacement="Top"
+							Padding="0"
+							Margin="0">
+
+							<i:Interaction.Behaviors>
+								<behav:TabReorderBehavior/>
+								<behav:AttachDraggableTabsBehavior/>
+							</i:Interaction.Behaviors>
+
+							<TabControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Header}" FontSize="14"/>
+								</DataTemplate>
+							</TabControl.ItemTemplate>
+
+							<TabControl.ContentTemplate>
+								<DataTemplate>
+									<ContentControl Content="{Binding Content}" />
+								</DataTemplate>
+							</TabControl.ContentTemplate>
+						</TabControl>
+					</Border>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- DockControlMissingPanel-->
+		<Setter Property="DockControlMissingPanel">
+			<Setter.Value>
+				<DataTemplate>
+					<Border Padding="16" CornerRadius="4">
+						<StackPanel HorizontalAlignment="Left"
+									VerticalAlignment="Top"
+									Margin="8,8,0,0"
+									Spacing="8">
+
+							<TextBlock Text="Panel not found:" FontWeight="Bold" />
+
+							<TextBlock Text="This DockControl attempted to locate a panel registered with the following descriptor, but none was found."
+									   TextWrapping="Wrap"
+									   FontStyle="Italic"
+									   Margin="16,4,16,0"/>
+
+							<StackPanel Orientation="Horizontal" Spacing="4">
+								<TextBlock Text="Descriptor ID:" FontWeight="SemiBold"/>
+								<SelectableTextBlock Text="{Binding DescriptorId}" />
+							</StackPanel>
+
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+	</ControlTheme>
+
+</ResourceDictionary>

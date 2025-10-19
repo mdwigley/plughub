@@ -1,0 +1,85 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost">
+
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<dock:DockControl>
+				<Border BorderBrush="Black" BorderThickness="3" Padding="100">
+					<TextBlock Text="Main Panel"/>
+				</Border>
+			</dock:DockControl>
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="dock|DockControl TabControl[TabStripPlacement=Bottom] TabItem">
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+	</Style>
+
+	<Style Selector="dock|DockControl TabControl[TabStripPlacement=Bottom] TabItem:selected /template/ #PART_SelectedPipe" x:SetterTargetType="Rectangle">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="dock|DockControl TabControl[TabStripPlacement=Bottom] /template/ ItemsPresenter#PART_ItemsPresenter" x:SetterTargetType="ItemsPresenter">
+		<Setter Property="MaxHeight" Value="24"/>
+	</Style>
+
+	<Style Selector="dock|DockControl TabControl[TabStripPlacement=Bottom] TabItem">
+		<Setter Property="MinHeight" Value="24"/>
+		<Setter Property="MinWidth" Value="64"/>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border Name="HeaderBorder"
+						BorderBrush="Transparent"
+						BorderThickness="0"
+						Background="Transparent"
+						Padding="4,0"
+						Margin="0"
+						VerticalAlignment="Center">
+					<ContentPresenter
+						Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"
+						ContentTemplate="{TemplateBinding HeaderTemplate}"
+						VerticalAlignment="Center"
+						HorizontalAlignment="Center"/>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<Style Selector="dock|DockControl TabControl[TabStripPlacement=Top] TabItem">
+		<Setter Property="MinHeight" Value="24"/>
+		<Setter Property="MinWidth" Value="64"/>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border Name="HeaderBorder"
+						BorderBrush="Transparent"
+						BorderThickness="0"
+						Background="Transparent"
+						Padding="4,0"
+						Margin="0"
+						VerticalAlignment="Center">
+					<ContentPresenter
+						Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"
+						ContentTemplate="{TemplateBinding HeaderTemplate}"
+						VerticalAlignment="Center"
+						HorizontalAlignment="Center"/>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<Style Selector="dock|DockControl TabControl TabItem:selected /template/ Border#HeaderBorder">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}"/>
+		<Setter Property="BorderBrush" Value="Black"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="Margin" Value="0"/>
+	</Style>
+
+	<Style Selector="dock|DockControl /template/ #PART_DropTargetsGrid > Border.DropTarget.IsPointerOver">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+		<Setter Property="Opacity" Value="0.5"/>
+	</Style>
+
+</Styles>

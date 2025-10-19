@@ -1,0 +1,36 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost">
+
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<dock:DockCompass></dock:DockCompass>
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="dock|DockCompass:edge-top /template/ #PART_NorthRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+
+	<Style Selector="dock|DockCompass:edge-bottom /template/ #PART_SouthRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+
+	<Style Selector="dock|DockCompass:edge-left /template/ #PART_WestRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+
+	<Style Selector="dock|DockCompass:edge-right /template/ #PART_EastRegion"
+		   x:SetterTargetType="Border">
+		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+		<Setter Property="Opacity" Value="0.25" />
+	</Style>
+
+</Styles>

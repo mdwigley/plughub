@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!--Avalonia-->
+		<PackageReference Include="Avalonia" Version="11.3.2" />
+		<!--Avalonia Extras-->
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<!--Avalonia Behaviors-->
+		<PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.2" />
+		<PackageReference Include="Xaml.Behaviors.Interactivity" Version="11.3.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Views\DockControlDemoView.axaml.cs">
+			<DependentUpon>DockControlDemoView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelCharacterView.axaml.cs">
+			<DependentUpon>DockHostPanelCharacterView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelFactionView.axaml.cs">
+			<DependentUpon>DockHostPanelFactionView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelQuestView.axaml.cs">
+			<DependentUpon>DockHostPanelQuestView.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\DockHostPanelWorldView.axaml.cs">
+			<DependentUpon>DockHostPanelWorldView.axaml</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\PlugHub.Shared\PlugHub.Shared.csproj" />
+		<ProjectReference Include="..\PlugHub.Plugin.Controls\PlugHub.Plugin.Controls.csproj" />
+	</ItemGroup>
+
+</Project>

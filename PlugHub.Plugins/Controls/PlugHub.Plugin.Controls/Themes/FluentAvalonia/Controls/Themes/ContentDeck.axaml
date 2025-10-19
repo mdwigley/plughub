@@ -1,0 +1,82 @@
+<ResourceDictionary
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls">
+
+	<!-- ContentDeck Theme -->
+	<ControlTheme
+		x:Key="{x:Type core:ContentDeck}"
+		TargetType="core:ContentDeck">
+
+		<!-- Template -->
+		<Setter Property="Template">
+			<ControlTemplate>
+
+				<ScrollViewer
+					Name="PART_ContentItemScroller"
+					HorizontalScrollBarVisibility="Hidden"
+					VerticalScrollBarVisibility="Hidden"
+					ClipToBounds="True">
+
+					<ItemsPresenter
+						Name="PART_ContentItemStrip"
+						DockPanel.Dock="{TemplateBinding DockEdge}"
+						ItemsPanel="{TemplateBinding ItemsPanel}" />
+
+				</ScrollViewer>
+
+			</ControlTemplate>
+		</Setter>
+
+		<!-- ItemsPanel -->
+		<Setter Property="ItemsPanel">
+			<Setter.Value>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=core:ContentDeck}}" />
+				</ItemsPanelTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- ItemTemplate -->
+		<Setter Property="ItemTemplate">
+			<Setter.Value>
+				<DataTemplate>
+					<core:RotationView
+						Rotation="{Binding Rotation, RelativeSource={RelativeSource AncestorType=core:ContentDeck}}"
+						Tag="{Binding}">
+
+						<ContentPresenter
+							Content="{Binding}"
+							ContentTemplate="{Binding ContentItemTemplate, RelativeSource={RelativeSource AncestorType=core:ContentDeck}}" />
+
+					</core:RotationView>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- ContentItemTemplate -->
+		<Setter Property="ContentItemTemplate">
+			<Setter.Value>
+				<DataTemplate>
+					<Button Classes="content-item" Tag="{Binding}" Padding="0,5,11,6">
+						<Grid>
+							<TextBlock
+								Text="{Binding Header}"
+								FontSize="14"
+								FontWeight="Thin"
+								HorizontalAlignment="Center"
+								Margin="0,4,0,4" />
+
+							<Border BorderBrush="{DynamicResource TextFillColorDisabledBrush}" />
+
+							<Border
+								Classes="accent-bar"
+								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}" />
+						</Grid>
+					</Button>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
+
+	</ControlTheme>
+</ResourceDictionary>

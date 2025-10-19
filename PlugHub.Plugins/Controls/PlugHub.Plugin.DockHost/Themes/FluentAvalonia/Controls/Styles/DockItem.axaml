@@ -1,0 +1,49 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:dock="clr-namespace:PlugHub.Plugin.DockHost.Controls;assembly=PlugHub.Plugin.DockHost">
+
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<dock:DockItem Width="250" Height="200"></dock:DockItem>
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="Grid.path-button:pointerover">
+		<Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}"/>
+	</Style>
+	<Style Selector="Grid.path-button-close:pointerover">
+		<Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+	</Style>
+	<Style Selector="Grid.path-button:pointerover Path, Grid.path-button-close:pointerover Path">
+		<Setter Property="Stroke" Value="{DynamicResource TextFillColorInverseBrush}"/>
+		<Setter Property="Fill" Value="{DynamicResource TextFillColorInverseBrush}"/>
+	</Style>
+
+	<Style Selector="dock|DockItem:unpinned /template/ #PART_ButtonPin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+	<Style Selector="dock|DockItem:pinned /template/ #PART_ButtonPin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="dock|DockItem:pinned /template/ #PART_ButtonUnpin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+	<Style Selector="dock|DockItem:unpinned /template/ #PART_ButtonUnpin"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	<Style Selector="dock|DockItem:nonclosable /template/ #PART_ButtonClose"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	<Style Selector="dock|DockItem:closable /template/ #PART_ButtonClose"
+		   x:SetterTargetType="Grid">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
+</Styles>
