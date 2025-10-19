@@ -8,6 +8,9 @@
 		x:Key="{x:Type core:ContentDeck}"
 		TargetType="core:ContentDeck">
 
+		<Setter Property="BorderBrush" Value="{DynamicResource PlugHub.SecondaryAltControlBrush}" />
+		<Setter Property="AccentBrush" Value="{DynamicResource PlugHub.AccentFillBrush}" />
+
 		<!-- Template -->
 		<Setter Property="Template">
 			<ControlTemplate>
@@ -67,11 +70,13 @@
 								HorizontalAlignment="Center"
 								Margin="0,4,0,4" />
 
-							<Border BorderBrush="{DynamicResource TextFillColorDisabledBrush}" />
+							<Border
+								BorderBrush="{Binding BorderBrush}"
+								BorderThickness="{Binding BorderThickness}"/>
 
 							<Border
 								Classes="accent-bar"
-								BorderBrush="{DynamicResource AccentFillColorDefaultBrush}" />
+								BorderBrush="{Binding AccentBrush, RelativeSource={RelativeSource AncestorType=core:ContentDeck}}" />
 						</Grid>
 					</Button>
 				</DataTemplate>

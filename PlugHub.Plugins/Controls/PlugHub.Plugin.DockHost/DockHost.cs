@@ -7,7 +7,6 @@ namespace PlugHub.Plugin.DockHost
 {
     public class DockHost : PluginBase, IPluginDependencyInjection, IPluginResourceInclusion, IPluginStyleInclusion
     {
-
         #region DockHost: Key Fields
 
         public new static Guid PluginID { get; } = Guid.Parse("1d0a560e-64f9-4989-b5e2-4fb4ad1a9b38");
@@ -18,7 +17,7 @@ namespace PlugHub.Plugin.DockHost
         public new static string Author { get; } = "Enterlucent";
         public new static List<string> Categories { get; } =
         [
-            "Control",
+            "Controls",
         ];
 
         #endregion

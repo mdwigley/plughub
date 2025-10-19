@@ -1,5 +1,5 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<StyleInclude Source="avares://PlugHub.Plugin.Controls/Themes/FluentAvalonia/Controls/Styles/ContentDeck.axaml" />
+	<StyleInclude Source="avares://PlugHub.Plugin.Controls/Themes/FluentAvalonia/Controls/ContentDeck.Style.axaml" />
 </Styles>

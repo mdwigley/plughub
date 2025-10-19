@@ -19,7 +19,6 @@ namespace PlugHub.Plugin.DockHost
         public new static string Author { get; } = "Enterlucent";
         public new static List<string> Categories { get; } =
         [
-            "Control",
             "Demo"
         ];
 

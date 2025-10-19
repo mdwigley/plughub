@@ -5,6 +5,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using PlugHub.Plugin.Controls.Interfaces.Controls;
 using System.Collections;
@@ -42,7 +43,6 @@ namespace PlugHub.Plugin.Controls.Controls
         private ISwitchable? currentState;
         private int lastReorderOldIndex = -1;
         private int lastReorderNewIndex = -1;
-
 
         public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
             RoutedEvent.Register<ContentDeck, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
@@ -84,6 +84,14 @@ namespace PlugHub.Plugin.Controls.Controls
         {
             get => this.GetValue(DockEdgeProperty);
             set => this.SetValue(DockEdgeProperty, value);
+        }
+
+        public static readonly StyledProperty<IBrush?> AccentBrushProperty =
+            AvaloniaProperty.Register<ContentDeck, IBrush?>(nameof(AccentBrush));
+        public IBrush? AccentBrush
+        {
+            get => this.GetValue(AccentBrushProperty);
+            set => this.SetValue(AccentBrushProperty, value);
         }
 
         public static readonly StyledProperty<IDataTemplate?> ContentItemTemplateProperty =

@@ -7,8 +7,21 @@
 		<Border Padding="20">
 			<dock:DockCompass></dock:DockCompass>
 		</Border>
-	</Design.PreviewWith>	
-	
+	</Design.PreviewWith>
+
+	<LinearGradientBrush x:Key="PlugHub.DockCompass.CellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+		<GradientStop Color="#CCB0B0B0" Offset="0"/>
+		<GradientStop Color="#998B8B8B" Offset="1"/>
+	</LinearGradientBrush>
+
+	<SolidColorBrush x:Key="PlugHub.DockCompass.ModalBackDropBrush" Color="#33000000" />
+	<DropShadowEffect x:Key="PlugHub.DockCompass.CellShadowEffect" BlurRadius="8" Color="Black" Opacity="1"/>
+
+	<StreamGeometry x:Key="PlugHub.DockCompass.WestCellIcon">M 10 10 L 110 10 L 110 110 L 10 110 Z M 30 20 L 100 20 L 100 100 L 30 100 Z</StreamGeometry>
+	<StreamGeometry x:Key="PlugHub.DockCompass.NorthCellIcon">M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 30 L 100 30 L 100 100 L 20 100 Z</StreamGeometry>
+	<StreamGeometry x:Key="PlugHub.DockCompass.EastCellIcon">M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 90 20 L 90 100 L 20 100 Z</StreamGeometry>
+	<StreamGeometry x:Key="PlugHub.DockCompass.SouthCellIcon">M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 100 20 L 100 90 L 20 90 Z</StreamGeometry>
+
 	<ControlTheme
 		x:Key="{x:Type dock:DockCompass}"
 		TargetType="dock:DockCompass">
@@ -18,8 +31,9 @@
 				<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
 					<!-- Modal plane background -->
-					<Border Background="#33000000"
-							IsHitTestVisible="False"/>
+					<Border
+						Background="{StaticResource PlugHub.DockCompass.ModalBackDropBrush}"
+						IsHitTestVisible="False"/>
 
 					<!-- Bottom layer: large highlight regions -->
 					<Grid>
@@ -28,7 +42,6 @@
 							<RowDefinition Height="3*" />
 							<RowDefinition Height="1*" />
 						</Grid.RowDefinitions>
-
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="1*" />
 							<ColumnDefinition Width="3*" />
@@ -55,103 +68,60 @@
 						</Grid.ColumnDefinitions>
 
 						<!-- West cell -->
-						<Border Name="PART_WestCell"
-								Grid.Row="1" Grid.Column="0"
-								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1"
-								CornerRadius="0">
-							<Border.Background>
-								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-									<GradientStop Color="#CCB0B0B0" Offset="0"/>
-									<GradientStop Color="#998B8B8B" Offset="1"/>
-								</LinearGradientBrush>
-							</Border.Background>
+						<Border
+							Name="PART_WestCell"
+							Grid.Row="1" Grid.Column="0"
+							Background="{StaticResource PlugHub.DockCompass.CellBackgroundBrush}">
 
-							<!-- Optional subtle shadow for depth -->
 							<Border.Effect>
-								<DropShadowEffect BlurRadius="8"
-												  Color="Black"
-												  Opacity="1"/>
+								<StaticResource ResourceKey="PlugHub.DockCompass.CellShadowEffect"/>
 							</Border.Effect>
 
-							<!-- Icon -->
-							<PathIcon Width="24" Height="24"
-									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 30 20 L 100 20 L 100 100 L 30 100 Z"/>
+							<PathIcon
+								Width="24" Height="24"
+								Data="{DynamicResource PlugHub.DockCompass.WestCellIcon}" />
 						</Border>
 
 						<!-- North cell -->
-						<Border Name="PART_NorthCell"
-								Grid.Row="0" Grid.Column="1"
-								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1"
-								CornerRadius="0">
-							<Border.Background>
-								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-									<GradientStop Color="#CCB0B0B0" Offset="0"/>
-									<GradientStop Color="#998B8B8B" Offset="1"/>
-								</LinearGradientBrush>
-							</Border.Background>
+						<Border
+							Name="PART_NorthCell"
+							Grid.Row="0" Grid.Column="1"
+							Background="{StaticResource PlugHub.DockCompass.CellBackgroundBrush}">
 
-							<!-- Optional subtle shadow for depth -->
 							<Border.Effect>
-								<DropShadowEffect BlurRadius="8"
-												  Color="Black"
-												  Opacity="1"/>
+								<StaticResource ResourceKey="PlugHub.DockCompass.CellShadowEffect"/>
 							</Border.Effect>
 
-							<!-- Icon -->
 							<PathIcon Width="24" Height="24"
-									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 30 L 100 30 L 100 100 L 20 100 Z"/>
+									  Data="{DynamicResource PlugHub.DockCompass.NorthCellIcon}" />
 						</Border>
 
 						<!-- East cell -->
-						<Border Name="PART_EastCell"
-								Grid.Row="1" Grid.Column="2"
-								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1"
-								CornerRadius="0">
-							<Border.Background>
-								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-									<GradientStop Color="#CCB0B0B0" Offset="0"/>
-									<GradientStop Color="#998B8B8B" Offset="1"/>
-								</LinearGradientBrush>
-							</Border.Background>
+						<Border
+							Name="PART_EastCell"
+							Grid.Row="1" Grid.Column="2"
+							Background="{StaticResource PlugHub.DockCompass.CellBackgroundBrush}">
 
-							<!-- Optional subtle shadow for depth -->
 							<Border.Effect>
-								<DropShadowEffect BlurRadius="8"
-												  Color="Black"
-												  Opacity="1"/>
+								<StaticResource ResourceKey="PlugHub.DockCompass.CellShadowEffect"/>
 							</Border.Effect>
 
-							<!-- Icon -->
 							<PathIcon Width="24" Height="24"
-									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 90 20 L 90 100 L 20 100 Z"/>
+									  Data="{DynamicResource PlugHub.DockCompass.EastCellIcon}" />
 						</Border>
 
 						<!-- South cell -->
-						<Border Name="PART_SouthCell"
-								Grid.Row="2" Grid.Column="1"
-								BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
-								BorderThickness="1"
-								CornerRadius="0">
-							<Border.Background>
-								<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-									<GradientStop Color="#CCB0B0B0" Offset="0"/>
-									<GradientStop Color="#998B8B8B" Offset="1"/>
-								</LinearGradientBrush>
-							</Border.Background>
+						<Border
+							Name="PART_SouthCell"
+							Grid.Row="2" Grid.Column="1"
+							Background="{StaticResource PlugHub.DockCompass.CellBackgroundBrush}">
 
-							<!-- Optional subtle shadow for depth -->
 							<Border.Effect>
-								<DropShadowEffect BlurRadius="8"
-												  Color="Black"
-												  Opacity="1"/>
+								<StaticResource ResourceKey="PlugHub.DockCompass.CellShadowEffect"/>
 							</Border.Effect>
 
-							<!-- Icon -->
 							<PathIcon Width="24" Height="24"
-									  Data="M 10 10 L 110 10 L 110 110 L 10 110 Z M 20 20 L 100 20 L 100 90 L 20 90 Z"/>
+									  Data="{DynamicResource PlugHub.DockCompass.SouthCellIcon}" />
 						</Border>
 
 						<!-- Center (disabled) -->
@@ -160,7 +130,5 @@
 				</Grid>
 			</ControlTemplate>
 		</Setter>
-
 	</ControlTheme>
-
 </ResourceDictionary>

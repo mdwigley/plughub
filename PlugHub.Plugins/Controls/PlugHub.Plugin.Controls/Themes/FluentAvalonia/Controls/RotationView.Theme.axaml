@@ -3,6 +3,6 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<!-- RotationView Theme -->
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceInclude Source="avares://PlugHub.Plugin.Controls/Themes/Generic/Controls/Themes/RotationView.axaml" />
+		<ResourceInclude Source="avares://PlugHub.Plugin.Controls/Themes/Generic/Controls/RotationView.Theme.axaml" />
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

@@ -6,7 +6,7 @@ namespace PlugHub.Plugin.DockHost.Views
     {
         public DockHostPanelQuestView()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
     }
 }

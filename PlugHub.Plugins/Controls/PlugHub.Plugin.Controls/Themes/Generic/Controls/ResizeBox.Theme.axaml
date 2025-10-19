@@ -25,7 +25,6 @@
 			</ControlTemplate>
 		</Setter>
 
-		<!-- Scoped styles for template parts -->
 		<Style Selector="^ /template/ Thumb#PART_ResizeThumb">
 			<Setter Property="Template">
 				<Setter.Value>

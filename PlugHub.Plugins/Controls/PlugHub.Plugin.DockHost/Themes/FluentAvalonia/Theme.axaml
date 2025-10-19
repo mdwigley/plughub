@@ -1,15 +1,9 @@
 <ResourceDictionary
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/Themes/DockCompass.axaml" />
-		<ResourceInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/Themes/DockControl.axaml" />
-		<ResourceInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/Themes/DockItem.axaml" />
+		<ResourceInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/DockCompass.Theme.axaml" />
+		<ResourceInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/DockControl.Theme.axaml" />
+		<ResourceInclude Source="avares://PlugHub.Plugin.DockHost/Themes/FluentAvalonia/Controls/DockItem.Theme.axaml" />
 	</ResourceDictionary.MergedDictionaries>
-
-	<StreamGeometry x:Key="PlugHub.DockItem.PinIcon">M6,4 L12,4 L12,9 L6,9 Z M0,6 L4,6 L4,7 L0,7 Z M4,2 L6,2 L6,11 L4,11 Z</StreamGeometry>
-	<StreamGeometry x:Key="PlugHub.DockItem.UnpinIcon">M4,8 L4,2 L9,2 L9,8 Z M6,12 L7,12 L7,10 L6,10 Z M2,10 L11,10 L11,8 L2,8 Z</StreamGeometry>
-	<StreamGeometry x:Key="PlugHub.DockItem.CloseIcon">M4,4 L12,12 M12,4 L4,12</StreamGeometry>
-
 </ResourceDictionary>

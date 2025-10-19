@@ -6,7 +6,7 @@ namespace PlugHub.Plugin.DockHost.Views
     {
         public DockHostPanelCharacterView()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
     }
 }

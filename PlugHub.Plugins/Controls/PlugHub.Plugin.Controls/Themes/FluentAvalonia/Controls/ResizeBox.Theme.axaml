@@ -3,6 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<!-- ResizablePanel Theme -->
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceInclude Source="avares://PlugHub.Plugin.Controls/Themes/Generic/Controls/Themes/ResizeBox.axaml" />
+		<ResourceInclude Source="avares://PlugHub.Plugin.Controls/Themes/Generic/Controls/ResizeBox.Theme.axaml" />
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

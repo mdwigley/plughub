@@ -9,26 +9,22 @@
 		</Border>
 	</Design.PreviewWith>
 
-	<Style Selector="dock|DockCompass:edge-top /template/ #PART_NorthRegion"
-		   x:SetterTargetType="Border">
+	<Style Selector="dock|DockCompass:edge-top /template/ #PART_NorthRegion" x:SetterTargetType="Border">
 		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
 		<Setter Property="Opacity" Value="0.25" />
 	</Style>
 
-	<Style Selector="dock|DockCompass:edge-bottom /template/ #PART_SouthRegion"
-		   x:SetterTargetType="Border">
+	<Style Selector="dock|DockCompass:edge-bottom /template/ #PART_SouthRegion" x:SetterTargetType="Border">
 		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
 		<Setter Property="Opacity" Value="0.25" />
 	</Style>
 
-	<Style Selector="dock|DockCompass:edge-left /template/ #PART_WestRegion"
-		   x:SetterTargetType="Border">
+	<Style Selector="dock|DockCompass:edge-left /template/ #PART_WestRegion" x:SetterTargetType="Border">
 		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
 		<Setter Property="Opacity" Value="0.25" />
 	</Style>
 
-	<Style Selector="dock|DockCompass:edge-right /template/ #PART_EastRegion"
-		   x:SetterTargetType="Border">
+	<Style Selector="dock|DockCompass:edge-right /template/ #PART_EastRegion" x:SetterTargetType="Border">
 		<Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
 		<Setter Property="Opacity" Value="0.25" />
 	</Style>

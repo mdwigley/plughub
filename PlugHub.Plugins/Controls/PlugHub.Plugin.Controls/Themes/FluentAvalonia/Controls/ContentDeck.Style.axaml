@@ -34,7 +34,6 @@
 			</Transitions>
 		</Setter>
 	</Style>
-
 	<Style Selector="core|ContentDeck Button.content-item:pointerover .accent-bar" x:SetterTargetType="Border">
 		<Setter Property="Opacity" Value="1" />
 	</Style>
