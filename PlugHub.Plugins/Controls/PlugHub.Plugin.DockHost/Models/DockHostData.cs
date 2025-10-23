@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using PlugHub.Plugin.Controls.Controls;
 
 namespace PlugHub.Plugin.DockHost.Models
 {
@@ -26,6 +27,16 @@ namespace PlugHub.Plugin.DockHost.Models
         public double TopPanelLength { get; set; } = -1;
         public double RightPanelLength { get; set; } = -1;
         public double BottomPanelLength { get; set; } = -1;
+
+        public ContentDeckDisplayMode LeftDeckMode { get; set; } = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode TopDeckMode { get; set; } = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode RightDeckMode { get; set; } = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode BottomDeckMode { get; set; } = ContentDeckDisplayMode.Tab;
+
+        public List<double> LeftSplitterSizes { get; set; } = [];
+        public List<double> TopSplitterSizes { get; set; } = [];
+        public List<double> RightSplitterSizes { get; set; } = [];
+        public List<double> BottomSplitterSizes { get; set; } = [];
 
         public List<DockHostPanelData> DockHostDataItems { get; set; } = [];
     }

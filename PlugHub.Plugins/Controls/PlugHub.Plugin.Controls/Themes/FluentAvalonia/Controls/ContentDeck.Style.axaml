@@ -1,32 +1,54 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls">
+	xmlns:core="clr-namespace:PlugHub.Plugin.Controls.Controls;assembly=PlugHub.Plugin.Controls"
+	xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls">
 
-	<Style Selector="core|ContentDeck:pointerover:edge-left Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,0,0,4" />
+	<!-- Transient: Button Setup -->
+	<Style Selector="core|ContentDeck[ActivationMode=Transient] Button.content-item:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="Transparent" />
 	</Style>
-	<Style Selector="core|ContentDeck:pointerover:edge-right Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,4,0,0" />
-	</Style>
-	<Style Selector="core|ContentDeck:pointerover:edge-top Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,4,0,0" />
-	</Style>
-	<Style Selector="core|ContentDeck:pointerover:edge-bottom Border.accent-bar">
-		<Setter Property="BorderThickness" Value="0,0,0,4" />
-	</Style>
-
-	<Style Selector="core|ContentDeck Button.content-item">
+	<Style Selector="core|ContentDeck[ActivationMode=Transient] Button.content-item">
 		<Setter Property="Background" Value="Transparent" />
 		<Setter Property="BorderBrush" Value="Transparent" />
 		<Setter Property="BorderThickness" Value="0" />
 	</Style>
 
-	<Style Selector="core|ContentDeck Button.content-item:pointerover /template/ ContentPresenter">
-		<Setter Property="Background" Value="Transparent" />
+	<!-- Transient: Button Updates -->
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:edge-left Button.content-item">
+		<Setter Property="Margin" Value="0,-8,0,0" />
+		<Setter Property="Padding" Value="0,4,8,4" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:edge-right Button.content-item">
+		<Setter Property="Margin" Value="0,0,0,-8" />
+		<Setter Property="Padding" Value="0,4,8,4" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:edge-top Button.content-item">
+		<Setter Property="Margin" Value="0,0,0,-8" />
+		<Setter Property="Padding" Value="0,4,8,4" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:edge-bottom Button.content-item">
+		<Setter Property="Margin" Value="0,-8,0,0" />
+		<Setter Property="Padding" Value="0,4,8,4" />
 	</Style>
 
-	<Style Selector="core|ContentDeck Button.content-item .accent-bar" x:SetterTargetType="Border">
+	<!-- Transient: Button Hover -->
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:pointerover:edge-left Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,0,0,4" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:pointerover:edge-right Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,4,0,0" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:pointerover:edge-top Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,4,0,0" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Transient]:pointerover:edge-bottom Border.accent-bar">
+		<Setter Property="BorderThickness" Value="0,0,0,4" />
+	</Style>
+
+	<!-- Transient: Button Animate -->
+	<Style Selector="core|ContentDeck[ActivationMode=Transient] Button.content-item .accent-bar"
+		   x:SetterTargetType="Border">
 		<Setter Property="Opacity" Value="0" />
 		<Setter Property="Transitions">
 			<Transitions>
@@ -34,8 +56,61 @@
 			</Transitions>
 		</Setter>
 	</Style>
-	<Style Selector="core|ContentDeck Button.content-item:pointerover .accent-bar" x:SetterTargetType="Border">
+	<Style Selector="core|ContentDeck[ActivationMode=Transient] Button.content-item:pointerover .accent-bar"
+		   x:SetterTargetType="Border">
 		<Setter Property="Opacity" Value="1" />
+	</Style>
+
+
+	<!-- Persistent: Button Setup -->
+	<Style Selector="core|ContentDeck[ActivationMode=Persistent] Button.content-item">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderBrush" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="8,-2,8,-2" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Persistent] Button.content-item:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Persistent] core|ContentDeckItem:selected Button.content-item">
+		<Setter Property="Background" Value="{DynamicResource PlugHub.AccentFillBrush}" />
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Persistent] core|ContentDeckItem:selected Button.content-item:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="{DynamicResource PlugHub.AccentFillBrush}" />
+	</Style>
+
+	<!-- Display Mode Switch Docking -->
+	<Style Selector="core|ContentDeck #PART_TransferButton" x:SetterTargetType="Button">
+		<Setter Property="DockPanel.Dock" Value="Bottom"/>
+	</Style>
+	<Style Selector="core|ContentDeck[DockEdge=Right] #PART_TransferButton" x:SetterTargetType="Button">
+		<Setter Property="DockPanel.Dock" Value="Bottom"/>
+	</Style>
+	<Style Selector="core|ContentDeck[DockEdge=Top] #PART_TransferButton" x:SetterTargetType="Button">
+		<Setter Property="DockPanel.Dock" Value="Right"/>
+	</Style>
+	<Style Selector="core|ContentDeck[DockEdge=Bottom] #PART_TransferButton" x:SetterTargetType="Button">
+		<Setter Property="DockPanel.Dock" Value="Right"/>
+	</Style>
+
+	<!-- Disable Mode Swithing on Transient -->
+	<Style Selector="core|ContentDeck[ActivationMode=Transient] #PART_TransferButton" x:SetterTargetType="Button">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	<Style Selector="core|ContentDeck[ActivationMode=Persistent] #PART_TransferButton" x:SetterTargetType="Button">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
+	<!-- Disable Mode Swithing on Transient -->
+	<Style Selector="Button#PART_TransferButton">
+		<Setter Property="Width" Value="24"/>
+		<Setter Property="Height" Value="24"/>
+		<Setter Property="CornerRadius" Value="0"/>
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="BorderBrush" Value="Transparent"/>
+		<Setter Property="DockPanel.Dock" Value="Bottom"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
 	</Style>
 
 </Styles>

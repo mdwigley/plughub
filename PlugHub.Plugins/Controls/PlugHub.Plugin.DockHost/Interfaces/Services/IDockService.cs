@@ -87,10 +87,9 @@ namespace PlugHub.Plugin.DockHost.Interfaces.Services
         public DockControlChangeType ChangeType { get; } = changeType;
     }
 
-    public sealed class DockControlReadyEventArgs : EventArgs
+    public sealed class DockControlReadyEventArgs(DockControl control) : EventArgs
     {
-        public DockControlReadyEventArgs(DockControl control) => this.Control = control;
-        public DockControl Control { get; }
+        public DockControl Control { get; } = control;
     }
 
     /// <summary>

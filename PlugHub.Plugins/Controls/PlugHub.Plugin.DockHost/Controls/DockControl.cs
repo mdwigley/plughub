@@ -155,6 +155,22 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         // *************************************************************** //
 
+        public static readonly StyledProperty<IDataTemplate?> DockControlLeftTabControlProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlLeftTabControl));
+        public IDataTemplate? DockControlLeftTabControl
+        {
+            get => this.GetValue(DockControlLeftTabControlProperty);
+            set => this.SetValue(DockControlLeftTabControlProperty, value);
+        }
+
+        public static readonly StyledProperty<IDataTemplate?> DockControlRightTabControlProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlRightTabControl));
+        public IDataTemplate? DockControlRightTabControl
+        {
+            get => this.GetValue(DockControlRightTabControlProperty);
+            set => this.SetValue(DockControlRightTabControlProperty, value);
+        }
+
         public static readonly StyledProperty<IDataTemplate?> DockControlBottomTabControlProperty =
             AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlBottomTabControl));
         public IDataTemplate? DockControlBottomTabControl
@@ -397,7 +413,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                             this.topGutter?.Bounds.Height ?? 0,
                             this.bottomGutter?.Bounds.Height ?? 0);
 
-                    if (args is AvaloniaPropertyChangedEventArgs hcp && hcp.Property == ContentDeck.HasItemsProperty && hcp.NewValue is bool has)
+                    if (args is AvaloniaPropertyChangedEventArgs hcp && hcp.Property == ContentDeck.IsVisibleProperty && hcp.NewValue is bool has)
                         this.RecalculateMargins(
                             edge == Dock.Left ? hasItemsSelector(has) : this.leftGutter?.Bounds.Width ?? 0,
                             edge == Dock.Right ? hasItemsSelector(has) : this.rightGutter?.Bounds.Width ?? 0,
@@ -620,7 +636,7 @@ namespace PlugHub.Plugin.DockHost.Controls
         }
         protected virtual void NormalizeSlicesBySortOrder()
         {
-            void SortByOrder(ObservableCollection<DockItemState> collection)
+            static void SortByOrder(ObservableCollection<DockItemState> collection)
             {
                 List<DockItemState> sorted = [.. collection.OrderBy(p => p.SortOrder)];
 

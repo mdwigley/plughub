@@ -10,24 +10,30 @@
 
 		<Setter Property="BorderBrush" Value="{DynamicResource PlugHub.SecondaryAltControlBrush}" />
 		<Setter Property="AccentBrush" Value="{DynamicResource PlugHub.AccentFillBrush}" />
+		<Setter Property="ContentSizes" Value="200*,100*"/>
 
 		<!-- Template -->
 		<Setter Property="Template">
 			<ControlTemplate>
+				<DockPanel LastChildFill="True">
+					<Button
+						x:Name="PART_TransferButton">
 
-				<ScrollViewer
-					Name="PART_ContentItemScroller"
-					HorizontalScrollBarVisibility="Hidden"
-					VerticalScrollBarVisibility="Hidden"
-					ClipToBounds="True">
+						<TextBlock
+							Text="⇄"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"/>
+					</Button>
 
-					<ItemsPresenter
-						Name="PART_ContentItemStrip"
-						DockPanel.Dock="{TemplateBinding DockEdge}"
-						ItemsPanel="{TemplateBinding ItemsPanel}" />
-
-				</ScrollViewer>
-
+					<ScrollViewer
+						Name="PART_ContentItemScroller"
+						HorizontalScrollBarVisibility="Hidden"
+						VerticalScrollBarVisibility="Hidden"
+						ClipToBounds="True">
+						<ItemsPresenter Name="PART_ContentItemStrip"
+										ItemsPanel="{TemplateBinding ItemsPanel}" />
+					</ScrollViewer>
+				</DockPanel>
 			</ControlTemplate>
 		</Setter>
 
@@ -61,12 +67,15 @@
 		<Setter Property="ContentItemTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<Button Classes="content-item" Tag="{Binding}" Padding="0,5,11,6">
+					<Button
+						Classes="content-item"
+						Tag="{Binding}"
+						CornerRadius="0">
+
 						<Grid>
 							<TextBlock
 								Text="{Binding Header}"
-								FontSize="14"
-								FontWeight="Thin"
+								FontSize="14" FontWeight="Thin"
 								HorizontalAlignment="Center"
 								Margin="0,4,0,4" />
 
