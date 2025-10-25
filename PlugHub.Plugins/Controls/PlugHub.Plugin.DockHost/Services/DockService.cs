@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PlugHub.Plugin.Controls.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Controls;
 using PlugHub.Plugin.DockHost.Interfaces.Plugins;
 using PlugHub.Plugin.DockHost.Interfaces.Services;

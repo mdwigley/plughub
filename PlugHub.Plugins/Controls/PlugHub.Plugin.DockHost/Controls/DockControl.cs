@@ -6,7 +6,10 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Microsoft.Extensions.Logging;
 using PlugHub.Plugin.Controls.Controls;
+using PlugHub.Plugin.Controls.Interfaces.Services;
+using PlugHub.Plugin.Controls.Services;
 using PlugHub.Plugin.DockHost.Interfaces.Services;
 using PlugHub.Plugin.DockHost.Models;
 using System.Collections.ObjectModel;
@@ -520,7 +523,6 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             Dispatcher.UIThread.Post(() =>
             {
-                this.NormalizeSlicesBySortOrder();
                 this.IsReady = true;
 
                 this.LeftContentSizes = [.. this.config.LeftContentSizes.Select(x => new GridLength(x, GridUnitType.Star))];
@@ -787,28 +789,6 @@ namespace PlugHub.Plugin.DockHost.Controls
                 list.RemoveAt(i);
             }
         }
-        protected virtual void NormalizeSlicesBySortOrder()
-        {
-            static void SortByOrder(ObservableCollection<DockItemState> collection)
-            {
-                List<DockItemState> sorted = [.. collection.OrderBy(p => p.SortOrder)];
-
-                collection.Clear();
-
-                foreach (DockItemState? item in sorted)
-                    collection.Add(item);
-            }
-
-            SortByOrder(this.LeftPinned);
-            SortByOrder(this.RightPinned);
-            SortByOrder(this.TopPinned);
-            SortByOrder(this.BottomPinned);
-
-            SortByOrder(this.LeftUnpinned);
-            SortByOrder(this.RightUnpinned);
-            SortByOrder(this.TopUnpinned);
-            SortByOrder(this.BottomUnpinned);
-        }
 
         private DockHostControlData NewConfig()
         {
@@ -998,12 +978,11 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (dto != null) dto.DockEdge = edge;
 
             if (state.Content != null)
-                await HardDetachAsync(state.Content);
+                await DetachService.HardDetachAsync(state.Content);
 
             Dispatcher.UIThread.Post(() =>
             {
                 this.Reslice(state);
-                this.InvalidateMeasure();
 
             }, DispatcherPriority.Render);
         }
@@ -1029,12 +1008,11 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (dto != null) dto.IsPinned = pinned;
 
             if (state.Content != null)
-                await HardDetachAsync(state.Content);
+                await DetachService.HardDetachAsync(state.Content);
 
             Dispatcher.UIThread.Post(() =>
             {
                 this.Reslice(state);
-                this.InvalidateMeasure();
 
             }, DispatcherPriority.Render);
         }
@@ -1056,7 +1034,7 @@ namespace PlugHub.Plugin.DockHost.Controls
             if (dto != null) this.config.DockHostDataItems.Remove(dto);
 
             if (state.Content != null)
-                await HardDetachAsync(state.Content);
+                await DetachService.HardDetachAsync(state.Content);
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -1064,7 +1042,6 @@ namespace PlugHub.Plugin.DockHost.Controls
                     this.UnhookPanel(panel);
 
                 this.RemoveFromAllSlices(state);
-                this.InvalidateMeasure();
 
             }, DispatcherPriority.Render);
         }
@@ -1125,11 +1102,18 @@ namespace PlugHub.Plugin.DockHost.Controls
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                slice.Add(d);
+                int index = 0;
+
+                while (index < slice.Count && slice[index].SortOrder <= d.SortOrder)
+                    index++;
+
+                slice.Insert(index, d);
+
                 this.RefreshControl();
 
             }, DispatcherPriority.Render);
         }
+
         private void Reslice(DockItemState d)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -1241,36 +1225,6 @@ namespace PlugHub.Plugin.DockHost.Controls
             this.RightGutterMargins = new Thickness(0);
             this.TopGutterMargins = new Thickness(0);
             this.BottomGutterMargins = new Thickness(0);
-        }
-
-        private static async Task HardDetachAsync(Control panel)
-        {
-            for (int i = 0; i < 3 && panel.Parent != null; i++)
-            {
-                string? parentType = panel.Parent?.GetType().Name;
-
-                switch (panel.Parent)
-                {
-                    case ContentPresenter cp:
-                        cp.Content = null;
-                        break;
-                    case ContentControl cc:
-                        cc.Content = null;
-                        break;
-                    case Panel container:
-                        container.Children.Remove(panel);
-                        break;
-                }
-                panel.InvalidateMeasure();
-                panel.InvalidateArrange();
-
-                await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
-            }
-
-            if (panel.Parent != null)
-            {
-                string? parentType = panel.Parent?.GetType().Name;
-            }
         }
 
         #endregion
