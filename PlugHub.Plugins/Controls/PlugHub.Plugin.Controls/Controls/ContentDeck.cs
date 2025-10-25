@@ -324,7 +324,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.HookClicks();
             this.HookSwitchDisplay(e);
             this.HookDefocusClose();
-            this.HoookScoller(e);
+            this.HookScoller(e);
 
             this.NormalizeContentSizes();
             this.RebuildGrid();
@@ -351,7 +351,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.IsVisible = this.EmptyBehavior == ContentDeckEmptyBehavior.RemainVisible || this.Items.Count > 0;
         }
 
-        private void HookClicks()
+        protected virtual void HookClicks()
         {
             this.RemoveHandler(PointerPressedEvent, this.OnItemPressed);
             this.RemoveHandler(PointerMovedEvent, this.OnItemMoved);
@@ -361,7 +361,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.AddHandler(PointerMovedEvent, this.OnItemMoved, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
             this.AddHandler(PointerReleasedEvent, this.OnItemReleased, RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         }
-        private void HookSwitchDisplay(TemplateAppliedEventArgs e)
+        protected virtual void HookSwitchDisplay(TemplateAppliedEventArgs e)
         {
             Button? transferButton = e.NameScope.Find<Button>("PART_TransferButton");
 
@@ -376,7 +376,7 @@ namespace PlugHub.Plugin.Controls.Controls
                 };
             }
         }
-        private void HookDefocusClose()
+        protected virtual void HookDefocusClose()
         {
             TopLevel? topLevel = TopLevel.GetTopLevel(this);
 
@@ -413,7 +413,7 @@ namespace PlugHub.Plugin.Controls.Controls
 
             this.top.AddHandler(PointerPressedEvent, this.defocusHandler, RoutingStrategies.Tunnel);
         }
-        private void HoookScoller(TemplateAppliedEventArgs e)
+        protected virtual void HookScoller(TemplateAppliedEventArgs e)
         {
             ScrollViewer? scroller = e.NameScope.Find<ScrollViewer>("PART_ContentItemScroller");
 
@@ -436,7 +436,7 @@ namespace PlugHub.Plugin.Controls.Controls
 
             base.OnDetachedFromVisualTree(e);
         }
-        private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+        protected virtual void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
             if (sender is ScrollViewer sv)
             {
@@ -460,7 +460,7 @@ namespace PlugHub.Plugin.Controls.Controls
 
         #region DockGutter: Gutter Item Reorder
 
-        private void OnItemPressed(object? sender, PointerPressedEventArgs e)
+        protected virtual void OnItemPressed(object? sender, PointerPressedEventArgs e)
         {
             this.pressedRot = null;
             this.pressedItem = null;
@@ -480,7 +480,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.clickPosition = e.GetPosition(this);
             this.isMoving = false;
         }
-        private void OnItemMoved(object? sender, PointerEventArgs e)
+        protected virtual void OnItemMoved(object? sender, PointerEventArgs e)
         {
             if (this.clickPosition == null || this.pressedRot == null || this.pressedItem == null)
                 return;
@@ -504,7 +504,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.isMoving = true;
             this.OnItemReorder(this.pressedItem, current);
         }
-        private void OnItemReorder(ISwitchable pressedState, Point currentPos)
+        protected virtual void OnItemReorder(ISwitchable pressedState, Point currentPos)
         {
             if (this.ItemsSource == null)
                 return;
@@ -585,7 +585,7 @@ namespace PlugHub.Plugin.Controls.Controls
                 this.lastTargetBounds = targetBounds;
             }
         }
-        private void OnItemReleased(object? sender, RoutedEventArgs e)
+        protected virtual void OnItemReleased(object? sender, RoutedEventArgs e)
         {
             if (this.pressedItem != null && this.pressedRot != null)
             {
@@ -605,10 +605,10 @@ namespace PlugHub.Plugin.Controls.Controls
 
                 if (!this.isMoving)
                 {
-                    this.SetActiveItem(this.pressedItem);
-
                     if (this.ActivationMode == ContentDeckActivationMode.Transient)
                         this.TogglePanel(this.pressedItem);
+
+                    this.SetActiveItem(this.pressedItem);
                 }
                 else
                 {
@@ -628,7 +628,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.ResetPointerState();
         }
 
-        private void ResetPointerState()
+        protected virtual void ResetPointerState()
         {
             this.clickPosition = null;
             this.isMoving = false;
@@ -676,13 +676,12 @@ namespace PlugHub.Plugin.Controls.Controls
 
         #region DockGutter: Grid handlers
 
-        private GridLength GetLengthOrMin(int slotIndex)
+        protected virtual GridLength GetLengthOrMin(int slotIndex)
         {
             if (slotIndex < this.ContentSizes.Count)
             {
                 GridLength candidate = this.ContentSizes[slotIndex];
 
-                // assume star sizing for content cells
                 return candidate.Value < this.MinContentSize.Value
                     ? this.MinContentSize
                     : candidate;
@@ -691,14 +690,14 @@ namespace PlugHub.Plugin.Controls.Controls
             return this.MinContentSize;
         }
 
-        private void UpdateGridVisibility()
+        protected virtual void UpdateGridVisibility()
         {
             if (this.DisplayMode == ContentDeckDisplayMode.Deck)
                 this.UpdateDeckVisibility();
             else
                 this.UpdateTabVisibility();
         }
-        private void UpdateDeckVisibility()
+        protected virtual void UpdateDeckVisibility()
         {
             int count = this.IsVertical
                 ? this.deckGrid.RowDefinitions.Count
@@ -738,7 +737,7 @@ namespace PlugHub.Plugin.Controls.Controls
             foreach (Control child in this.deckGrid.Children.OfType<Control>())
                 child.IsVisible = true;
         }
-        private void UpdateTabVisibility()
+        protected virtual void UpdateTabVisibility()
         {
             int activeIndex = this.Items
                 .OfType<ISwitchable>()
@@ -749,7 +748,7 @@ namespace PlugHub.Plugin.Controls.Controls
 
             for (int i = 0, slot = 0; i < count; i++)
             {
-                if (i % 2 == 0) // content definition
+                if (i % 2 == 0)
                 {
                     bool isActive = slot == activeIndex;
                     GridLength length = slot < this.ContentSizes.Count
@@ -850,7 +849,6 @@ namespace PlugHub.Plugin.Controls.Controls
                     }
                     else if (activeItemRemoved)
                     {
-                        // pick the next logical item
                         int candidateIndex = e.OldStartingIndex;
                         if (candidateIndex >= this.Items.Count)
                             candidateIndex = this.Items.Count - 1;
@@ -876,7 +874,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.UpdateGridVisibility();
         }
 
-        private void NormalizeContentSizes()
+        protected virtual void NormalizeContentSizes()
         {
             int required = this.Items.OfType<ISwitchable>()
                 .Count(x => x.Content != null);
@@ -896,7 +894,7 @@ namespace PlugHub.Plugin.Controls.Controls
                     this.ContentSizes[i] = this.MinContentSize;
             }
         }
-        private GridSplitter CreateGridSplitter(int gridIndex)
+        protected virtual GridSplitter CreateGridSplitter(int gridIndex)
         {
             GridSplitter splitter = new()
             {
@@ -920,7 +918,6 @@ namespace PlugHub.Plugin.Controls.Controls
                 Grid.SetColumn(splitter, gridIndex);
             }
 
-            // Call back into the control when drag completes
             splitter.DragCompleted += (_, __) =>
             {
                 this.NormalizeContentSizes();
@@ -991,7 +988,7 @@ namespace PlugHub.Plugin.Controls.Controls
             this.SetActiveItem();
         }
 
-        private void OnSplitterDragCompleted(int gridIndex)
+        protected virtual void OnSplitterDragCompleted(int gridIndex)
         {
             int prevIndex = (gridIndex - 1) / 2;
             int nextIndex = (gridIndex + 1) / 2;
