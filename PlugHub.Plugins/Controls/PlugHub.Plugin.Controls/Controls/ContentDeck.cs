@@ -998,6 +998,8 @@ namespace PlugHub.Plugin.Controls.Controls
 
                 slotIndex++;
             }
+
+            this.UpdateGridVisibility();
         }
         private void ClearDeckGrid()
         {
