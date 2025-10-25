@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -101,7 +102,128 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region DockControl: Pinned Panel Properties
+
+        #region DockControl: Pinned COntentDeck.ContentSize Properties
+
+        public static readonly DirectProperty<DockControl, AvaloniaList<GridLength>> LeftContentSizesProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, AvaloniaList<GridLength>>(nameof(LeftContentSizes), o => o.LeftContentSizes, (o, v) => o.LeftContentSizes = v);
+        private AvaloniaList<GridLength> leftContentSizes = [];
+        public AvaloniaList<GridLength> LeftContentSizes
+        {
+            get => this.leftContentSizes;
+            set => this.SetAndRaise(LeftContentSizesProperty, ref this.leftContentSizes, value);
+        }
+
+        public static readonly DirectProperty<DockControl, AvaloniaList<GridLength>> TopContentSizesProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, AvaloniaList<GridLength>>(nameof(TopContentSizes), o => o.TopContentSizes, (o, v) => o.TopContentSizes = v);
+        private AvaloniaList<GridLength> topContentSizes = [];
+        public AvaloniaList<GridLength> TopContentSizes
+        {
+            get => this.topContentSizes;
+            set => this.SetAndRaise(TopContentSizesProperty, ref this.topContentSizes, value);
+        }
+
+        public static readonly DirectProperty<DockControl, AvaloniaList<GridLength>> RightContentSizesProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, AvaloniaList<GridLength>>(nameof(RightContentSizes), o => o.RightContentSizes, (o, v) => o.RightContentSizes = v);
+        private AvaloniaList<GridLength> rightContentSizes = [];
+        public AvaloniaList<GridLength> RightContentSizes
+        {
+            get => this.rightContentSizes;
+            set => this.SetAndRaise(RightContentSizesProperty, ref this.rightContentSizes, value);
+        }
+
+        public static readonly DirectProperty<DockControl, AvaloniaList<GridLength>> BottomContentSizesProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, AvaloniaList<GridLength>>(nameof(BottomContentSizes), o => o.BottomContentSizes, (o, v) => o.BottomContentSizes = v);
+        private AvaloniaList<GridLength> bottomContentSizes = [];
+        public AvaloniaList<GridLength> BottomContentSizes
+        {
+            get => this.bottomContentSizes;
+            set => this.SetAndRaise(BottomContentSizesProperty, ref this.bottomContentSizes, value);
+        }
+
+        #endregion
+
+        #region DockControl: Pinned ContentDeck.DislayMode Properties
+
+        public static readonly DirectProperty<DockControl, ContentDeckDisplayMode> LeftDeckModeProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, ContentDeckDisplayMode>(nameof(LeftDeckMode), o => o.LeftDeckMode, (o, v) => o.LeftDeckMode = v, ContentDeckDisplayMode.Tab);
+        private ContentDeckDisplayMode leftDeckMode = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode LeftDeckMode
+        {
+            get => this.leftDeckMode;
+            set => this.SetAndRaise(LeftDeckModeProperty, ref this.leftDeckMode, value);
+        }
+
+        public static readonly DirectProperty<DockControl, ContentDeckDisplayMode> TopDeckModeProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, ContentDeckDisplayMode>(nameof(TopDeckMode), o => o.TopDeckMode, (o, v) => o.TopDeckMode = v, ContentDeckDisplayMode.Tab);
+        private ContentDeckDisplayMode topDeckMode = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode TopDeckMode
+        {
+            get => this.topDeckMode;
+            set => this.SetAndRaise(TopDeckModeProperty, ref this.topDeckMode, value);
+        }
+
+        public static readonly DirectProperty<DockControl, ContentDeckDisplayMode> RightDeckModeProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, ContentDeckDisplayMode>(nameof(RightDeckMode), o => o.RightDeckMode, (o, v) => o.RightDeckMode = v, ContentDeckDisplayMode.Tab);
+        private ContentDeckDisplayMode rightDeckMode = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode RightDeckMode
+        {
+            get => this.rightDeckMode;
+            set => this.SetAndRaise(RightDeckModeProperty, ref this.rightDeckMode, value);
+        }
+
+        public static readonly DirectProperty<DockControl, ContentDeckDisplayMode> BottomDeckModeProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, ContentDeckDisplayMode>(nameof(BottomDeckMode), o => o.BottomDeckMode, (o, v) => o.BottomDeckMode = v, ContentDeckDisplayMode.Tab);
+        private ContentDeckDisplayMode bottomDeckMode = ContentDeckDisplayMode.Tab;
+        public ContentDeckDisplayMode BottomDeckMode
+        {
+            get => this.bottomDeckMode;
+            set => this.SetAndRaise(BottomDeckModeProperty, ref this.bottomDeckMode, value);
+        }
+
+        #endregion
+
+        #region DockControl: Pinned ContentDeck.SelectedIndex Properties
+
+        public static readonly DirectProperty<DockControl, int> LeftPinnedSelectedIndexProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, int>(nameof(LeftPinnedSelectedIndex), o => o.LeftPinnedSelectedIndex, (o, v) => o.LeftPinnedSelectedIndex = v, 0);
+        private int leftPinnedSelectedIndex = -1;
+        public int LeftPinnedSelectedIndex
+        {
+            get => this.leftPinnedSelectedIndex;
+            set => this.SetAndRaise(LeftPinnedSelectedIndexProperty, ref this.leftPinnedSelectedIndex, value);
+        }
+
+        public static readonly DirectProperty<DockControl, int> TopPinnedSelectedIndexProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, int>(nameof(TopPinnedSelectedIndex), o => o.TopPinnedSelectedIndex, (o, v) => o.TopPinnedSelectedIndex = v, 0);
+        private int topPinnedSelectedIndex = -1;
+        public int TopPinnedSelectedIndex
+        {
+            get => this.topPinnedSelectedIndex;
+            set => this.SetAndRaise(TopPinnedSelectedIndexProperty, ref this.topPinnedSelectedIndex, value);
+        }
+
+        public static readonly DirectProperty<DockControl, int> RightPinnedSelectedIndexProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, int>(nameof(RightPinnedSelectedIndex), o => o.RightPinnedSelectedIndex, (o, v) => o.RightPinnedSelectedIndex = v, 0);
+        private int rightPinnedSelectedIndex = -1;
+        public int RightPinnedSelectedIndex
+        {
+            get => this.rightPinnedSelectedIndex;
+            set => this.SetAndRaise(RightPinnedSelectedIndexProperty, ref this.rightPinnedSelectedIndex, value);
+        }
+
+        public static readonly DirectProperty<DockControl, int> BottomPinnedSelectedIndexProperty =
+            AvaloniaProperty.RegisterDirect<DockControl, int>(nameof(BottomPinnedSelectedIndex), o => o.BottomPinnedSelectedIndex, (o, v) => o.BottomPinnedSelectedIndex = v, 0);
+        private int bottomPinnedSelectedIndex = -1;
+        public int BottomPinnedSelectedIndex
+        {
+            get => this.bottomPinnedSelectedIndex;
+            set => this.SetAndRaise(BottomPinnedSelectedIndexProperty, ref this.bottomPinnedSelectedIndex, value);
+        }
+
+        #endregion
+
+        #region DockControl: Pinned Panel Length Properties
 
         public static readonly StyledProperty<GridLength> LeftPanelLengthProperty =
             AvaloniaProperty.Register<DockControl, GridLength>(nameof(LeftPanelLength), new GridLength(DEFAULT_PANEL_SIZE));
@@ -135,7 +257,9 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(BottomPanelLengthProperty, value);
         }
 
-        // *************************************************************** //
+        #endregion
+
+        #region DockControl: Pinned Panel Content Properties
 
         public static readonly DirectProperty<DockControl, bool> HasLeftContentProperty =
             AvaloniaProperty.RegisterDirect<DockControl, bool>(nameof(HasLeftContent), o => o.HasLeftContent);
@@ -153,38 +277,40 @@ namespace PlugHub.Plugin.DockHost.Controls
             AvaloniaProperty.RegisterDirect<DockControl, bool>(nameof(HasBottomContent), o => o.HasBottomContent);
         public bool HasBottomContent => this.BottomPinned.Count > 0;
 
-        // *************************************************************** //
+        #endregion
 
-        public static readonly StyledProperty<IDataTemplate?> DockControlLeftTabControlProperty =
-            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlLeftTabControl));
-        public IDataTemplate? DockControlLeftTabControl
+        #region DockControl: Pinned Panel Template Properties
+
+        public static readonly StyledProperty<IDataTemplate?> DockControlLeftPinnedTemplateProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlLeftPinnedTemplate));
+        public IDataTemplate? DockControlLeftPinnedTemplate
         {
-            get => this.GetValue(DockControlLeftTabControlProperty);
-            set => this.SetValue(DockControlLeftTabControlProperty, value);
+            get => this.GetValue(DockControlLeftPinnedTemplateProperty);
+            set => this.SetValue(DockControlLeftPinnedTemplateProperty, value);
         }
 
-        public static readonly StyledProperty<IDataTemplate?> DockControlRightTabControlProperty =
-            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlRightTabControl));
-        public IDataTemplate? DockControlRightTabControl
+        public static readonly StyledProperty<IDataTemplate?> DockControlRightPinnedTemplateProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlRightPinnedTemplate));
+        public IDataTemplate? DockControlRightPinnedTemplate
         {
-            get => this.GetValue(DockControlRightTabControlProperty);
-            set => this.SetValue(DockControlRightTabControlProperty, value);
+            get => this.GetValue(DockControlRightPinnedTemplateProperty);
+            set => this.SetValue(DockControlRightPinnedTemplateProperty, value);
         }
 
-        public static readonly StyledProperty<IDataTemplate?> DockControlBottomTabControlProperty =
-            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlBottomTabControl));
-        public IDataTemplate? DockControlBottomTabControl
+        public static readonly StyledProperty<IDataTemplate?> DockControlBottomPinnedTemplateProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlBottomPinnedTemplate));
+        public IDataTemplate? DockControlBottomPinnedTemplate
         {
-            get => this.GetValue(DockControlBottomTabControlProperty);
-            set => this.SetValue(DockControlBottomTabControlProperty, value);
+            get => this.GetValue(DockControlBottomPinnedTemplateProperty);
+            set => this.SetValue(DockControlBottomPinnedTemplateProperty, value);
         }
 
-        public static readonly StyledProperty<IDataTemplate?> DockControlTopTabControlProperty =
-            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlTopTabControl));
-        public IDataTemplate? DockControlTopTabControl
+        public static readonly StyledProperty<IDataTemplate?> DockControlTopPinnedTemplateProperty =
+            AvaloniaProperty.Register<DockControl, IDataTemplate?>(nameof(DockControlTopPinnedTemplate));
+        public IDataTemplate? DockControlTopPinnedTemplate
         {
-            get => this.GetValue(DockControlTopTabControlProperty);
-            set => this.SetValue(DockControlTopTabControlProperty, value);
+            get => this.GetValue(DockControlTopPinnedTemplateProperty);
+            set => this.SetValue(DockControlTopPinnedTemplateProperty, value);
         }
 
         #endregion
@@ -198,7 +324,8 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
-        #region DockControl: Unpinned Panel Properties
+
+        #region DockControl: Unpinned Flyout Properties
 
         public static readonly StyledProperty<double> LeftFlyoutLengthProperty =
             AvaloniaProperty.Register<DockControl, double>(nameof(LeftFlyoutLength), DEFAULT_PANEL_SIZE);
@@ -232,7 +359,9 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetValue(BottomFlyoutLengthProperty, value);
         }
 
-        // *************************************************************** //
+        #endregion
+
+        #region DockControl: Unpinned Gutter Margin Properties
 
         public static readonly DirectProperty<DockControl, Thickness> LeftGutterMarginsProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(LeftGutterMargins), o => o.LeftGutterMargins, (o, v) => o.LeftGutterMargins = v, new Thickness(0));
@@ -270,7 +399,9 @@ namespace PlugHub.Plugin.DockHost.Controls
             set => this.SetAndRaise(BottomGutterMarginsProperty, ref this.bottomGutterMargins, value);
         }
 
-        // *************************************************************** //
+        #endregion
+
+        #region DockControl: Unpinned Flyout Margins Properties
 
         public static readonly DirectProperty<DockControl, Thickness> LeftFlyoutMarginProperty =
             AvaloniaProperty.RegisterDirect<DockControl, Thickness>(nameof(LeftFlyoutMargin), o => o.LeftFlyoutMargin);
@@ -308,7 +439,9 @@ namespace PlugHub.Plugin.DockHost.Controls
             private set => this.SetAndRaise(BottomFlyoutMarginProperty, ref this.bottomFlyoutMargin, value);
         }
 
-        // *************************************************************** //
+        #endregion
+
+        #region DockControl: Unpinned Flyout Open Properties
 
         public static readonly DirectProperty<DockControl, bool> HasOpenFlyoutProperty =
             AvaloniaProperty.RegisterDirect<DockControl, bool>(nameof(HasOpenFlyout), o => o.HasOpenFlyout);
@@ -330,27 +463,30 @@ namespace PlugHub.Plugin.DockHost.Controls
 
         #endregion
 
+
         public DockControl()
         {
             this.config = this.NewConfig();
 
-            DockPanelsProperty.Changed.AddClassHandler<DockControl>((s, e) =>
+            this.PropertyChanged += (_, e) =>
             {
-                if (e.NewValue is IList<DockItemState> list && s.IsConstructed)
-                    this.ProcessBufferedPanels(list);
-            });
-
-            DockServiceProperty.Changed.AddClassHandler<DockControl>((s, e) =>
-            {
-                if (e.NewValue is IDockService service)
+                if (e.Property == DockPanelsProperty)
                 {
-                    this.dockService = service;
-
-                    DockHostControlData? replace = this.dockService.RegisterDockControl(this);
-
-                    if (replace != null) this.config = replace;
+                    if (e.NewValue is IList<DockItemState> list && this.IsConstructed)
+                        this.ProcessBufferedPanels(list);
                 }
-            });
+                else if (e.Property == DockServiceProperty)
+                {
+                    if (e.NewValue is IDockService service)
+                    {
+                        this.dockService = service;
+
+                        DockHostControlData? replace = this.dockService.RegisterDockControl(this);
+
+                        if (replace != null) this.config = replace;
+                    }
+                }
+            };
 
             this.DetachedFromVisualTree += (s, e) =>
             {
@@ -359,6 +495,7 @@ namespace PlugHub.Plugin.DockHost.Controls
                 this.dockService.SaveDockControl(this);
             };
         }
+
 
         #region DockControl: Lifecycle 
 
@@ -385,6 +522,17 @@ namespace PlugHub.Plugin.DockHost.Controls
             {
                 this.NormalizeSlicesBySortOrder();
                 this.IsReady = true;
+
+                this.LeftContentSizes = [.. this.config.LeftContentSizes.Select(x => new GridLength(x, GridUnitType.Star))];
+                this.TopContentSizes = [.. this.config.TopContentSizes.Select(x => new GridLength(x, GridUnitType.Star))];
+                this.RightContentSizes = [.. this.config.RightContentSizes.Select(x => new GridLength(x, GridUnitType.Star))];
+                this.BottomContentSizes = [.. this.config.BottomContentSizes.Select(x => new GridLength(x, GridUnitType.Star))];
+
+                this.LeftPinnedSelectedIndex = this.config.LeftPinnedSelectedIndex;
+                this.TopPinnedSelectedIndex = this.config.TopPinnedSelectedIndex;
+                this.RightPinnedSelectedIndex = this.config.RightPinnedSelectedIndex;
+                this.BottomPinnedSelectedIndex = this.config.BottomPinnedSelectedIndex;
+
                 this.RaiseEvent(new RoutedEventArgs(DockControlReadyEvent));
 
             }, DispatcherPriority.Background);
@@ -511,6 +659,11 @@ namespace PlugHub.Plugin.DockHost.Controls
             grid.RowDefinitions[0].Height = new GridLength(this.config.TopPanelLength);
             grid.ColumnDefinitions[4].Width = new GridLength(this.config.RightPanelLength);
             grid.RowDefinitions[4].Height = new GridLength(this.config.BottomPanelLength);
+
+            this.LeftDeckMode = this.config.LeftDeckMode;
+            this.TopDeckMode = this.config.TopDeckMode;
+            this.RightDeckMode = this.config.RightDeckMode;
+            this.BottomDeckMode = this.config.BottomDeckMode;
 
             this.leftSplitter = e.NameScope.Find<GridSplitter>("PART_LeftGridSplitter");
             this.topSplitter = e.NameScope.Find<GridSplitter>("PART_TopGridSplitter");
@@ -670,11 +823,41 @@ namespace PlugHub.Plugin.DockHost.Controls
                 LeftPanelLength = this.LeftPanelLength.Value,
                 TopPanelLength = this.TopPanelLength.Value,
                 RightPanelLength = this.RightPanelLength.Value,
-                BottomPanelLength = this.BottomPanelLength.Value
+                BottomPanelLength = this.BottomPanelLength.Value,
+
+                LeftDeckMode = this.LeftDeckMode,
+                TopDeckMode = this.TopDeckMode,
+                RightDeckMode = this.RightDeckMode,
+                BottomDeckMode = this.BottomDeckMode,
+
+                LeftContentSizes = [.. this.LeftContentSizes.Select(x => x.Value)],
+                TopContentSizes = [.. this.TopContentSizes.Select(x => x.Value)],
+                RightContentSizes = [.. this.RightContentSizes.Select(x => x.Value)],
+                BottomContentSizes = [.. this.BottomContentSizes.Select(x => x.Value)],
+
+                LeftPinnedSelectedIndex = this.LeftPinnedSelectedIndex,
+                TopPinnedSelectedIndex = this.TopPinnedSelectedIndex,
+                RightPinnedSelectedIndex = this.RightPinnedSelectedIndex,
+                BottomPinnedSelectedIndex = this.BottomPinnedSelectedIndex
             };
         }
         public virtual DockHostControlData? ToConfig()
         {
+            this.config.LeftDeckMode = this.LeftDeckMode;
+            this.config.TopDeckMode = this.TopDeckMode;
+            this.config.RightDeckMode = this.RightDeckMode;
+            this.config.BottomDeckMode = this.BottomDeckMode;
+
+            this.config.LeftContentSizes = [.. this.LeftContentSizes.Select(x => x.Value)];
+            this.config.TopContentSizes = [.. this.TopContentSizes.Select(x => x.Value)];
+            this.config.RightContentSizes = [.. this.RightContentSizes.Select(x => x.Value)];
+            this.config.BottomContentSizes = [.. this.BottomContentSizes.Select(x => x.Value)];
+
+            this.config.LeftPinnedSelectedIndex = this.LeftPinnedSelectedIndex;
+            this.config.TopPinnedSelectedIndex = this.TopPinnedSelectedIndex;
+            this.config.RightPinnedSelectedIndex = this.RightPinnedSelectedIndex;
+            this.config.BottomPinnedSelectedIndex = this.BottomPinnedSelectedIndex;
+
             Dictionary<Guid, DockHostPanelData> byId =
                 this.config.DockHostDataItems.ToDictionary(x => x.ControlID);
 

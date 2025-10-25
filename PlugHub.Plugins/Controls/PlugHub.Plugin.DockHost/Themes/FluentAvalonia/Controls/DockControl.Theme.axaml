@@ -100,7 +100,7 @@
 								<ContentPresenter
 									Name="PART_TopPinnedPresenter"
 									Content="{Binding TopPinned, RelativeSource={RelativeSource TemplatedParent}}"
-									ContentTemplate="{TemplateBinding DockControlTopTabControl}" />
+									ContentTemplate="{TemplateBinding DockControlTopPinnedTemplate}" />
 							</Border>
 
 							<!-- Top splitter -->
@@ -124,7 +124,7 @@
 								<ContentPresenter
 									Name="PART_LeftPinnedPresenter"
 									Content="{Binding LeftPinned, RelativeSource={RelativeSource TemplatedParent}}"
-									ContentTemplate="{TemplateBinding DockControlLeftTabControl}" />
+									ContentTemplate="{TemplateBinding DockControlLeftPinnedTemplate }" />
 							</Border>
 
 							<!-- Left splitter -->
@@ -164,7 +164,7 @@
 								<ContentPresenter
 									Name="PART_RightPinnedPresenter"
 									Content="{Binding RightPinned, RelativeSource={RelativeSource TemplatedParent}}"
-									ContentTemplate="{TemplateBinding DockControlRightTabControl}" />
+									ContentTemplate="{TemplateBinding DockControlRightPinnedTemplate}" />
 							</Border>
 
 							<!-- Bottom splitter -->
@@ -188,7 +188,7 @@
 								<ContentPresenter
 									Name="PART_BottomPinnedPresenter"
 									Content="{Binding BottomPinned, RelativeSource={RelativeSource TemplatedParent}}"
-									ContentTemplate="{TemplateBinding DockControlBottomTabControl}"/>
+									ContentTemplate="{TemplateBinding DockControlBottomPinnedTemplate}"/>
 							</Border>
 
 						</Grid>
@@ -279,53 +279,55 @@
 			</ControlTemplate>
 		</Setter>
 
-		<!-- DockControlLeftTabControl -->
-		<Setter Property="DockControlLeftTabControl">
+		<!-- DockControlLeftPinnedTemplate -->
+		<Setter Property="DockControlLeftPinnedTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<Border Name="BottomTabBorder" Padding="0" Margin="0">
+					<Border Name="LeftPinnedBorder" Padding="0" Margin="0">
 						<DockPanel
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
 							Margin="0">
 
 							<core:ContentDeck
-								Name="PART_BottomContentDesk"
+								Name="PART_LeftContentDeck"
 								ItemsSource="{Binding}"
 								DockPanel.Dock="Bottom"
 								DockEdge="Bottom"
 								ActivationMode="Persistent"
 								EmptyBehavior="Collapse"
 								Padding="0"
-								DisplayMode="{Binding LeftDockMode, RelativeSource={RelativeSource TemplatedParent}}"
-								ContentSizes="{Binding LeftContentSizes, RelativeSource={RelativeSource TemplatedParent}}"/>
+								DisplayMode="{Binding TemplatedParent.LeftDeckMode, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								ContentSizes="{Binding TemplatedParent.LeftContentSizes, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								SelectedIndex="{Binding TemplatedParent.LeftPinnedSelectedIndex, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"/>
 
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding ActiveContent, ElementName=PART_BottomContentDesk}">
+								Content="{Binding ActiveContent, ElementName=PART_LeftContentDeck}">
+
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
+
 						</DockPanel>
 					</Border>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
 
-		<!-- DockControlTopTabControl -->
-		<Setter Property="DockControlTopTabControl">
+		<!-- DockControlTopPinnedTemplate -->
+		<Setter Property="DockControlTopPinnedTemplate">
 			<Setter.Value>
 				<DataTemplate>
-
-					<Border Name="TopTabBorder" Padding="0" Margin="0">
+					<Border Name="TopPinnedBorder" Padding="0" Margin="0">
 						<DockPanel
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
 							Margin="0">
 
 							<core:ContentDeck
-								Name="PART_LeftContentDesk"
+								Name="PART_TopContentDeck"
 								ItemsSource="{Binding}"
 								DockPanel.Dock="Top"
 								DockEdge="Top"
@@ -333,69 +335,74 @@
 								EmptyBehavior="Collapse"
 								DeckOrientation="Horizontal"
 								Padding="0"
-								DisplayMode="{Binding TopDockMode, RelativeSource={RelativeSource TemplatedParent}}"
-								ContentSizes="{Binding TopContentSizes, RelativeSource={RelativeSource TemplatedParent}}"/>
+								DisplayMode="{Binding TemplatedParent.TopDeckMode, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								ContentSizes="{Binding TemplatedParent.TopContentSizes, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								SelectedIndex="{Binding TemplatedParent.TopPinnedSelectedIndex, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"/>
 
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding ActiveContent, ElementName=PART_LeftContentDesk}">
+								Content="{Binding ActiveContent, ElementName=PART_TopContentDeck}">
+
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
+
 						</DockPanel>
 					</Border>
-
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
 
-		<!-- DockControlRightTabControl -->
-		<Setter Property="DockControlRightTabControl">
+		<!-- DockControlRightPinnedTemplate -->
+		<Setter Property="DockControlRightPinnedTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<Border Name="BottomTabBorder" Padding="0" Margin="0">
+					<Border Name="RightPinnedBorder" Padding="0" Margin="0">
 						<DockPanel
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
 							Margin="0">
 
 							<core:ContentDeck
-								Name="PART_BottomContentDesk"
+								Name="PART_RightContentDeck"
 								ItemsSource="{Binding}"
 								DockPanel.Dock="Bottom"
 								DockEdge="Bottom"
 								ActivationMode="Persistent"
 								EmptyBehavior="Collapse"
 								Padding="0"
-								DisplayMode="{Binding RightDockMode, RelativeSource={RelativeSource TemplatedParent}}"
-								ContentSizes="{Binding RightContentSizes, RelativeSource={RelativeSource TemplatedParent}}"/>
+								DisplayMode="{Binding TemplatedParent.RightDeckMode, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								ContentSizes="{Binding TemplatedParent.RightContentSizes, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								SelectedIndex="{Binding TemplatedParent.RightPinnedSelectedIndex, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"/>
 
 							<av:TransitioningContentControl
 								IsTransitionReversed="True"
-								Content="{Binding ActiveContent, ElementName=PART_BottomContentDesk}">
+								Content="{Binding ActiveContent, ElementName=PART_RightContentDeck}">
+
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
+
 						</DockPanel>
 					</Border>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
 
-		<!-- DockControlBottomTabControl -->
-		<Setter Property="DockControlBottomTabControl">
+		<!-- DockControlBottomPinnedTemplate -->
+		<Setter Property="DockControlBottomPinnedTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<Border Name="BottomTabBorder" Padding="0" Margin="0">
+					<Border Name="BottomPinnedBorder" Padding="0" Margin="0">
 						<DockPanel
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
 							Margin="0">
 
 							<core:ContentDeck
-								Name="PART_BottomContentDesk"
+								Name="PART_BottomContentDeck"
 								ItemsSource="{Binding}"
 								DockPanel.Dock="Bottom"
 								DockEdge="Bottom"
@@ -403,21 +410,24 @@
 								EmptyBehavior="Collapse"
 								DeckOrientation="Horizontal"
 								Padding="0"
-								DisplayMode="{Binding BottomDockMode, RelativeSource={RelativeSource TemplatedParent}}"
-								ContentSizes="{Binding BottomContentSizes, RelativeSource={RelativeSource TemplatedParent}}"/>
+								DisplayMode="{Binding TemplatedParent.BottomDeckMode, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								ContentSizes="{Binding TemplatedParent.BottomContentSizes, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"
+								SelectedIndex="{Binding TemplatedParent.BottomPinnedSelectedIndex, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=TwoWay}"/>
 
 							<av:TransitioningContentControl
-								IsTransitionReversed="True"
-								Content="{Binding ActiveContent, ElementName=PART_BottomContentDesk}">
+							  IsTransitionReversed="True"
+							  Content="{Binding ActiveContent, ElementName=PART_BottomContentDeck}">
 								<av:TransitioningContentControl.PageTransition>
 									<an:CompositePageTransition/>
 								</av:TransitioningContentControl.PageTransition>
 							</av:TransitioningContentControl>
+
 						</DockPanel>
 					</Border>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
+
 
 		<!-- DockControlMissingPanel-->
 		<Setter Property="DockControlMissingPanel">

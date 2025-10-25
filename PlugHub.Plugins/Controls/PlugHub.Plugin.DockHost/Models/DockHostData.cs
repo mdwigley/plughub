@@ -33,10 +33,15 @@ namespace PlugHub.Plugin.DockHost.Models
         public ContentDeckDisplayMode RightDeckMode { get; set; } = ContentDeckDisplayMode.Tab;
         public ContentDeckDisplayMode BottomDeckMode { get; set; } = ContentDeckDisplayMode.Tab;
 
-        public List<double> LeftSplitterSizes { get; set; } = [];
-        public List<double> TopSplitterSizes { get; set; } = [];
-        public List<double> RightSplitterSizes { get; set; } = [];
-        public List<double> BottomSplitterSizes { get; set; } = [];
+        public List<double> LeftContentSizes { get; set; } = [];
+        public List<double> TopContentSizes { get; set; } = [];
+        public List<double> RightContentSizes { get; set; } = [];
+        public List<double> BottomContentSizes { get; set; } = [];
+
+        public int LeftPinnedSelectedIndex { get; set; } = 0;
+        public int TopPinnedSelectedIndex { get; set; } = 0;
+        public int RightPinnedSelectedIndex { get; set; } = 0;
+        public int BottomPinnedSelectedIndex { get; set; } = 0;
 
         public List<DockHostPanelData> DockHostDataItems { get; set; } = [];
     }

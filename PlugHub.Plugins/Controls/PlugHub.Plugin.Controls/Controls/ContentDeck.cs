@@ -294,6 +294,21 @@ namespace PlugHub.Plugin.Controls.Controls
                     else
                         this.IsOpen = false;
                 }
+                else if (e.Property == ContentSizesProperty)
+                {
+                    this.UpdateGridVisibility();
+                }
+                else if (e.Property == SelectedIndexProperty)
+                {
+                    int index = this.SelectedIndex;
+
+                    if (index >= 0 && index < this.Items.Count)
+                        this.activeItem = this.Items[index] as ISwitchable;
+                    else
+                        this.activeItem = null;
+
+                    this.UpdateGridVisibility();
+                }
             };
         }
 
@@ -311,7 +326,9 @@ namespace PlugHub.Plugin.Controls.Controls
             this.HookDefocusClose();
             this.HoookScoller(e);
 
+            this.NormalizeContentSizes();
             this.RebuildGrid();
+            this.UpdateGridVisibility();
         }
 
         protected virtual void UpdateOrientation()
@@ -906,6 +923,7 @@ namespace PlugHub.Plugin.Controls.Controls
             // Call back into the control when drag completes
             splitter.DragCompleted += (_, __) =>
             {
+                this.NormalizeContentSizes();
                 this.OnSplitterDragCompleted(gridIndex);
             };
 
@@ -913,8 +931,6 @@ namespace PlugHub.Plugin.Controls.Controls
         }
         private void RebuildGrid()
         {
-            this.NormalizeContentSizes();
-
             this.deckGrid.Children.Clear();
             this.deckGrid.RowDefinitions.Clear();
             this.deckGrid.ColumnDefinitions.Clear();
@@ -942,7 +958,7 @@ namespace PlugHub.Plugin.Controls.Controls
                     this.deckGrid.Children.Add(splitter);
                 }
 
-                GridLength length = GetLengthOrMin(slotIndex);
+                GridLength length = this.GetLengthOrMin(slotIndex);
 
                 if (this.IsVertical)
                 {
@@ -965,7 +981,6 @@ namespace PlugHub.Plugin.Controls.Controls
             this.deckGrid.InvalidateMeasure();
             this.deckGrid.InvalidateArrange();
             this.deckGrid.InvalidateVisual();
-
             this.deckGrid.UpdateLayout();
         }
         private void ClearDeckGrid()

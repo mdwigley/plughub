@@ -10,7 +10,6 @@
 
 		<Setter Property="BorderBrush" Value="{DynamicResource PlugHub.SecondaryAltControlBrush}" />
 		<Setter Property="AccentBrush" Value="{DynamicResource PlugHub.AccentFillBrush}" />
-		<Setter Property="ContentSizes" Value="200*,100*"/>
 
 		<!-- Template -->
 		<Setter Property="Template">
