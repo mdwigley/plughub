@@ -13,7 +13,7 @@ namespace PlugHub.Plugin.DockHost.Models
     /// Provides change notifications for data binding and can project itself into
     /// a persistence-friendly <see cref="DockHostPanelData"/> for configuration storage.
     /// </summary>
-    public class DockItemState : INotifyPropertyChanged, ISwitchable
+    public class DockItemState : INotifyPropertyChanged, IContentItem
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 

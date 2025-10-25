@@ -30,19 +30,13 @@ namespace PlugHub.Plugin.Controls.Controls
     public enum ContentDeckEmptyBehavior
     {
         Collapse,
-        RemainVisible
+        Visible
     }
 
-    public class ActiveContentChangedEventArgs(RoutedEvent routedEvent, object? oldItem, object? newItem)
+    public class ItemsReorderedEventArgs(RoutedEvent routedEvent, IContentItem item, int oldIndex, int newIndex)
         : RoutedEventArgs(routedEvent)
     {
-        public object? OldItem { get; } = oldItem;
-        public object? NewItem { get; } = newItem;
-    }
-    public class ItemsReorderedEventArgs(RoutedEvent routedEvent, ISwitchable item, int oldIndex, int newIndex)
-        : RoutedEventArgs(routedEvent)
-    {
-        public ISwitchable Item { get; } = item;
+        public IContentItem Item { get; } = item;
         public int OldIndex { get; } = oldIndex;
         public int NewIndex { get; } = newIndex;
     }
@@ -60,24 +54,25 @@ namespace PlugHub.Plugin.Controls.Controls
                 this.PseudoClasses.Set(":selected", isSelected);
             }
         }
-
     }
 
     public class ContentDeck : SelectingItemsControl
     {
         private EventHandler<PointerPressedEventArgs>? defocusHandler;
 
+        private TopLevel? top;
+
         private Point? clickPosition;
         private bool isMoving;
         private RotationView? pressedRot;
-        private ISwitchable? pressedItem;
-        private ISwitchable? lastTargetItem;
+        private IContentItem? pressedItem;
+        private IContentItem? lastTargetItem;
         private Rect? lastTargetBounds;
-        private TopLevel? top;
         private Control? activeSource;
-        private ISwitchable? activeItem;
         private int lastReorderOldIndex = -1;
         private int lastReorderNewIndex = -1;
+
+        private IContentItem? activeItem;
 
         private readonly Grid deckGrid = new()
         {
@@ -100,14 +95,6 @@ namespace PlugHub.Plugin.Controls.Controls
         {
             add => this.AddHandler(ClosedEvent, value);
             remove => this.RemoveHandler(ClosedEvent, value);
-        }
-
-        public static readonly RoutedEvent<ActiveContentChangedEventArgs> ActiveContentChangedEvent =
-            RoutedEvent.Register<ContentDeck, ActiveContentChangedEventArgs>(nameof(ActiveContentChanged), RoutingStrategies.Bubble);
-        public event EventHandler<ActiveContentChangedEventArgs>? ActiveContentChanged
-        {
-            add => this.AddHandler(ActiveContentChangedEvent, value);
-            remove => this.RemoveHandler(ActiveContentChangedEvent, value);
         }
 
         public static readonly RoutedEvent<ItemsReorderedEventArgs> ItemsReorderedEvent =
@@ -210,7 +197,14 @@ namespace PlugHub.Plugin.Controls.Controls
         public bool IsOpen
         {
             get => this.isOpen;
-            set => this.SetAndRaise(IsOpenProperty, ref this.isOpen, value);
+            set
+            {
+                if (this.SetAndRaise(IsOpenProperty, ref this.isOpen, value))
+                {
+                    if (value) this.RaiseEvent(new RoutedEventArgs(OpenedEvent));
+                    else this.RaiseEvent(new RoutedEventArgs(ClosedEvent));
+                }
+            }
         }
 
         public static readonly DirectProperty<ContentDeck, Orientation> OrientationProperty =
@@ -249,67 +243,49 @@ namespace PlugHub.Plugin.Controls.Controls
 
         public ContentDeck()
         {
-            this.Items.CollectionChanged += this.CollectionChanged;
+            this.Items.CollectionChanged += this.OnCollectionChanged;
             this.SelectionMode = SelectionMode.AlwaysSelected;
             this.activeItem = null;
             this.activeContent = null;
             this.IsOpen = this.ActivationMode == ContentDeckActivationMode.Persistent;
             this.ActiveContent = this.deckGrid;
 
-            this.UpdateVisibility();
-
-            this.PropertyChanged += (_, e) =>
+            ItemsSourceProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
             {
-                if (e.Property == ItemsSourceProperty)
-                {
-                    if (e.OldValue is ObservableCollection<ISwitchable> oldColl)
-                        oldColl.CollectionChanged -= this.CollectionChanged;
-                    if (e.NewValue is ObservableCollection<ISwitchable> newColl)
-                        newColl.CollectionChanged += this.CollectionChanged;
-                    this.UpdateVisibility();
-                }
-                else if (e.Property == DockEdgeProperty)
-                {
-                    this.UpdateOrientation();
-                }
-                else if (e.Property == IsOpenProperty)
-                {
-                    if ((bool?)e.NewValue == true)
-                        this.RaiseEvent(new RoutedEventArgs(OpenedEvent));
-                    else
-                        this.RaiseEvent(new RoutedEventArgs(ClosedEvent));
-                }
-                else if (e.Property == ActiveContentProperty)
-                {
-                    this.RaiseEvent(new ActiveContentChangedEventArgs(ActiveContentChangedEvent, e.OldValue, e.NewValue));
-                }
-                else if (e.Property == DisplayModeProperty)
-                {
-                    this.UpdateGridVisibility();
-                }
-                else if (e.Property == ActivationModeProperty)
-                {
-                    if (((ContentDeckActivationMode?)e.NewValue) == ContentDeckActivationMode.Persistent)
-                        this.IsOpen = true;
-                    else
-                        this.IsOpen = false;
-                }
-                else if (e.Property == ContentSizesProperty)
-                {
-                    this.UpdateGridVisibility();
-                }
-                else if (e.Property == SelectedIndexProperty)
-                {
-                    int index = this.SelectedIndex;
+                if (e.OldValue is ObservableCollection<IContentItem> oldColl)
+                    oldColl.CollectionChanged -= x.OnCollectionChanged;
+                if (e.NewValue is ObservableCollection<IContentItem> newColl)
+                    newColl.CollectionChanged += x.OnCollectionChanged;
 
-                    if (index >= 0 && index < this.Items.Count)
-                        this.activeItem = this.Items[index] as ISwitchable;
-                    else
-                        this.activeItem = null;
+                x.UpdateVisibility();
+            });
+            DockEdgeProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
+            {
+                x.UpdateOrientation();
+            });
+            DisplayModeProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
+            {
+                x.UpdateGridVisibility();
+            });
+            ActivationModeProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
+            {
+                x.IsOpen = ((ContentDeckActivationMode?)e.NewValue) == ContentDeckActivationMode.Persistent;
+            });
+            ContentSizesProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
+            {
+                x.UpdateGridVisibility();
+            });
+            SelectedIndexProperty.Changed.AddClassHandler<ContentDeck>((x, e) =>
+            {
+                int index = x.SelectedIndex;
 
-                    this.UpdateGridVisibility();
-                }
-            };
+                if (index >= 0 && index < x.Items.Count)
+                    x.activeItem = x.Items[index] as IContentItem;
+                else
+                    x.activeItem = null;
+
+                x.UpdateGridVisibility();
+            });
         }
 
         #region DockGutter: Internal Upkeep
@@ -328,7 +304,6 @@ namespace PlugHub.Plugin.Controls.Controls
 
             this.NormalizeContentSizes();
             this.RebuildGrid();
-            this.UpdateGridVisibility();
         }
 
         protected virtual void UpdateOrientation()
@@ -348,7 +323,7 @@ namespace PlugHub.Plugin.Controls.Controls
         }
         protected virtual void UpdateVisibility()
         {
-            this.IsVisible = this.EmptyBehavior == ContentDeckEmptyBehavior.RemainVisible || this.Items.Count > 0;
+            this.IsVisible = this.EmptyBehavior == ContentDeckEmptyBehavior.Visible || this.Items.Count > 0;
         }
 
         protected virtual void HookClicks()
@@ -420,6 +395,13 @@ namespace PlugHub.Plugin.Controls.Controls
             scroller?.AddHandler(PointerWheelChangedEvent, this.OnPointerWheelChanged, RoutingStrategies.Tunnel);
         }
 
+        #endregion
+
+        #region DockGutter: Event Hanlders
+
+        protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+            => new ContentDeckItem();
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -444,17 +426,105 @@ namespace PlugHub.Plugin.Controls.Controls
                 {
                     double delta = e.Delta.Y;
 
-                    sv.Offset = new Vector(
-                        Math.Max(0, sv.Offset.X + delta * -40),
-                        sv.Offset.Y);
+                    sv.Offset = new Vector(Math.Max(0, sv.Offset.X + delta * -40), sv.Offset.Y);
 
                     e.Handled = true;
                 }
             }
         }
+        protected virtual void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
 
-        protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
-            => new ContentDeckItem();
+                    this.RebuildGrid();
+
+                    bool isTabMode = this.DisplayMode == ContentDeckDisplayMode.Tab;
+                    bool noActiveItem = this.activeItem == null;
+                    bool hasItems = this.Items.Count > 0;
+                    bool hasNewItems = e.NewItems?.Count > 0;
+
+                    if (isTabMode && noActiveItem && hasItems && hasNewItems)
+                    {
+                        int lastNewIndex = e.NewStartingIndex + e.NewItems!.Count - 1;
+
+                        if (this.Items[lastNewIndex] is IContentItem newItem)
+                            this.SetActiveItem(newItem);
+                        else
+                            this.ClearActiveItem();
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+
+                    foreach (IContentItem s in e.OldItems?.OfType<IContentItem>() ?? [])
+                        if (s.Content != null)
+                            this.deckGrid.Children.Remove(s.Content);
+
+                    this.RebuildGrid();
+
+                    bool noItemsLeft = this.Items.Count == 0;
+                    bool activeItemRemoved = this.activeItem != null && !this.Items.Contains(this.activeItem);
+
+                    if (noItemsLeft)
+                    {
+                        this.ClearActiveItem();
+                    }
+                    else if (activeItemRemoved)
+                    {
+                        int candidateIndex = e.OldStartingIndex;
+
+                        if (candidateIndex >= this.Items.Count)
+                            candidateIndex = this.Items.Count - 1;
+
+                        if (this.Items[candidateIndex] is IContentItem candidate)
+                            this.SetActiveItem(candidate);
+                        else
+                            this.ClearActiveItem();
+                    }
+
+                    if (this.ActivationMode == ContentDeckActivationMode.Transient)
+                        this.IsOpen = false;
+
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    this.RebuildGrid();
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    this.ClearDeckGrid();
+                    break;
+            }
+
+            this.UpdateVisibility();
+        }
+        protected virtual void OnSplitterDragCompleted(int gridIndex)
+        {
+            int prevIndex = (gridIndex - 1) / 2;
+            int nextIndex = (gridIndex + 1) / 2;
+
+            if (prevIndex >= 0 && nextIndex < this.ContentSizes.Count)
+            {
+                if (this.IsVertical)
+                {
+                    RowDefinition prevRow = this.deckGrid.RowDefinitions[gridIndex - 1];
+                    RowDefinition nextRow = this.deckGrid.RowDefinitions[gridIndex + 1];
+
+                    this.ContentSizes[prevIndex] = prevRow.Height;
+                    this.ContentSizes[nextIndex] = nextRow.Height;
+                }
+                else
+                {
+                    ColumnDefinition prevCol = this.deckGrid.ColumnDefinitions[gridIndex - 1];
+                    ColumnDefinition nextCol = this.deckGrid.ColumnDefinitions[gridIndex + 1];
+
+                    this.ContentSizes[prevIndex] = prevCol.Width;
+                    this.ContentSizes[nextIndex] = nextCol.Width;
+                }
+            }
+        }
 
         #endregion
 
@@ -469,7 +539,8 @@ namespace PlugHub.Plugin.Controls.Controls
             if (e.Source is Visual v)
             {
                 RotationView? rot = v.FindAncestorOfType<RotationView>(includeSelf: true);
-                if (rot?.DataContext is ISwitchable d)
+
+                if (rot?.DataContext is IContentItem d)
                 {
                     this.pressedRot = rot;
                     this.activeSource = rot;
@@ -486,6 +557,7 @@ namespace PlugHub.Plugin.Controls.Controls
                 return;
 
             Point current = e.GetPosition(this);
+
             double dx = current.X - this.clickPosition.Value.X;
             double dy = current.Y - this.clickPosition.Value.Y;
             double distSq = dx * dx + dy * dy;
@@ -498,22 +570,24 @@ namespace PlugHub.Plugin.Controls.Controls
             if (!this.isMoving)
             {
                 this.Cursor = new Cursor(StandardCursorType.DragMove);
+
                 e.Pointer.Capture(this);
             }
 
             this.isMoving = true;
             this.OnItemReorder(this.pressedItem, current);
         }
-        protected virtual void OnItemReorder(ISwitchable pressedState, Point currentPos)
+        protected virtual void OnItemReorder(IContentItem pressedState, Point currentPos)
         {
             if (this.ItemsSource == null)
                 return;
 
             int currentIndex = this.Items.IndexOf(pressedState);
+
             if (currentIndex < 0)
                 return;
 
-            ISwitchable? targetState = null;
+            IContentItem? targetState = null;
             Rect? targetBounds = null;
 
             for (int i = 0; i < this.Items.Count; i++)
@@ -521,6 +595,7 @@ namespace PlugHub.Plugin.Controls.Controls
                 if (this.ContainerFromIndex(i) is Control container)
                 {
                     Point? topLeft = container.TranslatePoint(new Point(0, 0), this);
+
                     if (topLeft == null) continue;
 
                     Rect rect = new(topLeft.Value, container.Bounds.Size);
@@ -529,8 +604,9 @@ namespace PlugHub.Plugin.Controls.Controls
                     {
                         if (currentPos.Y >= rect.Top && currentPos.Y <= rect.Bottom)
                         {
-                            targetState = this.Items[i] as ISwitchable;
+                            targetState = this.Items[i] as IContentItem;
                             targetBounds = rect;
+
                             break;
                         }
                     }
@@ -538,8 +614,9 @@ namespace PlugHub.Plugin.Controls.Controls
                     {
                         if (currentPos.X >= rect.Left && currentPos.X <= rect.Right)
                         {
-                            targetState = this.Items[i] as ISwitchable;
+                            targetState = this.Items[i] as IContentItem;
                             targetBounds = rect;
+
                             break;
                         }
                     }
@@ -599,6 +676,7 @@ namespace PlugHub.Plugin.Controls.Controls
                     if (!bounds.Contains(releasePos))
                     {
                         this.ResetPointerState();
+
                         return;
                     }
                 }
@@ -612,14 +690,14 @@ namespace PlugHub.Plugin.Controls.Controls
                 }
                 else
                 {
+                    this.SelectedItem = this.pressedItem;
+
                     this.RaiseEvent(
                         new ItemsReorderedEventArgs(
                             ItemsReorderedEvent,
                             this.pressedItem!,
                             this.lastReorderOldIndex,
                             this.lastReorderNewIndex));
-
-                    this.SelectedItem = this.pressedItem;
                 }
 
                 e.Handled = true;
@@ -646,21 +724,23 @@ namespace PlugHub.Plugin.Controls.Controls
 
         #region DockGutter: Panel Controlers
 
-        protected virtual void SetActiveItem(ISwitchable? item = null)
+        protected virtual void SetActiveItem(IContentItem item)
         {
-            ISwitchable? previous = this.activeItem;
-
             this.activeItem = item;
             this.SelectedItem = item;
-
             if (this.DisplayMode == ContentDeckDisplayMode.Tab)
                 this.UpdateGridVisibility();
-
-            if (previous != item)
-                this.RaiseEvent(new ActiveContentChangedEventArgs(ActiveContentChangedEvent, previous, item));
         }
 
-        protected virtual void TogglePanel(ISwitchable? previous)
+        protected virtual void ClearActiveItem()
+        {
+            this.activeItem = null;
+            this.SelectedItem = null;
+            if (this.DisplayMode == ContentDeckDisplayMode.Tab)
+                this.UpdateGridVisibility();
+        }
+
+        protected virtual void TogglePanel(IContentItem? previous)
         {
             if (this.IsOpen && this.activeItem == previous)
             {
@@ -674,7 +754,7 @@ namespace PlugHub.Plugin.Controls.Controls
 
         #endregion
 
-        #region DockGutter: Grid handlers
+        #region DockGutter: Grid Handlers
 
         protected virtual GridLength GetLengthOrMin(int slotIndex)
         {
@@ -688,6 +768,62 @@ namespace PlugHub.Plugin.Controls.Controls
             }
 
             return this.MinContentSize;
+        }
+        protected virtual void NormalizeContentSizes()
+        {
+            int required = this.Items.OfType<IContentItem>().Count(x => x.Content != null);
+
+            this.ContentSizes ??= [];
+
+            while (this.ContentSizes.Count > required)
+                this.ContentSizes.RemoveAt(this.ContentSizes.Count - 1);
+
+            while (this.ContentSizes.Count < required)
+                this.ContentSizes.Add(this.MinContentSize);
+
+            for (int i = 0; i < this.ContentSizes.Count; i++)
+            {
+                GridLength g = this.ContentSizes[i];
+
+                if (g.IsStar && this.MinContentSize.IsStar && g.Value < this.MinContentSize.Value)
+                    this.ContentSizes[i] = this.MinContentSize;
+                else if (!g.IsStar && this.MinContentSize.IsAbsolute && g.Value < this.MinContentSize.Value)
+                    this.ContentSizes[i] = this.MinContentSize;
+            }
+        }
+        protected virtual GridSplitter CreateGridSplitter(int gridIndex)
+        {
+            GridSplitter splitter = new()
+            {
+                ResizeBehavior = GridResizeBehavior.PreviousAndNext,
+                Background = Brushes.Transparent,
+                ResizeDirection = this.IsVertical ? GridResizeDirection.Rows : GridResizeDirection.Columns,
+            };
+
+            if (this.IsVertical)
+            {
+                splitter.Height = this.Spacing;
+                splitter.HorizontalAlignment = HorizontalAlignment.Stretch;
+                splitter.VerticalAlignment = VerticalAlignment.Stretch;
+
+                Grid.SetRow(splitter, gridIndex);
+            }
+            else
+            {
+                splitter.Width = this.Spacing;
+                splitter.VerticalAlignment = VerticalAlignment.Stretch;
+                splitter.HorizontalAlignment = HorizontalAlignment.Stretch;
+
+                Grid.SetColumn(splitter, gridIndex);
+            }
+
+            splitter.DragCompleted += (_, __) =>
+            {
+                this.NormalizeContentSizes();
+                this.OnSplitterDragCompleted(gridIndex);
+            };
+
+            return splitter;
         }
 
         protected virtual void UpdateGridVisibility()
@@ -706,6 +842,7 @@ namespace PlugHub.Plugin.Controls.Controls
             for (int i = 0; i < count; i++)
             {
                 bool isContent = i % 2 == 0;
+
                 int slot = i / 2;
 
                 if (isContent)
@@ -740,7 +877,7 @@ namespace PlugHub.Plugin.Controls.Controls
         protected virtual void UpdateTabVisibility()
         {
             int activeIndex = this.Items
-                .OfType<ISwitchable>()
+                .OfType<IContentItem>()
                 .Select((item, i) => new { item, i })
                 .FirstOrDefault(x => x.item == this.activeItem)?.i ?? -1;
 
@@ -751,6 +888,7 @@ namespace PlugHub.Plugin.Controls.Controls
                 if (i % 2 == 0)
                 {
                     bool isActive = slot == activeIndex;
+
                     GridLength length = slot < this.ContentSizes.Count
                         ? this.ContentSizes[slot]
                         : this.MinContentSize;
@@ -802,130 +940,16 @@ namespace PlugHub.Plugin.Controls.Controls
                 if (child is GridSplitter)
                 {
                     child.IsVisible = false;
+
                     continue;
                 }
 
-                int slot = this.Items.IndexOf(((ISwitchable)child.DataContext!));
+                int slot = this.Items.IndexOf(((IContentItem)child.DataContext!));
 
                 child.IsVisible = slot == activeIndex;
             }
         }
 
-        protected virtual void CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-
-                    this.RebuildGrid();
-
-                    bool isTabMode = this.DisplayMode == ContentDeckDisplayMode.Tab;
-                    bool noActiveItem = this.activeItem == null;
-                    bool hasItems = this.Items.Count > 0;
-                    bool hasNewItems = e.NewItems?.Count > 0;
-
-                    if (isTabMode && noActiveItem && hasItems && hasNewItems)
-                    {
-                        int lastNewIndex = e.NewStartingIndex + e.NewItems!.Count - 1;
-
-                        this.SetActiveItem(this.Items[lastNewIndex] as ISwitchable);
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (ISwitchable s in e.OldItems?.OfType<ISwitchable>() ?? [])
-                        if (s.Content != null)
-                            this.deckGrid.Children.Remove(s.Content);
-
-                    this.RebuildGrid();
-
-                    bool noItemsLeft = this.Items.Count == 0;
-                    bool activeItemRemoved = this.activeItem != null && !this.Items.Contains(this.activeItem);
-
-                    if (noItemsLeft)
-                    {
-                        this.SetActiveItem(null);
-                    }
-                    else if (activeItemRemoved)
-                    {
-                        int candidateIndex = e.OldStartingIndex;
-                        if (candidateIndex >= this.Items.Count)
-                            candidateIndex = this.Items.Count - 1;
-
-                        this.SetActiveItem(this.Items[candidateIndex] as ISwitchable);
-                    }
-
-                    if (this.ActivationMode == ContentDeckActivationMode.Transient)
-                        this.IsOpen = false;
-
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    this.RebuildGrid();
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    this.ClearDeckGrid();
-                    break;
-            }
-
-            this.UpdateVisibility();
-            this.UpdateGridVisibility();
-        }
-
-        protected virtual void NormalizeContentSizes()
-        {
-            int required = this.Items.OfType<ISwitchable>()
-                .Count(x => x.Content != null);
-
-            this.ContentSizes ??= [];
-
-            while (this.ContentSizes.Count < required)
-                this.ContentSizes.Add(this.MinContentSize);
-
-            for (int i = 0; i < this.ContentSizes.Count; i++)
-            {
-                GridLength g = this.ContentSizes[i];
-
-                if (g.IsStar && this.MinContentSize.IsStar && g.Value < this.MinContentSize.Value)
-                    this.ContentSizes[i] = this.MinContentSize;
-                else if (!g.IsStar && this.MinContentSize.IsAbsolute && g.Value < this.MinContentSize.Value)
-                    this.ContentSizes[i] = this.MinContentSize;
-            }
-        }
-        protected virtual GridSplitter CreateGridSplitter(int gridIndex)
-        {
-            GridSplitter splitter = new()
-            {
-                ResizeBehavior = GridResizeBehavior.PreviousAndNext,
-                Background = Brushes.Transparent,
-                ResizeDirection = this.IsVertical ? GridResizeDirection.Rows : GridResizeDirection.Columns,
-            };
-
-            if (this.IsVertical)
-            {
-                splitter.Height = this.Spacing;
-                splitter.HorizontalAlignment = HorizontalAlignment.Stretch;
-                splitter.VerticalAlignment = VerticalAlignment.Stretch;
-                Grid.SetRow(splitter, gridIndex);
-            }
-            else
-            {
-                splitter.Width = this.Spacing;
-                splitter.VerticalAlignment = VerticalAlignment.Stretch;
-                splitter.HorizontalAlignment = HorizontalAlignment.Stretch;
-                Grid.SetColumn(splitter, gridIndex);
-            }
-
-            splitter.DragCompleted += (_, __) =>
-            {
-                this.NormalizeContentSizes();
-                this.OnSplitterDragCompleted(gridIndex);
-            };
-
-            return splitter;
-        }
         private void RebuildGrid()
         {
             this.deckGrid.Children.Clear();
@@ -936,7 +960,7 @@ namespace PlugHub.Plugin.Controls.Controls
 
             for (int i = 0; i < this.Items.Count; i++)
             {
-                if (this.Items[i] is not ISwitchable switchable || switchable.Content == null)
+                if (this.Items[i] is not IContentItem switchable || switchable.Content == null)
                     continue;
 
                 if (i > 0)
@@ -974,44 +998,13 @@ namespace PlugHub.Plugin.Controls.Controls
 
                 slotIndex++;
             }
-
-            this.deckGrid.InvalidateMeasure();
-            this.deckGrid.InvalidateArrange();
-            this.deckGrid.InvalidateVisual();
-            this.deckGrid.UpdateLayout();
         }
         private void ClearDeckGrid()
         {
             this.deckGrid.Children.Clear();
             this.deckGrid.RowDefinitions.Clear();
             this.deckGrid.ColumnDefinitions.Clear();
-            this.SetActiveItem();
-        }
-
-        protected virtual void OnSplitterDragCompleted(int gridIndex)
-        {
-            int prevIndex = (gridIndex - 1) / 2;
-            int nextIndex = (gridIndex + 1) / 2;
-
-            if (prevIndex >= 0 && nextIndex < this.ContentSizes.Count)
-            {
-                if (this.IsVertical)
-                {
-                    RowDefinition prevRow = this.deckGrid.RowDefinitions[gridIndex - 1];
-                    RowDefinition nextRow = this.deckGrid.RowDefinitions[gridIndex + 1];
-
-                    this.ContentSizes[prevIndex] = prevRow.Height;
-                    this.ContentSizes[nextIndex] = nextRow.Height;
-                }
-                else
-                {
-                    ColumnDefinition prevCol = this.deckGrid.ColumnDefinitions[gridIndex - 1];
-                    ColumnDefinition nextCol = this.deckGrid.ColumnDefinitions[gridIndex + 1];
-
-                    this.ContentSizes[prevIndex] = prevCol.Width;
-                    this.ContentSizes[nextIndex] = nextCol.Width;
-                }
-            }
+            this.ClearActiveItem();
         }
 
         #endregion

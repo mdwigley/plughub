@@ -38,7 +38,7 @@ PlugHub.Plugin.Controls
 │
 ├───Interfaces
 │   └───Controls
-│           ISwitchable.cs
+│           IContentItem.cs
 │
 └───Themes
     ├───FluentAvalonia
@@ -104,7 +104,7 @@ Controls here represent the logic layer only — they have no direct visual impl
 
 ### Interfaces
 Houses shared control contracts and behavior patterns.  
-`ISwitchable` is an example interface for dynamic control state changes.
+`IContentItem` is an example interface for dynamic control state changes.
 
 ### Themes
 Defines theme families. Each family (e.g., *FluentAvalonia*, *MaterialYou*, *Generic*) comprises:

@@ -183,16 +183,20 @@ namespace PlugHub.Plugin.Controls.Controls
 
         public ResizeBox()
         {
-            PanelSizeProperty.Changed.AddClassHandler<ResizeBox>((x, e) => x.ApplyPanelSize());
-
-            DockEdgeProperty.Changed.AddClassHandler<ResizeBox>((x, e) =>
+            PanelSizeProperty.Changed.AddClassHandler<ResizeBox>((s, e) =>
             {
-                x.ApplyPanelSize();
-                x.ApplyThumbStyle();
-                x.ApplyOrientation();
+                s.ApplyPanelSize();
             });
-
-            ThumbThicknessProperty.Changed.AddClassHandler<ResizeBox>((x, e) => x.ApplyThumbStyle());
+            DockEdgeProperty.Changed.AddClassHandler<ResizeBox>((s, e) =>
+            {
+                s.ApplyPanelSize();
+                s.ApplyThumbStyle();
+                s.ApplyOrientation();
+            });
+            ThumbThicknessProperty.Changed.AddClassHandler<ResizeBox>((s, e) =>
+            {
+                s.ApplyThumbStyle();
+            });
         }
 
         #region ResizeBox: Overrides
