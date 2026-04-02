@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
+          submodules: recursive
       - name: Ensure LFS files are present
         run: git lfs pull          
       - name: Setup .NET

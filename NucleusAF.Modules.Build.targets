@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
-         InitialTargets="DebugModuleDiscovery">
+		 InitialTargets="DebugModuleDiscovery">
 
 	<!-- Detect publishing mode -->
 	<PropertyGroup>
@@ -48,7 +48,7 @@
 		<Message Text="Building $(Configuration) Module projects..." Importance="high" />
 		<Message Text="Module projects discovered: @(ModuleProjects)" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
 		<MSBuild Projects="@(ModuleProjects)"
-				 Targets="Build"
+				 Targets="_ModuleBuildAndClean"
 				 Properties="Configuration=$(Configuration);Restore=true" />
 	</Target>
 
@@ -84,7 +84,7 @@
 		<Message Text="Building Release Module projects for publish..." Importance="high" />
 		<Message Text="Module projects discovered: @(ModuleProjects)" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
 		<MSBuild Projects="@(ModuleProjects)"
-				 Targets="Build"
+				 Targets="_ModuleBuildAndClean"
 				 Properties="Configuration=Release;Restore=true" />
 	</Target>
 

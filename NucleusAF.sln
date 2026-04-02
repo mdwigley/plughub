@@ -49,6 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		NucleusAF.Modules.Build.targets = NucleusAF.Modules.Build.targets
 		NucleusAF.Modules.Clean.targets = NucleusAF.Modules.Clean.targets
+		NucleusAF.Modules.EntryPoints.targets = NucleusAF.Modules.EntryPoints.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{FFA6FB05-2049-4062-B7DD-9AA18E0098AB}"

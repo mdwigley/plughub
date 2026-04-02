@@ -21,4 +21,61 @@
 		<ProjectReference Include="..\..\..\..\..\NucleusAF\NucleusAF.csproj" />
 		<ProjectReference Include="..\..\..\..\Framework\Diagnostics\NucleusAF.Mock\NucleusAF.Mock.csproj" />
 	</ItemGroup>
+	
+	<!-- 
+	=======================================================================
+	MODULE SYSTEM CLEANUP (Module Example)
+	=======================================================================
+
+	This target runs *after* the module's normal Build/Publish targets and sets up:
+		- where the module's own output lives
+		- whether to enable debug logging
+		- which module artifacts should be kept
+		- everything else in the module's output directory will be deleted
+
+	Surfaces no longer perform cleanup; they simply copy the module's cleaned output.
+	-->
+
+	<Target Name="SetModuleCleanup" AfterTargets="Build;Publish">
+
+		<PropertyGroup>
+			<!-- 
+			Override the module's own output directory.
+			Modules clean themselves in-place under $(TargetDir).
+			-->
+			<ModuleOutputDir>$(TargetDir)</ModuleOutputDir>
+
+			<!-- Turn on verbose module cleanup/debug messages -->
+			<ModuleDebug>true</ModuleDebug>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<!-- 
+			Define KEEP rules for module artifacts.
+			Each <KeepArtifacts> entry is a path or simple wildcard.
+			These will be preserved by the CleanModuleArtifacts target
+			(imported below from NucleusAF.Modules.Clean.targets).
+
+			Everything NOT listed here will be deleted.
+
+			Example entries:
+				- Keep the module's own DLL + PDB + DEPS
+			-->
+
+			<!-- Keep the module's primary assembly -->
+			<KeepArtifacts Include="$(TargetDir)$(AssemblyName).dll" />
+			<KeepArtifacts Include="$(TargetDir)$(AssemblyName).pdb" />
+			<KeepArtifacts Include="$(TargetDir)$(AssemblyName).deps.json" />
+
+			<!-- Example: keep assets if the module has them -->
+			<!-- <KeepArtifacts Include="$(TargetDir)Assets\**\*" /> -->
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Import module build entry points -->
+	<Import Project="..\..\..\..\..\NucleusAF.Modules.EntryPoints.targets" />
+
+	<!-- Import shared cleanup logic for module artifacts -->
+	<Import Project="..\..\..\..\..\NucleusAF.Modules.Clean.targets" />	
 </Project>

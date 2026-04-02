@@ -1,25 +1,54 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<!-- ModuleOutputDir:
+	   - Surfaces override to $(OutputPath)Modules\
+	   - Modules override to $(TargetDir) or $(TargetDir)publish\
+	   - Cleanup ALWAYS scans under this root -->
+	<PropertyGroup>
+		<ModuleOutputDir Condition="'$(ModuleOutputDir)'==''">$(OutputPath)Modules\</ModuleOutputDir>
+	</PropertyGroup>
+
 	<!-- 
 	NucleusAF.Modules.Cleanup.targets
 	Provides a post-build/publish cleanup hook for surfaces.
-	Surfaces can declare <CleanupArtifacts> items in their project file
-	to remove redundant or unwanted Module artifacts.
+	Surfaces can declare either:
+	  - <CleanupArtifacts>  → explicit delete list
+	  - <KeepArtifacts>	 → inverse list (delete everything except these)
 	-->
 
 	<Target Name="CleanModuleArtifacts" AfterTargets="Build;Publish">
 		<Message Text="Starting Module artifact cleanup..." Importance="high" />
 
-		<!-- Files -->
-		<Message Text="Cleanup file candidates: @(CleanupArtifacts, ', ')"
-				 Importance="high"
-				 Condition="'$(ModuleDebug)'=='true' and @(CleanupArtifacts->Count()) > 0" />
+		<!-- ========================================================= -->
+		<!-- Inverse-list computation (if KeepArtifacts is provided)   -->
+		<!-- ========================================================= -->
+		<ItemGroup Condition="@(KeepArtifacts->Count()) > 0">
+			<!-- Gather everything under Modules -->
+			<AllModuleArtifacts Include="$(ModuleOutputDir)**\*" />
 
-		<Message Text="Cleanup file candidates: (none)"
-				 Importance="high"
-				 Condition="'$(ModuleDebug)'=='true' and @(CleanupArtifacts->Count()) == 0" />
+			<!-- Compute delete-list = all - keep -->
+			<ArtifactsToDelete Include="@(AllModuleArtifacts)" />
+			<ArtifactsToDelete Remove="@(KeepArtifacts)" />
+		</ItemGroup>
 
-		<!-- Dirs -->
+		<!-- ========================================================= -->
+		<!-- Normal mode (no KeepArtifacts → use CleanupArtifacts)	 -->
+		<!-- ========================================================= -->
+		<ItemGroup Condition="@(KeepArtifacts->Count()) == 0">
+			<ArtifactsToDelete Include="@(CleanupArtifacts)" />
+		</ItemGroup>
+
+		<!-- ========================================================= -->
+		<!-- Debug output											  -->
+		<!-- ========================================================= -->
+		<Message Text="Artifacts to delete: @(ArtifactsToDelete, ', ')"
+				 Importance="high"
+				 Condition="'$(ModuleDebug)'=='true' and @(ArtifactsToDelete->Count()) > 0" />
+
+		<Message Text="Artifacts to delete: (none)"
+				 Importance="high"
+				 Condition="'$(ModuleDebug)'=='true' and @(ArtifactsToDelete->Count()) == 0" />
+
 		<Message Text="Cleanup dir candidates: @(CleanupDirs, ', ')"
 				 Importance="high"
 				 Condition="'$(ModuleDebug)'=='true' and @(CleanupDirs->Count()) > 0" />
@@ -28,10 +57,14 @@
 				 Importance="high"
 				 Condition="'$(ModuleDebug)'=='true' and @(CleanupDirs->Count()) == 0" />
 
-		<!-- Delete files -->
-		<Delete Files="@(CleanupArtifacts)" TreatErrorsAsWarnings="false" />
+		<!-- ========================================================= -->
+		<!-- Delete files											  -->
+		<!-- ========================================================= -->
+		<Delete Files="@(ArtifactsToDelete)" TreatErrorsAsWarnings="false" />
 
-		<!-- Remove only the explicit directories you listed -->
+		<!-- ========================================================= -->
+		<!-- Remove explicit directories only						  -->
+		<!-- ========================================================= -->
 		<RemoveDir Directories="@(CleanupDirs)"
 				   Condition="@(CleanupDirs->Count()) > 0" />
 
