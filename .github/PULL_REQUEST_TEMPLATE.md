@@ -5,7 +5,7 @@
 <!--- Describe your changes in detail -->
 
 ## Related Issue
-<!--- This project only accepts pull requests related to open issues -->
+<!--- This project only accepts pull requests related to open and approved issues -->
 <!--- If suggesting a new feature or change, please discuss it in an issue first -->
 <!--- If fixing a bug, there should be an issue describing it with steps to reproduce -->
 <!--- Link the issue here using keywords like "Resolves #123" or "Fixes #123".  
@@ -28,7 +28,7 @@
 - [ ] Breaking change (fix or feature that would cause existing functionality to change)
 - [ ] Asset change (adds or updates icons, templates, or other assets)
 - [ ] Documentation change (adds or updates documentation)
-- [ ] Plugin change (adds or updates a plugin)
+- [ ] Module change (adds or updates a module)
 
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
@@ -40,5 +40,5 @@
   - [ ] I have linked the asset issue above.
 - [ ] My change requires a change to the documentation.
   - [ ] I have linked the documentation issue above.
-- [ ] My change requires a change to a plugin.
-  - [ ] I have linked the plugin issue above.
+- [ ] My change requires a change to a module.
+  - [ ] I have linked the module issue above.

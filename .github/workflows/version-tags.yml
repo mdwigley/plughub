@@ -1,4 +1,4 @@
-name: PlugHub Desktop Release
+name: NucleusAF Desktop Release
 
 permissions:
   contents: write
@@ -15,13 +15,13 @@ jobs:
         include:
           - os: windows-latest
             rid: win-x64
-            artifact_name: PlugHub-Desktop-win-x64.zip
+            artifact_name: NucleusAF-Desktop-win-x64.zip
           - os: ubuntu-latest
             rid: linux-x64
-            artifact_name: PlugHub-Desktop-linux-x64.zip
+            artifact_name: NucleusAF-Desktop-linux-x64.zip
           - os: macos-latest
             rid: osx-x64
-            artifact_name: PlugHub-Desktop-osx-x64.zip
+            artifact_name: NucleusAF-Desktop-osx-x64.zip
 
     runs-on: ${{ matrix.os }}
 
@@ -42,14 +42,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore all projects
-        run: dotnet restore PlugHub.sln
+        run: dotnet restore NucleusAF.sln
       - name: Build (Release)
         run: dotnet build --configuration Release -maxcpucount:1
       - name: Test
         run: dotnet test --configuration Release --no-build --verbosity normal
       - name: Publish self-contained app (${{ matrix.rid }})
         run: |
-          dotnet publish PlugHub.Desktop/PlugHub.Desktop.csproj \
+          dotnet publish NucleusAF.Surfaces/Avalonia/NucleusAF.Desktop/NucleusAF.Desktop.csproj \
             -c Release \
             -r ${{ matrix.rid }} \
             --self-contained true \

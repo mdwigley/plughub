@@ -1,0 +1,113 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         InitialTargets="DebugModuleDiscovery">
+
+	<!-- Detect publishing mode -->
+	<PropertyGroup>
+		<IsPublishing Condition="'$(PublishDir)' != '' or '$(PublishProfile)' != '' or '$(DeployOnBuild)' == 'true'">true</IsPublishing>
+		<IsPublishing Condition="'$(PublishDir)' == '' and '$(PublishProfile)' == '' and '$(DeployOnBuild)' != 'true'">false</IsPublishing>
+
+		<!-- Debug flag: surfaces can set <ModuleDebug>true</ModuleDebug> -->
+		<ModuleDebug Condition="'$(ModuleDebug)'==''">false</ModuleDebug>
+	</PropertyGroup>
+
+	<!-- Default Module output folder (overridable in surface projects) -->
+	<PropertyGroup>
+		<ModuleOutputDir Condition="'$(ModuleOutputDir)'=='' and '$(IsPublishing)'!='true'">$(OutputPath)Modules\</ModuleOutputDir>
+		<ModuleOutputDir Condition="'$(ModuleOutputDir)'=='' and '$(IsPublishing)'=='true'">$(PublishDir)Modules\</ModuleOutputDir>
+	</PropertyGroup>
+
+	<!-- 
+	Override this ItemGroup in your project to include the module groups you need.
+	Example: include all module projects under the Diagnostics branch:
+
+	<ItemGroup>
+		<ModuleProjects Include="$(MSBuildThisFileDirectory)..\..\..\NucleusAF.Modules\Platform\Diagnostics\**\*.csproj" />
+	</ItemGroup>
+
+	Adjust the relative path and folder name (e.g. Diagnostics, Security, etc.) 
+	depending on which module group you want to bring in.
+	-->
+
+	<Target Name="DebugModuleDiscovery" Condition="'$(ModuleDebug)'=='true'">
+		<Message Text="MSBuildThisFileDirectory: $(MSBuildThisFileDirectory)" Importance="high" />
+		<Message Text="ModuleProjects glob: $(MSBuildThisFileDirectory)NucleusAF.Modules\**\*.csproj" Importance="high" />
+		<Message Text="Module projects discovered: @(ModuleProjects)" Importance="high" />
+	</Target>
+
+	<ItemGroup>
+
+	</ItemGroup>
+
+	<!-- ===================== -->
+	<!-- BUILD MODE (IsPublishing == false) -->
+	<!-- ===================== -->
+
+	<Target Name="BuildConfigurationModules"
+			BeforeTargets="Build"
+			Condition="'$(IsPublishing)' == 'false' and @(ModuleProjects->Count()) > 0">
+		<Message Text="Building $(Configuration) Module projects..." Importance="high" />
+		<Message Text="Module projects discovered: @(ModuleProjects)" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
+		<MSBuild Projects="@(ModuleProjects)"
+				 Targets="Build"
+				 Properties="Configuration=$(Configuration);Restore=true" />
+	</Target>
+
+	<Target Name="CopyModuleArtifactsOnBuild"
+			AfterTargets="Build"
+			DependsOnTargets="BuildConfigurationModules"
+			Condition="'$(IsPublishing)' == 'false' and @(ModuleProjects->Count()) > 0">
+		<Message Text="Copying Module artifacts to $(OutputPath)Modules ..." Importance="high" />
+		<!-- Expand globs from the transformed project paths -->
+		<CreateItem Include="@(ModuleProjects->'%(RootDir)%(Directory)bin\$(Configuration)\**\*')">
+			<Output TaskParameter="Include" ItemName="ModuleArtifactsRaw" />
+		</CreateItem>
+		<ItemGroup>
+			<!-- Preserve subfolder hierarchy under Modules\… -->
+			<ModuleArtifacts Include="@(ModuleArtifactsRaw)">
+				<ModuleName>$([System.Text.RegularExpressions.Regex]::Match('%(ModuleArtifactsRaw.Identity)', 'NucleusAF\.Modules[\\/](.+?)[\\/]bin').Groups[1].Value)</ModuleName>
+			</ModuleArtifacts>
+		</ItemGroup>
+		<Message Text="Artifacts discovered: @(ModuleArtifactsRaw)" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
+		<Message Text="Copy destinations: @(ModuleArtifacts->'$(OutputPath)Modules\%(ModuleName)\%(Filename)%(Extension)')" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
+		<Copy SourceFiles="@(ModuleArtifacts)"
+			  DestinationFiles="@(ModuleArtifacts->'$(OutputPath)Modules\%(ModuleName)\%(Filename)%(Extension)')"
+			  SkipUnchangedFiles="true" />
+	</Target>
+
+	<!-- ===================== -->
+	<!-- PUBLISH MODE (IsPublishing == true) -->
+	<!-- ===================== -->
+
+	<Target Name="BuildReleaseModules"
+			BeforeTargets="Publish"
+			Condition="'$(IsPublishing)' == 'true' and @(ModuleProjects->Count()) > 0">
+		<Message Text="Building Release Module projects for publish..." Importance="high" />
+		<Message Text="Module projects discovered: @(ModuleProjects)" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
+		<MSBuild Projects="@(ModuleProjects)"
+				 Targets="Build"
+				 Properties="Configuration=Release;Restore=true" />
+	</Target>
+
+	<Target Name="CopyModuleArtifactsOnPublish"
+			AfterTargets="Publish"
+			DependsOnTargets="BuildReleaseModules"
+			Condition="'$(IsPublishing)' == 'true' and @(ModuleProjects->Count()) > 0">
+		<Message Text="Copying Module artifacts to $(PublishDir)Modules ..." Importance="high" />
+		<!-- Expand globs from the transformed project paths -->
+		<CreateItem Include="@(ModuleProjects->'%(RootDir)%(Directory)bin\$(Configuration)\**\*')">
+			<Output TaskParameter="Include" ItemName="ModuleArtifactsRaw" />
+		</CreateItem>
+		<ItemGroup>
+			<!-- Preserve subfolder hierarchy under Modules\… -->
+			<ModuleArtifacts Include="@(ModuleArtifactsRaw)">
+				<ModuleName>$([System.Text.RegularExpressions.Regex]::Match('%(ModuleArtifactsRaw.Identity)', 'NucleusAF\.Modules[\\/](.+?)[\\/]bin').Groups[1].Value)</ModuleName>
+			</ModuleArtifacts>
+		</ItemGroup>
+		<Message Text="Artifacts discovered: @(ModuleArtifactsRaw)" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
+		<Message Text="Copy destinations: @(ModuleArtifacts->'$(PublishDir)Modules\%(ModuleName)\%(Filename)%(Extension)')" Importance="high" Condition="'$(ModuleDebug)'=='true'" />
+		<Copy SourceFiles="@(ModuleArtifacts)"
+			  DestinationFiles="@(ModuleArtifacts->'$(PublishDir)Modules\%(ModuleName)\%(Filename)%(Extension)')"
+			  SkipUnchangedFiles="true" />
+	</Target>
+
+</Project>

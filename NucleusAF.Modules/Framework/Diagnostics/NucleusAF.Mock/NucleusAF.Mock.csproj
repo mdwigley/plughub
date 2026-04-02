@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Assets\ic_fluent_chat_24_regular.png" />
+		<None Remove="Assets\ic_fluent_link_24_filled.png" />
+		<None Remove="Assets\ic_fluent_link_dismiss_24_filled.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Assets\ic_fluent_chat_24_regular.png" />
+		<EmbeddedResource Include="Assets\ic_fluent_link_24_filled.png" />
+		<EmbeddedResource Include="Assets\ic_fluent_link_dismiss_24_filled.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\NucleusAF\NucleusAF.csproj" />
+	</ItemGroup>
+</Project>

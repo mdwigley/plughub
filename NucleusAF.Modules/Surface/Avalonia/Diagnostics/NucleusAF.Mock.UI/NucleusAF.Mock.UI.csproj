@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Themes\FluentAvalonia\Style.axaml" />
+		<AvaloniaResource Include="Themes\FluentAvalonia\Theme.axaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\NucleusAF.Surfaces\Avalonia\NucleusAF.Avalonia\NucleusAF.Avalonia.csproj" />
+		<ProjectReference Include="..\..\..\..\..\NucleusAF\NucleusAF.csproj" />
+		<ProjectReference Include="..\..\..\..\Framework\Diagnostics\NucleusAF.Mock\NucleusAF.Mock.csproj" />
+	</ItemGroup>
+</Project>

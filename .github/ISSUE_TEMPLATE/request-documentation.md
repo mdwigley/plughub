@@ -1,6 +1,6 @@
 ---
 name: Documentation Request
-about: Request new or improved documentation for PlugHub
+about: Request new or improved documentation for NucleusAF
 title: "<short title for your request>"
 labels: documentation
 ---
@@ -9,7 +9,7 @@ labels: documentation
 
 <!--
 Describe what is missing, unclear, or needs improvement in the documentation.
-Be as specific as possible (e.g., "Getting Started guide is missing setup steps for Linux," "API reference for PluginServiceProvider is unclear," "No documentation for custom page plugins," etc.)
+Be as specific as possible (e.g., "Getting Started guide is missing setup steps for Linux," "API reference for ServiceProvider is unclear," "No documentation for custom page modules," etc.)
 -->
 
 ## Why is this documentation important?

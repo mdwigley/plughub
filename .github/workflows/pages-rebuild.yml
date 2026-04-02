@@ -1,4 +1,4 @@
-name: Deploy PlugHub Pages
+name: Deploy NucleusAF Pages
 
 on:
   workflow_dispatch:

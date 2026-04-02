@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a feature enhancement for PlugHub
+about: Suggest a feature enhancement for NucleusAF
 title: "<short title for your request>"
 labels: enhancement
 ---
@@ -21,4 +21,4 @@ labels: enhancement
 <!--- If this feature request is for a specific platform or set of platforms, list them here. -->
 
 ## Affected Components (optional)
-<!--- List any components, modules, or plugins that would be affected by this feature. -->
+<!--- List any components or modules that would be affected by this feature. -->

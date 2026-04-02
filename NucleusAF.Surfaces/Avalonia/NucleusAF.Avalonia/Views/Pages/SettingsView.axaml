@@ -1,0 +1,142 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:NucleusAF.Avalonia.ViewModels.Pages"
+	xmlns:c="using:NucleusAF.Avalonia.Converters"
+			 
+	mc:Ignorable="d" d:DesignWidth="1230" d:DesignHeight="720"
+			 
+	x:Class="NucleusAF.Avalonia.Views.Pages.SettingsView"
+	x:DataType="vm:SettingsViewModel"
+			 
+	Background="{DynamicResource NucleusAF.QuarternaryBackgroundBrush}">
+
+	<UserControl.Resources>
+		<c:CollapsedHeightConverter x:Key="CollapsedHeightConverter" CollapsedHeight="0"/>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector="AutoCompleteBox">
+			<Setter Property="InnerRightContent">
+				<Template>
+					<PathIcon
+						Data="{StaticResource sidebar_search_ltr_regular}"
+						Margin="0,0,8,0"
+						Width="16" Height="16"
+						HorizontalAlignment="Right" VerticalAlignment="Center"/>
+				</Template>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="5" />
+			<ColumnDefinition Width="200" MinWidth="100" MaxWidth="500" />
+		</Grid.ColumnDefinitions>
+
+		<!-- Main content -->
+		<Border Grid.Column="0">
+			<TransitioningContentControl Content="{Binding SelectedSettingsPageContent}" />
+		</Border>
+
+		<!-- Splitter -->
+		<GridSplitter
+			Grid.Column="1"
+			Width="5"
+			ResizeDirection="Columns"
+			ResizeBehavior="PreviousAndNext"
+			HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+			<GridSplitter.Template>
+				<ControlTemplate>
+					<Border Background="Transparent">
+						<Rectangle
+							Width="1"
+							Fill="{TemplateBinding Background}"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Stretch"/>
+					</Border>
+				</ControlTemplate>
+			</GridSplitter.Template>
+		</GridSplitter>
+
+		<!-- Category/search panel -->
+		<Border Grid.Column="2">
+			<Grid RowDefinitions="Auto,*">
+
+				<!-- Search -->
+				<AutoCompleteBox
+					Grid.Row="0"
+					Name="SettingsSearchBox"
+					Watermark="Search ..."
+					Margin="8,8,16,8"
+					Text="{Binding SearchText, Mode=TwoWay}"
+					ItemsSource="{Binding SearchSuggestions}"
+					FilterMode="Contains" />
+
+				<!-- Category list -->
+				<ScrollViewer
+					Grid.Row="1"
+					VerticalScrollBarVisibility="Auto"
+					HorizontalScrollBarVisibility="Disabled"
+					Margin="8,0">
+
+					<ItemsControl ItemsSource="{Binding SettingsPageItemSource}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<StackPanel>
+
+									<!-- Group header -->
+									<Border BorderBrush="{DynamicResource NucleusAF.PrimaryControlStrokeBrush}" BorderThickness="0,0,0,2">
+										<TextBlock
+											Text="{Binding GroupName}"
+											FontWeight="Bold"
+											Margin="8"
+											FontSize="16"
+											VerticalAlignment="Center"
+											HorizontalAlignment="Right"
+											PointerReleased="TextBlock_PointerReleased"/>
+									</Border>
+
+									<!-- Group items -->
+									<ListBox
+										SelectedItem="{Binding DataContext.SelectedSettingsPageItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}"
+										ItemsSource="{Binding Items}"
+										Margin="0,0,0,8"
+										SelectionChanged="ListBox_SelectionChanged"
+										Height="{Binding IsCollapsed, Converter={StaticResource CollapsedHeightConverter}}">
+
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<Grid ColumnDefinitions="Auto,*">
+													<!-- Icon -->
+													<PathIcon
+														Grid.Column="0"
+														Width="16" Height="16"
+														Data="{Binding Icon}"/>
+
+													<!-- Label -->
+													<TextBlock
+														Grid.Column="1"
+														VerticalAlignment="Center"
+														HorizontalAlignment="Right"
+														Text="{Binding Label}"/>
+												</Grid>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+
+								</StackPanel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+				</ScrollViewer>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

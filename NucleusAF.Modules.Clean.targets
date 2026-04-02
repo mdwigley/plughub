@@ -1,0 +1,41 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!-- 
+	NucleusAF.Modules.Cleanup.targets
+	Provides a post-build/publish cleanup hook for surfaces.
+	Surfaces can declare <CleanupArtifacts> items in their project file
+	to remove redundant or unwanted Module artifacts.
+	-->
+
+	<Target Name="CleanModuleArtifacts" AfterTargets="Build;Publish">
+		<Message Text="Starting Module artifact cleanup..." Importance="high" />
+
+		<!-- Files -->
+		<Message Text="Cleanup file candidates: @(CleanupArtifacts, ', ')"
+				 Importance="high"
+				 Condition="'$(ModuleDebug)'=='true' and @(CleanupArtifacts->Count()) > 0" />
+
+		<Message Text="Cleanup file candidates: (none)"
+				 Importance="high"
+				 Condition="'$(ModuleDebug)'=='true' and @(CleanupArtifacts->Count()) == 0" />
+
+		<!-- Dirs -->
+		<Message Text="Cleanup dir candidates: @(CleanupDirs, ', ')"
+				 Importance="high"
+				 Condition="'$(ModuleDebug)'=='true' and @(CleanupDirs->Count()) > 0" />
+
+		<Message Text="Cleanup dir candidates: (none)"
+				 Importance="high"
+				 Condition="'$(ModuleDebug)'=='true' and @(CleanupDirs->Count()) == 0" />
+
+		<!-- Delete files -->
+		<Delete Files="@(CleanupArtifacts)" TreatErrorsAsWarnings="false" />
+
+		<!-- Remove only the explicit directories you listed -->
+		<RemoveDir Directories="@(CleanupDirs)"
+				   Condition="@(CleanupDirs->Count()) > 0" />
+
+		<Message Text="Module artifact cleanup complete." Importance="high" />
+	</Target>
+
+</Project>

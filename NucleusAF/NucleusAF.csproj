@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!--Dependency Injection-->
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+		<!--Configuration-->
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+		<!--Logging-->
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+	</ItemGroup>
+
+</Project>

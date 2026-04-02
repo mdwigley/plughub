@@ -1,0 +1,866 @@
+<UserControl
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:fa="using:FluentAvalonia.UI.Controls"
+xmlns:vm="using:NucleusAF.Avalonia.ViewModels.Pages"
+xmlns:c="using:NucleusAF.Avalonia.Converters"
+
+mc:Ignorable="d" d:DesignWidth="1230" d:DesignHeight="720"
+
+x:Class="NucleusAF.Avalonia.Views.Pages.ModuleSettingsView"
+x:DataType="vm:ModuleSettingsViewModel"
+
+KeyDown="UserControl_KeyDown">
+
+	<UserControl.Styles>
+
+		<Style Selector="Expander">
+			<Setter Property="Template">
+				<ControlTemplate TargetType="Expander">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="96"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+
+						<ToggleButton
+						IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+						BorderThickness="0"
+						Padding="0"
+						HorizontalAlignment="Stretch">
+
+							<ToggleButton.Template>
+								<ControlTemplate TargetType="ToggleButton">
+									<ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+								</ControlTemplate>
+							</ToggleButton.Template>
+
+							<ContentPresenter Content="{TemplateBinding Header}" HorizontalAlignment="Stretch" />
+
+						</ToggleButton>
+
+						<ContentPresenter Grid.Row="1"
+										  Content="{TemplateBinding Content}"
+										  IsVisible="{TemplateBinding IsExpanded}"
+										  Margin="96,0,64,0"/>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Expander ToggleButton:checked">
+			<Setter Property="Background" Value="{DynamicResource NucleusAF.AccentFillBrush}" />
+		</Style>
+		<Style Selector="Expander .hover-bar" x:SetterTargetType="Border">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Height" Value="0"/>
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Height" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Expander:pointerover .hover-bar" x:SetterTargetType="Border">
+			<Setter Property="Background" Value="{DynamicResource NucleusAF.AccentFillBrush}"/>
+			<Setter Property="Height" Value="32"/>
+		</Style>
+
+		<Style Selector="Border.provider-row">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Border.provider-row:pointerover">
+			<Setter Property="Background" Value="{DynamicResource NucleusAF.TertiaryAltControlBrush}"/>
+		</Style>
+
+		<Style Selector="HeaderedContentControl.GroupBox">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+
+						<!-- Header -->
+						<Border
+						ZIndex="1"
+						Background="{DynamicResource NucleusAF.SecondaryBackgroundBrushBrush}"
+						Padding="8,0,8,0"
+						Margin="8,0,0,0">
+
+							<TextBlock
+							Text="{TemplateBinding Header}"
+							FontWeight="Bold"/>
+						</Border>
+
+						<!-- Content Area -->
+						<Border
+						Grid.RowSpan="2" Grid.ColumnSpan="2"
+						Padding="0,8,0,0" Margin="0,8,0,0"
+						BorderThickness="1"
+						CornerRadius="4"
+						BorderBrush="{DynamicResource NucleusAF.PrimaryStrongControlBrush}">
+
+							<ContentPresenter
+							Name="PART_ContentPresenter"
+							Padding="8"
+							Content="{TemplateBinding Content}"/>
+						</Border>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="Border.OverlayPanel:not(:slid-in)">
+			<Setter Property="RenderTransform">
+				<TranslateTransform X="400" />
+			</Setter>
+		</Style>
+		<Style Selector="Border.OverlayPanel:slid-in">
+			<Setter Property="RenderTransform">
+				<TranslateTransform X="0" />
+			</Setter>
+			<Setter Property="Transitions">
+				<Transitions>
+					<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" />
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.NoPointerOver:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Button.DescriptorDetailsClose:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource NucleusAF.ExitBackgroundBrush}"/>
+		</Style>
+
+	</UserControl.Styles>
+
+	<UserControl.Resources>
+		<c:UriToBitmapConverter x:Key="UriToBitmapConverter"/>
+		<c:NullToBoolConverter x:Key="NullToBoolConverter"/>
+		<c:BooleanNegationConverter x:Key="BooleanNegationConverter"/>
+
+		<!-- Confirmation Modal -->
+		<DataTemplate x:Key="ConfirmationModalTemplate">
+			<Border Padding="16">
+				<StackPanel Spacing="12">
+					<StackPanel Orientation="Horizontal" Spacing="8">
+						<fa:SymbolIcon Symbol="ImportantFilled"/>
+						<TextBlock x:Name="Header" FontSize="16"/>
+					</StackPanel>
+					<ScrollViewer Height="200">
+						<TextBlock x:Name="Body" TextWrapping="Wrap" />
+					</ScrollViewer>
+				</StackPanel>
+			</Border>
+		</DataTemplate>
+	</UserControl.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="200" MinWidth="100" MaxWidth="500"/>
+			<ColumnDefinition Width="5"/>
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+
+		<!-- Left Column -->
+		<ScrollViewer Grid.Row="0" Grid.Column="0"
+					  Margin="8 8 8 0"
+					  VerticalAlignment="Stretch">
+			<Border>
+				<StackPanel>
+
+					<!-- Module Search Box -->
+					<AutoCompleteBox
+					Margin="8,0,0,16"
+					Watermark="Search modules..."
+					Text="{Binding ModuleSearchText}">
+
+						<AutoCompleteBox.Styles>
+							<!-- Override the clear button template -->
+							<Style Selector="AutoCompleteBox Button">
+								<Setter Property="Template">
+									<ControlTemplate>
+										<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+											<ContentPresenter
+											HorizontalAlignment="Center"
+											VerticalAlignment="Center"
+											Content="{TemplateBinding Content}" />
+										</Grid>
+									</ControlTemplate>
+								</Setter>
+							</Style>
+
+							<!-- Disabled state for the clear button path -->
+							<Style Selector="AutoCompleteBox Button:disabled Path">
+								<Setter Property="Stroke" Value="Transparent" />
+								<Setter Property="Fill" Value="Transparent" />
+							</Style>
+
+							<!-- Provide the actual clear button in the right content -->
+							<Style Selector="AutoCompleteBox">
+								<Setter Property="InnerRightContent">
+									<Template>
+										<Button
+										Width="24" Height="24"
+										HorizontalAlignment="Right" VerticalAlignment="Center"
+										Margin="0" Padding="0"
+										Background="Transparent"
+										BorderBrush="Transparent" BorderThickness="0"
+										IsTabStop="False"
+										Click="OnModuleClearButtonClicked"
+										IsEnabled="{Binding DataContext.HasSearchOrCategorySelected, RelativeSource={RelativeSource AncestorType=UserControl}}">
+
+											<Path
+											Data="{StaticResource NucleusAF.ClearSearchIcon}"
+											Fill="Transparent"
+											Stroke="{DynamicResource NucleusAF.SecondaryTextBrush}"
+											StrokeThickness="2"/>
+										</Button>
+									</Template>
+								</Setter>
+							</Style>
+						</AutoCompleteBox.Styles>
+					</AutoCompleteBox>
+
+					<!-- Module Category Header -->
+					<Border
+					BorderBrush="{DynamicResource NucleusAF.PrimaryControlStrokeBrush}"
+					BorderThickness="0,0,0,2"
+					Margin="8,0,0,0">
+
+						<TextBlock
+						Text="Categories"
+						FontWeight="Bold"
+						Margin="0,8"
+						FontSize="16"/>
+					</Border>
+
+					<!-- Module Category List -->
+					<ListBox
+					x:Name="ModuleSettingsCategoryListBox"
+					ItemsSource="{Binding AvailableCategories}"
+					SelectionChanged="OnModuleCategorySelectionChanged"
+					SelectionMode="Multiple,Toggle">
+
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding}" Margin="16,8,8,8"/>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+
+						<ListBox.Styles>
+							<Style Selector="ListBoxItem">
+								<Setter Property="Margin" Value="0"/>
+								<Setter Property="Padding" Value="0"/>
+							</Style>
+						</ListBox.Styles>
+
+					</ListBox>
+
+				</StackPanel>
+			</Border>
+		</ScrollViewer>
+
+		<!-- Left Hand Splitter -->
+		<GridSplitter
+		Grid.Column="1"
+		Width="5"
+		ResizeDirection="Columns"
+		ResizeBehavior="PreviousAndNext"
+		HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+			<GridSplitter.Template>
+				<ControlTemplate>
+					<Border Background="Transparent">
+						<Rectangle
+						Width="1"
+						Fill="{TemplateBinding Background}"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Stretch"/>
+					</Border>
+				</ControlTemplate>
+			</GridSplitter.Template>
+		</GridSplitter>
+
+		<!-- Main Content Column -->
+		<ScrollViewer
+		Grid.Row="0" Grid.Column="2"
+		Margin="8 0 0 0"
+		ScrollViewer.AllowAutoHide="False">
+			<ItemsControl ItemsSource="{Binding FilteredModules}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Expander Margin="0 0 0 8">
+							<Expander.Header>
+								<Grid Background="Transparent">
+									<Grid.RowDefinitions>
+										<RowDefinition Height="24"/>
+										<RowDefinition Height="32"/>
+										<RowDefinition Height="40"/>
+									</Grid.RowDefinitions>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="4"/>
+										<ColumnDefinition Width="Auto" MinWidth="96"/>
+										<ColumnDefinition Width="*" MinWidth="300"/>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+
+									<!-- Hover bar -->
+									<Border
+									Grid.Row="0" Grid.Column="0" Grid.RowSpan="3"
+									Classes="hover-bar"
+									Width="4"
+									HorizontalAlignment="Left" VerticalAlignment="Center"
+									Margin="0"
+									CornerRadius="10">
+									</Border>
+
+									<!-- Module Icon -->
+									<Border
+									Grid.RowSpan="3" Grid.Column="1"
+									Width="96" Height="96"
+									Padding="8"
+									IsHitTestVisible="False">
+
+										<Grid>
+											<Image
+											Source="{Binding IconSource, Converter={StaticResource UriToBitmapConverter}}"
+											Width="48" Height="48"
+											HorizontalAlignment="Center" VerticalAlignment="Center"
+											Stretch="UniformToFill"
+											IsVisible="{Binding HasImageIcon}"/>
+
+											<PathIcon
+											Data="{StaticResource default_module}"
+											Width="48" Height="48"
+											HorizontalAlignment="Center" VerticalAlignment="Center"
+											IsVisible="{Binding ShowDefaultIcon}"/>
+										</Grid>
+									</Border>
+
+									<!-- Module Name -->
+									<TextBlock
+									Grid.Column="2" Grid.Row="0"
+									Padding="0" Margin="8,8,0,0"
+									FontSize="16" FontWeight="Bold"
+									IsHitTestVisible="False"
+									Text="{Binding Name}"/>
+
+									<!-- Module Version -->
+									<TextBlock
+									Grid.Column="3" Grid.Row="0"
+									Padding="0" Margin="0,8,8,0"
+									FontSize="16" FontWeight="Bold"
+									IsHitTestVisible="False"
+									Text="{Binding Version, StringFormat='Version {0}'}"
+									HorizontalAlignment="Right"/>
+
+									<!-- Module Description -->
+									<Border
+									Grid.Column="2" Grid.Row="1"
+									Padding="0" Margin="0"
+									BorderThickness="0">
+
+										<TextBlock
+										Padding="0" Margin="8,0,0,0"
+										FontSize="12"
+										IsHitTestVisible="False"
+										MaxHeight="32"
+										Text="{Binding Description}"
+										TextTrimming="CharacterEllipsis"
+										TextWrapping="Wrap"
+										Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+									</Border>
+
+									<!-- Module Author -->
+									<TextBlock
+									Grid.Column="3" Grid.Row="1"
+									Padding="0" Margin="0,0,8,0"
+									FontSize="12"
+									IsHitTestVisible="False"
+									HorizontalAlignment="Right"
+									Text="{Binding Author}"
+									TextWrapping="Wrap"
+									Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+
+									<!-- Module Links -->
+									<Border Grid.Column="2" Grid.Row="2" BorderThickness="0" Padding="0" Margin="0">
+										<StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+											<Button
+											Background="Transparent"
+											BorderThickness="0"
+											Padding="0"
+											Command="{Binding OpenDocumentationCommand}"
+											IsVisible="{Binding HasDocsLink}">
+
+												<StackPanel Orientation="Horizontal">
+													<PathIcon
+													Width="16" Height="16"
+													Data="{StaticResource book_question_mark_regular}"/>
+													<TextBlock
+													Text="Documentation"
+													VerticalAlignment="Center"
+													Margin="8,0,0,0"
+													Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+												</StackPanel>
+											</Button>
+											<Button
+											Background="Transparent"
+											BorderThickness="0"
+											Padding="0" Margin="16,0,0,0"
+											Command="{Binding OpenSupportCommand}"
+											IsVisible="{Binding HasSupportLink}">
+
+												<StackPanel Orientation="Horizontal">
+													<PathIcon
+													Width="16" Height="16"
+													Data="{StaticResource question_circle_regular}"/>
+													<TextBlock
+													Text="Support"
+													VerticalAlignment="Center"
+													Margin="8,0,0,0"
+													Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+												</StackPanel>
+											</Button>
+											<Button
+											Background="Transparent"
+											BorderThickness="0"
+											Padding="0" Margin="16,0,0,0"
+											Command="{Binding OpenContactCommand}"
+											IsVisible="{Binding HasSupportContact}">
+
+												<StackPanel Orientation="Horizontal">
+													<PathIcon
+													Width="16" Height="16"
+													Data="{StaticResource mail_regular}"/>
+													<TextBlock
+													Text="Contact"
+													VerticalAlignment="Center"
+													Margin="8,0,0,0"
+													Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+												</StackPanel>
+											</Button>
+											<Button
+											Background="Transparent"
+											BorderThickness="0"
+											Padding="0" Margin="16,0,0,0"
+											Command="{Binding OpenChangeLogCommand}"
+											IsVisible="{Binding HasChangeLog}">
+
+												<StackPanel Orientation="Horizontal">
+													<PathIcon
+													Width="16" Height="16"
+													Data="{StaticResource history_regular}" />
+													<TextBlock
+													Text="Change Log"
+													VerticalAlignment="Center"
+													Margin="8,0,0,0"
+													Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+												</StackPanel>
+											</Button>
+										</StackPanel>
+									</Border>
+
+									<!-- Enable/Disable Toggle -->
+									<CheckBox
+									Grid.Column="4" Grid.RowSpan="3"
+									IsThreeState="True"
+									Margin="24,0" Padding="0"
+									VerticalAlignment="Center" HorizontalAlignment="Center"
+									IsChecked="{Binding IsEnabled}"
+									IsEnabled="{Binding HasNoDescriptors,
+									Converter={StaticResource BooleanNegationConverter}}"/>
+
+								</Grid>
+							</Expander.Header>
+
+							<Expander.Content>
+								<StackPanel Background="Transparent">
+
+									<!-- Assembly Information -->
+									<Border BorderThickness="0,0,0,1" Padding="8">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<TextBlock
+											Grid.Column="0"
+											Text="Linked Library:"
+											FontWeight="Bold"
+											Margin="0,0,8,0"/>
+											<TextBlock
+											Grid.Column="1"
+											Text="{Binding AssemblyFile}"
+											Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+										</Grid>
+									</Border>
+
+									<!-- Module Provider List -->
+									<StackPanel IsVisible="{Binding HasNoDescriptors, Converter={StaticResource BooleanNegationConverter}}">
+
+										<!-- Header row -->
+										<Border
+										BorderThickness="1,0,1,1"
+										Padding="8"
+										Background="{DynamicResource NucleusAF.SecondaryAltControlBrush}">
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="3*"/>
+													<ColumnDefinition Width="0.5*"/>
+												</Grid.ColumnDefinitions>
+
+												<!-- Header: Provider -->
+												<TextBlock
+												Grid.Column="0"
+												Text="Provider"
+												FontWeight="Bold"/>
+
+												<!-- Header: Enabled -->
+												<TextBlock
+												Grid.Column="1"
+												Text="Enabled"
+												FontWeight="Bold"
+												HorizontalAlignment="Center"/>
+											</Grid>
+										</Border>
+
+										<!-- Descriptor rows -->
+										<ItemsControl ItemsSource="{Binding ProvidedDescriptors}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+
+													<!-- Row container -->
+													<Border
+													Classes="provider-row"
+													Padding="8"
+													BorderThickness="0,0,0,1"
+													BorderBrush="{DynamicResource NucleusAF.PrimaryControlStrokeBrush}">
+
+														<Grid>
+															<Grid.ColumnDefinitions>
+																<ColumnDefinition Width="3*"/>
+																<ColumnDefinition Width="0.5*"/>
+															</Grid.ColumnDefinitions>
+
+															<!-- Descriptor Name -->
+															<Button
+															Grid.Column="0"
+															Classes="NoPointerOver"
+															Background="Transparent"
+															HorizontalAlignment="Stretch"
+															VerticalAlignment="Stretch"
+															HorizontalContentAlignment="Left"
+															Padding="0"
+															BorderThickness="0"
+															Command="{Binding DataContext.OpenDescriptorInfoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+															CommandParameter="{Binding}">
+
+																<TextBlock
+																Text="{Binding Name}"
+																VerticalAlignment="Center"
+																Background="Transparent"
+																Foreground="{DynamicResource NucleusAF.SecondaryTextBrush}"/>
+															</Button>
+
+															<!-- Enable/disable toggle -->
+															<ToggleSwitch
+															Grid.Column="1"
+															HorizontalAlignment="Center"
+															IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+															IsEnabled="{Binding IsSystem, Converter={StaticResource BooleanNegationConverter}}"
+															OnContent=""
+															OffContent=""/>
+
+														</Grid>
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+
+									<!-- No Provider Banner -->
+									<Border
+									Classes="provider-row"
+									BorderThickness="0,0,0,1"
+									Padding="8"
+									IsVisible="{Binding HasNoDescriptors}">
+
+										<TextBlock
+										Text="No providers available"
+										FontStyle="Italic"
+										HorizontalAlignment="Center"/>
+									</Border>
+
+								</StackPanel>
+							</Expander.Content>
+						</Expander>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+
+		<!-- Descriptor Details Panel -->
+		<Border
+		Grid.Row="0" Grid.Column="2"
+		x:Name="InterfaceDetailPanel"
+		Padding="8" Margin="0"
+		HorizontalAlignment="Right" VerticalAlignment="Stretch"
+		Classes="OverlayPanel"
+		Width="400"
+		Background="{DynamicResource NucleusAF.SecondaryBackgroundBrush}"
+		IsVisible="{Binding IsPanelVisible}"
+		CornerRadius="4"
+		RenderTransformOrigin="0,0">
+
+			<Border.RenderTransform>
+				<TranslateTransform X="0" />
+			</Border.RenderTransform>
+
+			<Grid RowDefinitions="Auto, *, Auto">
+				<StackPanel>
+
+					<!-- Provider Detail Header -->
+					<Grid
+					ColumnDefinitions="*,Auto"
+					Margin="0,0,0,8"
+					HorizontalAlignment="Stretch" VerticalAlignment="Center">
+
+						<TextBlock
+						Grid.Column="0"
+						Text="{Binding SelectedProvider}"
+						VerticalAlignment="Center"
+						FontWeight="Bold"
+						TextTrimming="CharacterEllipsis"/>
+
+						<Button
+						Grid.Column="1"
+						HorizontalAlignment="Right"
+						Classes="DescriptorDetailsClose"
+						Width="24" Height="24"
+						ToolTip.Tip="Hide Details"
+						Command="{Binding CloseDescriptorInfoCommand}">
+
+							<PathIcon
+							Width="12" Height="12"
+							Foreground="{DynamicResource NucleusAF.PrimaryTextBrush}"
+							Data="{StaticResource NucleusAF.CloseDescriptorDetailsIcon}" />
+						</Button>
+
+					</Grid>
+
+					<!-- Provider Descriptor Search -->
+					<AutoCompleteBox
+					Watermark="Filter descriptors..."
+					Text="{Binding DescriptorSearchText, Mode=TwoWay}"
+					Grid.Column="0"
+					MinWidth="100"
+					HorizontalAlignment="Stretch">
+
+						<AutoCompleteBox.Styles>
+							<Style Selector="AutoCompleteBox">
+								<Setter Property="InnerRightContent">
+									<Template>
+										<Button
+										Width="16" Height="16"
+										HorizontalAlignment="Right" VerticalAlignment="Center"
+										Margin="0,0,8,0" Padding="0"
+										Background="Transparent"
+										BorderBrush="Transparent"
+										IsTabStop="False">
+
+											<PathIcon
+											Width="16" Height="16"
+											Data="{StaticResource sidebar_search_ltr_regular}"/>
+										</Button>
+									</Template>
+								</Setter>
+							</Style>
+						</AutoCompleteBox.Styles>
+					</AutoCompleteBox>
+
+				</StackPanel>
+
+				<!-- Provider DataGrid -->
+				<DataGrid
+				Grid.Row="1"
+				Margin="0,8,0,0"
+				Name="TargetDataGrid"
+				ItemsSource="{Binding FilteredDescriptorData}"
+				SelectedItem="{Binding SelectedDescriptor, Mode=TwoWay}"
+				AutoGenerateColumns="False"
+				IsReadOnly="True"
+				GridLinesVisibility="All"
+				BorderThickness="1"
+				BorderBrush="Gray"
+				CornerRadius="4">
+
+					<DataGrid.Columns>
+						<DataGridTemplateColumn Header="Module" Width="4*">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<TextBlock
+									Margin="4,0,0,0"
+									HorizontalAlignment="Left" VerticalAlignment="Center"
+									Text="{Binding ModuleName, TargetNullValue=''}" />
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
+						<DataGridTemplateColumn Header="State" Width="1*" SortMemberPath="SortOrder" CanUserSort="True">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<TextBlock
+									HorizontalAlignment="Center" VerticalAlignment="Center"
+									ToolTip.Tip="{Binding Message}"
+									Text="{Binding State}"/>
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
+					</DataGrid.Columns>
+
+				</DataGrid>
+
+				<!-- Descriptor Details Panel -->
+				<HeaderedContentControl
+				Grid.Row="2"
+				Classes="GroupBox"
+				Header="Descriptor Details"
+				IsVisible="{Binding SelectedDescriptor, Converter={StaticResource NullToBoolConverter}}">
+
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+
+						<TextBlock
+						Grid.Row="0" Grid.Column="0"
+						Text="Module Name:"
+						FontWeight="SemiBold"
+						Margin="0,0,16,8"
+						VerticalAlignment="Center"/>
+						<SelectableTextBlock
+						Grid.Row="0" Grid.Column="1"
+						Text="{Binding SelectedDescriptor.ModuleName}"
+						Margin="0,0,0,8" />
+
+						<TextBlock
+						Grid.Row="1" Grid.Column="0"
+						Text="Module Id:"
+						FontWeight="SemiBold"
+						Margin="0,0,16,8"
+						VerticalAlignment="Center"/>
+						<SelectableTextBlock
+						Grid.Row="1" Grid.Column="1"
+						Text="{Binding SelectedDescriptor.Descriptor.ModuleId}"
+						FontSize="12"
+						Margin="0,0,0,8"/>
+
+						<TextBlock
+						Grid.Row="2" Grid.Column="0"
+						Text="Descriptor Id:"
+						FontWeight="SemiBold"
+						Margin="0,0,16,8"
+						VerticalAlignment="Center"/>
+						<SelectableTextBlock
+						Grid.Row="2" Grid.Column="1"
+						Text="{Binding SelectedDescriptor.Descriptor.DescriptorId}"
+						FontSize="12"
+						Margin="0,0,0,8"/>
+					</Grid>
+				</HeaderedContentControl>
+
+			</Grid>
+		</Border>
+
+		<!-- Restart Banner -->
+		<Border Grid.Row="1" Grid.Column="2"
+				IsVisible="{Binding ShowRestartBanner}"
+				Background="{DynamicResource NucleusAF.CautionBackgroundBrush}"
+				BorderBrush="{DynamicResource NucleusAF.AttentionBorderBrush}"
+				BorderThickness="1"
+				CornerRadius="4"
+				Padding="8"
+				Margin="0,4,0,4">
+			<DockPanel>
+				<!-- Left: icon substitute -->
+				<TextBlock
+				Text="⚠"
+				FontSize="18"
+				Margin="0,0,8,0"
+				VerticalAlignment="Center"
+				Foreground="{DynamicResource NucleusAF.AttentionTextBrush}"
+				DockPanel.Dock="Left"/>
+
+				<!-- Right: action button -->
+				<Button Content="Revert"
+						Command="{Binding RevertChangesCommand}"
+						HorizontalAlignment="Right"
+						VerticalAlignment="Center"
+						DockPanel.Dock="Right"
+						Padding="6,2">
+					<Button.Styles>
+						<!-- Base state -->
+						<Style x:SetterTargetType="Button">
+							<Setter Property="Background" Value="Transparent"/>
+							<Setter Property="Foreground" Value="{DynamicResource NucleusAF.TextFillColorDisabled}"/>
+							<Setter Property="BorderBrush" Value="{DynamicResource NucleusAF.SecondaryAltControlBrush}"/>
+							<Setter Property="BorderThickness" Value="2"/>
+							<Setter Property="CornerRadius" Value="4"/>
+						</Style>
+
+						<!-- Hover state -->
+						<Style Selector=":pointerover" x:SetterTargetType="Button">
+							<Setter Property="Background" Value="{DynamicResource NucleusAF.ExitBackgroundBrush}"/>
+							<Setter Property="Foreground" Value="{DynamicResource NucleusAF.AttentionInverseTextBrush}"/>
+							<Setter Property="BorderBrush" Value="{DynamicResource NucleusAF.ExitBackgroundBrush}"/>
+						</Style>
+
+						<!-- Pressed state -->
+						<Style Selector=":pressed" x:SetterTargetType="Button">
+							<Setter Property="Background" Value="{DynamicResource NucleusAF.PrimaryStrongControlBrush}"/>
+							<Setter Property="BorderBrush" Value="{DynamicResource NucleusAF.PrimaryStrongControlBrush}"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+
+				<!-- Center: title + message -->
+				<StackPanel>
+					<TextBlock
+					Text="Restart Required"
+					FontWeight="Bold"
+					Foreground="{DynamicResource NucleusAF.AttentionTextBrush}"
+					Margin="0,0,0,2"/>
+
+					<TextBlock
+					Text="Please restart the application for changes to take effect."
+					TextWrapping="Wrap"
+					Foreground="{DynamicResource NucleusAF.AttentionTextBrush}"/>
+				</StackPanel>
+			</DockPanel>
+		</Border>
+	</Grid>
+</UserControl>

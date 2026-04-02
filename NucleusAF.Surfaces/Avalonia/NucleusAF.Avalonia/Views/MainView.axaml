@@ -1,0 +1,179 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:NucleusAF.Avalonia.ViewModels"
+
+	mc:Ignorable="d" d:DesignWidth="1230" d:DesignHeight="720"
+			 
+	x:Class="NucleusAF.Avalonia.Views.MainView"
+	x:DataType="vm:MainViewModel"
+
+	Background="{DynamicResource NucleusAF.PrimaryBackgroundBrush}">
+
+	<UserControl.Styles>
+
+		<Style Selector="Button.HeaderButton">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="Width" Value="40"/>
+			<Setter Property="Height" Value="32"/>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}">
+
+						<ContentPresenter
+							Content="{TemplateBinding Content}"
+							ContentTemplate="{TemplateBinding ContentTemplate}"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"/>
+
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.HeaderButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource NucleusAF.AccentFillBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource NucleusAF.ExitTextBrush}"/>
+		</Style>
+		<Style Selector="Button.HeaderButton.Close:pointerover">
+			<Setter Property="Background" Value="{DynamicResource NucleusAF.ExitBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource NucleusAF.ExitTextBrush}"/>
+		</Style>
+
+	</UserControl.Styles>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="32"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<!-- Custom Title Bar -->
+		<Border
+			Grid.Row="0"
+			Background="Transparent"
+			Name="HeaderBorder"
+			PointerPressed="HeaderBorder_OnPointerPressed">
+
+			<DockPanel LastChildFill="True">
+
+				<!-- Left: icon + title -->
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+					<Button
+						Command="{Binding AppIconClickedCommand}"
+						Width="32" Height="32"
+						Padding="0" Margin="0"
+						BorderBrush="Transparent"
+						Background="Transparent">
+						<Image
+							Source="{Binding AppIcon}"
+							Width="16" Height="16"/>
+					</Button>
+					<TextBlock
+						Text="{Binding AppName}"
+						Padding="0" Margin="0"
+						FontSize="16"
+						VerticalAlignment="Center"/>
+				</StackPanel>
+
+				<!-- Right: HeaderButton buttons -->
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+					<!-- Settings -->
+					<Button
+						Classes="HeaderButton"
+						Command="{Binding OpenSettingsCommand}"
+						ToolTip.Tip="Open Settings"
+						IsVisible="{Binding IsSettingsVisible}">
+						<Path
+							Width="16" Height="16"
+							StrokeThickness="1"
+							Stretch="Uniform"
+							Data="{StaticResource NucleusAF.SettingsIcon}"
+							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+
+					<!-- Home -->
+					<Button
+						Classes="HeaderButton"
+						Command="{Binding GoHomeCommand}"
+						ToolTip.Tip="Return Home"
+						IsVisible="{Binding IsHomeVisible}">
+						<Path
+							Width="16" Height="16"
+							StrokeThickness="1"
+							Stretch="Uniform"
+							Data="{StaticResource NucleusAF.HomeIcon}"
+							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+
+					<!-- Minimize -->
+					<Button
+						Classes="HeaderButton"
+						Command="{Binding MinimizeCommand}">
+						<Path
+							Width="8" Height="2"
+							StrokeThickness="2"
+							Stretch="Uniform"
+							Data="{StaticResource NucleusAF.MinimizeIcon}"
+							Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+
+					<!-- Maximize -->
+					<Button
+						Classes="HeaderButton"
+						Command="{Binding MaximizeRestoreCommand}"
+						IsVisible="{Binding IsMaximizeVisible}">
+						<Path
+							Width="8" Height="8"
+							StrokeThickness="2"
+							Stretch="Uniform"
+							Data="{StaticResource NucleusAF.MaximizeIcon}"
+							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+
+					<!-- Restore -->
+					<Button
+						Classes="HeaderButton"
+						Command="{Binding MaximizeRestoreCommand}"
+						IsVisible="{Binding IsRestoreVisible}">
+						<Path
+							Width="8" Height="8"
+							StrokeThickness="2"
+							Stretch="Uniform"
+							Data="{StaticResource NucleusAF.RestoreIcon}"
+							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+
+					<!-- Close -->
+					<Button
+						Classes="HeaderButton Close"
+						Name="CloseButton"
+						Command="{Binding CloseCommand}">
+						<Path
+							Width="8" Height="8"
+							StrokeThickness="2"
+							Stretch="Uniform"
+							Data="{StaticResource NucleusAF.CloseIcon}"
+							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+
+				</StackPanel>
+			</DockPanel>
+		</Border>
+
+		<Border Grid.Row="1">
+			<TransitioningContentControl
+				Content="{Binding SelectedMainPageContent}"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch"/>
+		</Border>
+
+	</Grid>
+</UserControl>

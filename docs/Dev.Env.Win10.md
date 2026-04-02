@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide should walk you through the process of setting up your PlugHub development environment from scratch. We make no assumptions about the skill level of the reader so in some cases this guide may seem pedantic.  We do make two assumptions in this guide, that the reader is using Windows 10 and has access to the Internet.
+This guide should walk you through the process of setting up your NucleusAF development environment from scratch. We make no assumptions about the skill level of the reader so in some cases this guide may seem pedantic.  We do make two assumptions in this guide, that the reader is using Windows 10 and has access to the Internet.
 
 ## Table of Contents
 * [Prerequisites](#prerequisites)

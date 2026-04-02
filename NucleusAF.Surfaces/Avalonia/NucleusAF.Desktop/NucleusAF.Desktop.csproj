@@ -1,0 +1,105 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
+`			One for Windows with net8.0-windows TFM, one for MacOS with net8.0-macos and one with net8.0 TFM for Linux.-->
+		<TargetFramework>net8.0</TargetFramework>
+		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<Nullable>enable</Nullable>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Desktop" Version="11.3.13" />		
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\NucleusAF.Avalonia\NucleusAF.Avalonia.csproj" />
+	</ItemGroup>
+
+	<!-- 
+	=======================================================================
+	MODULE SYSTEM INTEGRATION (Surface Example)
+	=======================================================================
+	
+	Example: how to hook module projects into your surface project build.
+	This target runs *before* the normal Build target and sets up:
+		- where module outputs should be copied
+		- whether to enable debug logging
+		- which module projects to include
+	-->
+	<Target Name="SetModuleOutputDir" BeforeTargets="Build;Publish">
+
+		<PropertyGroup>
+			<!-- 
+			Override the default module output directory.
+			Here we place module assemblies under the main project's $(TargetDir)\Modules\ 
+			-->
+			<ModuleOutputDir>$(TargetDir)Modules\</ModuleOutputDir>
+
+			<!-- Turn on verbose module discovery/debug messages -->
+			<ModuleDebug>true</ModuleDebug>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<ModuleProjects Remove="@(ModuleProjects)" />
+			<!-- 
+			Include all module projects under the Diagnostics branch.
+			Adjust the relative path/folder name (e.g. Diagnostics, Security, etc.)
+			to bring in the module groups you need. 
+			-->
+			<ModuleProjects Include="$(MSBuildThisFileDirectory)..\..\..\NucleusAF.Modules\Framework\Diagnostics\**\*.csproj" />
+			<ModuleProjects Include="$(MSBuildThisFileDirectory)..\..\..\NucleusAF.Modules\Framework\Tasks\**\*.csproj" />
+			<ModuleProjects Include="$(MSBuildThisFileDirectory)..\..\..\NucleusAF.Modules\Surface\Avalonia\Diagnostics\**\*.csproj" />
+			<ModuleProjects Include="$(MSBuildThisFileDirectory)..\..\..\NucleusAF.Modules\Surface\Avalonia\Controls\**\*.csproj" />
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Import shared build logic for module projects -->
+	<Import Project="..\..\..\NucleusAF.Modules.Build.targets" />
+
+	<!-- Example: how to hook module cleanup into your surface project build.
+	This target runs *after* the normal Build/Publish targets and sets up:
+		- where module outputs should be copied (same as above)
+		- whether to enable debug logging (same as above)
+		- which module artifacts should be deleted after build/publish
+	-->
+	<Target Name="SetModuleCleanup" AfterTargets="Build;Publish">
+
+		<PropertyGroup>
+			<!-- Override the default module output directory -->
+			<ModuleOutputDir>$(TargetDir)Modules\</ModuleOutputDir>
+
+			<!-- Turn on verbose module discovery/debug messages -->
+			<ModuleDebug>true</ModuleDebug>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<!-- Define cleanup rules for module artifacts.
+			Each <CleanupArtifacts> entry is a path or simple wildcard.
+			These will be deleted by the CleanModuleArtifacts target
+			(imported below from NucleusAF.Modules.Cleanup.targets).
+
+			Example entries:
+				- Delete everything under A\B inside the build output Modules folder
+				
+			<CleanupArtifacts Include="$(OutputPath)Modules\A\*" />
+			<CleanupDirs Include="$(OutputPath)Modules\A" />				
+			-->
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Import shared cleanup logic for module artifacts -->
+	<Import Project="..\..\..\NucleusAF.Modules.Clean.targets" />
+
+</Project>

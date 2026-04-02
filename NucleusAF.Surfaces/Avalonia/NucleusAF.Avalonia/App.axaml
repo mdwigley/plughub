@@ -1,0 +1,7 @@
+<Application
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	x:Class="NucleusAF.Avalonia.App">
+	<!-- Module authors should contribute their own styles via IProviderStyleInclusion. -->
+	<Application.Styles />
+</Application>

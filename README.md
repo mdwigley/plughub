@@ -1,29 +1,20 @@
-# PlugHub
+# NucleusAF
 
-[![License: LGPL](https://img.shields.io/badge/License-LGPL-blue.svg)](LICENSE.md) 
+[![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-blue.svg)](LICENSE.md)
 [![Join us on Discord](https://img.shields.io/badge/Discord-Join-blue?logo=discord)](https://discord.com/invite/mWDHDqkzeR) 
-[![Release](https://img.shields.io/github/v/release/enterlucent/plughub?include_prereleases)](../../releases)
+[![Release](https://img.shields.io/github/v/release/enterlucent/nucleusaf?include_prereleases)](../../releases)
 
-**PlugHub** is an enterprise-grade application designed around a modular plugin architecture, enabling developers and organizations to build, manage, and deploy extensible software systems with ease. It provides a robust framework where plugins serve as independent, interchangeable components that seamlessly integrate into a unified host application.
+**NucleusAF** is an enterprise-grade application designed around a modular architecture, enabling developers and organizations to build, manage, and deploy extensible software systems with ease. It provides a robust framework where modules serve as independent, interchangeable components that seamlessly integrate into a unified host application.
 
-With PlugHub, you can rapidly extend functionality, validate plugin compatibility, and orchestrate complex workflows—all while maintaining a clean separation of concerns and maximizing maintainability.
+With NucleusAF, you can rapidly extend functionality, validate module compatibility, and orchestrate complex workflows, all while maintaining a clean separation of concerns and maximizing maintainability.
 
 **Join us** in creating a flexible and scalable platform that empowers innovation through modular design and dynamic extensibility.
 
 ## Table of Contents
-- [Quick Start](#quick-start)
 - [Getting Started](#getting-started)
 - [Contributing](#contributing)
 - [Authors](#authors)
 - [License](#license)
-
-## Quick Start
-1. **Install PlugHub**  
-   Download and install PlugHub from the [Releases page](../../releases).
-2. **Run PlugHub**  
-   Launch the application.
-3. **Add Plugins**  
-   Install plugins as needed to extend functionality.
 
 ## Getting Started
 - [Getting Information](#how-to-get-information) – Where to find documentation and support resources.
@@ -33,9 +24,9 @@ With PlugHub, you can rapidly extend functionality, validate plugin compatibilit
 - [Site Mention](#how-to-request-a-site-mention) – Submit community resources for inclusion.
 
 ### How to Get Information
-- **Documentation** – Comprehensive guides and references for PlugHub:
+- **Documentation** – Comprehensive guides and references for NucleusAF:
     - [Project Docs](docs/)
-    - [GitHub Pages](https://enterlucent.github.io/plughub/)
+    - [GitHub Pages](https://enterlucent.github.io/nucleusaf/)
     - [Wiki](../../wiki)
     - [Discussions](../../discussions)
 - **Community Chat** – Join our [Discord](https://discord.com/invite/mWDHDqkzeR) for real-time support and collaboration.
@@ -46,7 +37,7 @@ With PlugHub, you can rapidly extend functionality, validate plugin compatibilit
    - If you find a relevant discussion, join the conversation by commenting or reacting.
 2. **Start a New Discussion**  
    If your question isn't answered, create a new discussion in the appropriate category (such as Q&A or Support).
-   - Use a clear, descriptive title (e.g., “How do I configure plugins?”).
+   - Use a clear, descriptive title (e.g., “How do I configure modules?”).
    - Provide detailed information and context to help others assist you efficiently.
 3. **Follow Up**  
    Enable notifications or check back for responses. Please be patient, as maintainers and community members may reply asynchronously.
@@ -77,10 +68,10 @@ With PlugHub, you can rapidly extend functionality, validate plugin compatibilit
 
 ## How to Request a Site Mention
 
-If you have created a resource relevant to PlugHub and would like it featured on our GitHub Pages:
+If you have created a resource relevant to NucleusAF and would like it featured on our GitHub Pages:
 
 - Start a new discussion in the [General category](../../discussions/categories/general).
-- Prefix your discussion title with [PROMO]** (e.g., `[PROMO] mysite.com: PlugHub Plugin Showcase`).
+- Prefix your discussion title with [PROMO]** (e.g., `[PROMO] mysite.com: NucleusAF Module/Application Showcase`).
 - Respond to any follow-up questions from maintainers.
 - You will be notified if your submission is accepted and published.
 
@@ -99,25 +90,24 @@ See the list of [contributors](../../graphs/contributors) who have participated 
 
 ## License
 
-This repository uses **dual licensing**:
+This repository uses the **MPL‑2.0 licensing model**.
 
-### **Host Application & Shared Libraries**
-- **LGPL-3.0** ([View License](LICENSE.md))
-  - Applies to all code **except** official plugins.
-  - Permits use in proprietary software.
-  - Modifications to LGPL code must be shared under LGPL.
+### **Root License (MPL‑2.0)**
+- All code in this repository is licensed under **MPL‑2.0** unless a module directory provides its own `LICENSE` file.
+- MPL‑2.0 permits use inside proprietary or closed‑source applications.
+- **Only modified MPL‑covered files must be shared**, and only as patches or file‑level diffs.
 
-### **Official Plugins**
-- **GPL-3.0** (see plugin-specific `LICENSE` files)
-  - Applies to all code in `PlugHub.Plugins\PlugHub.Plugin.*` directories.
-  - Plugins may be used freely.
-  - **Derivative works** (forks, wrappers, modifications) must also be GPL-licensed.
+### **Module‑Level License Overrides**
+- Any module folder containing its own `LICENSE` file is governed by that license.
+- These module‑specific licenses override the root MPL‑2.0 terms for that module only.
+- This allows official or third‑party modules to use **GPL, LGPL, MPL, MIT, or commercial** licensing as needed.
 
-> If a subfolder contains its own `LICENSE` file, that license applies to the code in that subfolder and takes precedence over the root license.  
-> Always check the `LICENSE` file in each plugin directory for the specific terms that apply to that plugin.
+### Summary Table
 
-| Component          | License | Key Requirement                          |
-|--------------------|---------|------------------------------------------|
-| Host/Shared Code   | LGPL    | Modifications must be shared as LGPL.    |
-| Official Plugins   | GPL     | Derivatives must be GPL.                 |
+| Component / Folder          | License           | Requirement                                          |
+|-----------------------------|-------------------|-------------------------------------------------------|
+| Host / Shared Code          | MPL‑2.0           | Modified files must be shared under MPL‑2.0.          |
+| Module Folders w/ LICENSE   | Declared license  | Overrides MPL‑2.0 for that module.                    |
+| Module Folders w/o LICENSE  | MPL‑2.0           | Inherits root MPL‑2.0 terms.                          |
 
+> **Always check each module’s directory**: if it contains a `LICENSE` file, that license governs that module.

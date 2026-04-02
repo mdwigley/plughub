@@ -1,5 +1,5 @@
 name: Bug Report
-description: Create a report to help us improve PlugHub
+description: Create a report to help us improve NucleusAF
 title: "<short title for your identified issue>"
 type: bug
 labels: bug
@@ -40,8 +40,8 @@ body:
 
         ## Your Environment
         <!--- Include as many relevant details as possible. -->
-        * PlugHub version:
-        * Plugin version (if applicable):
+        * NucleusAF version:
+        * Module version (if applicable):
         * Operating System and version (desktop or mobile):
         * .NET Runtime version (if applicable):
     validations:
